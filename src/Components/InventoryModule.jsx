@@ -240,34 +240,34 @@ export default function InventoryModule() {
 
         <div>
           <h1
-            className="text-center haitianColor mt-1"
+            className="text-center m-0 p-0 haitianColor mt-1 haitianInventoryText"
             style={{ fontSize: "30px" }}
           >
             Inventory Management System
           </h1>
           <p
             style={{
-              fontSize: "16px",
+              // fontSize: "16px",
               textAlign: "center",
               color: "#0D3884",
             }}
-            className="m-0 p-0"
+            className="m-0 p-0 haitianInventoryDescriptionText"
           >
             (Add and manage your inventory items with ease)
           </p>
         </div>
-        <div className="row d-flex flex-row mb-5">
+        <div className="row d-flex flex-row mt-4">
           <Form
             form={form}
             variant="filled"
             layout="vertical"
-            className="mt-5 "
+            className="mt-3 mt-lg-5 "
             onFinish={handleSubmit}
           >
-            <div className="d-flex flex-md-row justify-content-lg-evenly">
+            <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly">
               {/* Basic Information */}
-
-              <div className="col-12 col-md-6 p-1 p-lg-4 inventoryCards rounded-4">
+              
+              <div className="col-12 col-lg-6 p-3 p-lg-4 inventoryCards rounded-4">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
                     className="d-flex align-items-center justify-content-center"
@@ -288,7 +288,7 @@ export default function InventoryModule() {
                   <div>
                     <div
                       className="fw-bold m-0 p-0"
-                      style={{ fontSize: "20px", color: "#0D3884" }}
+                      style={{ fontSize: "20px", color: "#0D3884"}}
                     >
                       Basic Information
                     </div>
@@ -375,7 +375,7 @@ export default function InventoryModule() {
               </div>
 
               {/* Financial */}
-              <div className="col-12 col-md-5 p-1 p-lg-4 inventoryCards rounded-4 ">
+              <div className="col-12 col-lg-5 mt-4 mt-lg-0 p-3 p-lg-4 inventoryCards rounded-4 ">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
                     className="d-flex align-items-center justify-content-center"
@@ -456,9 +456,9 @@ export default function InventoryModule() {
               </div>
             </div>
 
-            <div className="d-flex flex-md-row justify-content-lg-evenly mt-3 mt-lg-3">
+            <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly mt-4 mt-lg-3">
               {/* Stock Management */}
-              <div className="col-12 col-md-6 p-1 p-lg-4 inventoryCards rounded-4 mt-lg-3">
+              <div className="col-12 col-lg-6 p-3 p-lg-4 inventoryCards rounded-4 mt-lg-3">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
                     className="d-flex align-items-center justify-content-center"
@@ -478,7 +478,7 @@ export default function InventoryModule() {
 
                   <div>
                     <div
-                      className="fw-bold m-0 p-0"
+                      className="fw-bold m-0 p-0 "
                       style={{ fontSize: "20px", color: "#0D3884" }}
                     >
                       Stock Management
@@ -567,7 +567,7 @@ export default function InventoryModule() {
               </div>
 
               {/* Quick Stats */}
-              <div className="col-12 col-md-5 p-1 p-lg-4 inventoryCards rounded-4 mt-lg-3">
+              <div className="col-12 col-lg-5 mt-4 mt-lg-0 p-3 p-lg-4 inventoryCards rounded-4 mt-lg-3">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
                     className="d-flex align-items-center justify-content-center"
@@ -625,7 +625,7 @@ export default function InventoryModule() {
                     </div>
                     <div
                       className="card mt-2 border border-0 p-2 text-danger"
-                      style={{ backgroundColor: "rgba(250, 144, 138, 0.19)" }}
+                      style={{ backgroundColor: "rgb(255, 197, 197)" }}
                     >
                       <p className="m-0 p-0" style={{ fontSize: "20px" }}>
                         Reorder Soon
@@ -636,7 +636,7 @@ export default function InventoryModule() {
                 </div>
               </div>
             </div>
-            <div className="d-flex justify-content-center mt-4">
+            <div className="d-flex justify-content-center mt-4 pb-5">
               <Button
                 htmlType="submit"
                 size="large"
