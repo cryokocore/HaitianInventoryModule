@@ -342,7 +342,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input  type="number"/>
                     </Form.Item>
                     <Form.Item
                       label="MANUFACTURER"
@@ -423,7 +423,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input  type="number"/>
                     </Form.Item>
                     <Form.Item
                       label="COST PER ITEM"
@@ -436,7 +436,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input  type="number"/>
                     </Form.Item>
                     <Form.Item
                       label="INVENTORY COST"
@@ -449,7 +449,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input  type="number"/>
                     </Form.Item>
                   </div>
                 </div>
@@ -506,7 +506,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input  type="number"/>
                     </Form.Item>
                     <Form.Item
                       label="REORDER LEVEL"
@@ -519,7 +519,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input  type="number"/>
                     </Form.Item>
                   </div>
                   <div className="col-12 col-md-6">
@@ -534,7 +534,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input  type="number"/>
                     </Form.Item>
                     <Form.Item
                       label="ITEM REORDER QUANTITY"
@@ -547,7 +547,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input  type="number"/>
                     </Form.Item>
                   </div>
                   <Form.Item
