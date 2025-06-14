@@ -12,6 +12,17 @@
     color: #0D3884 !important;
   }
 
+  /* .inventoryCards{
+    border: 1px solid #f6f6f6 !important;
+    transition: all 0.3s ease-in-out;
+    background-color: #f0f0f033 !important;
+  }
+
+  .inventoryCards:hover{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
+  transform: scale(1.03);
+  } */
+
   .inventoryCards{
     border: 1px solid #f6f6f6 !important;
     transition: all 0.3s ease-in-out;
@@ -20,7 +31,10 @@
   }
 
   .inventoryCards:hover{
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
+  /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082); */
+      border: 1px solid #efeeee !important;
+    box-shadow: 10px 10px 6px rgba(0, 0, 0, 0.2);
+    background-color: #f0f0f00a !important;
   transform: scale(1.03);
   }
 

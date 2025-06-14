@@ -210,7 +210,7 @@ import {
 
 export default function InventoryModule() {
   const [form] = Form.useForm();
-  const handleSubmit = () => {};
+  const handleSubmit = (value) => {console.log(value);};
   const styl = `.ant-form-item .ant-form-item-label >label {
     position: relative;
     display: inline-flex
