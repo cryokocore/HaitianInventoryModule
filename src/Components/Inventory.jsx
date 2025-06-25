@@ -1,203 +1,8 @@
-// import React from "react";
-// import { Button, Form, Input, Radio } from "antd";
-
-// export default function InventoryModule() {
-//   const [form] = Form.useForm();
-//    const handleSubmit = ()=>{
-
-//    }
-//    const styl = `.ant-form-item .ant-form-item-label >label {
-//     position: relative;
-//     display: inline-flex
-// ;
-//     align-items: center;
-//     max-width: 100%;
-//     height: 32px;
-//     color: #0D3884;
-//     font-size: 14px;
-// }`
-//   return (
-//     <div className="container-fluid">
-//         <style>{styl}</style>
-//       <div className="row">
-//         <div className="col-12">
-//           <Form form={form} variant="filled" layout="vertical" className="mt-5" onFinish={handleSubmit}>
-//             <div className="row">
-//               <div className="col-12 col-md-6">
-//                 <Form.Item
-//                   label="REORDER(auto-fill)"
-//                   name="reorder"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input reorder(auto-fill)",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                 <Form.Item
-//                   label="ITEM NO."
-//                   name="itemNo"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input item no.",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="NAME"
-//                   name="name"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input name",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="MANUFACTURER"
-//                   name="manufacturer"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input manufacturer",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="DESCRIPTION"
-//                   name="description"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input description",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="PRICE"
-//                   name="price"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input price",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="COST PER ITEM"
-//                   name="costPerItem"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input cost per item",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//               </div>
-//                   <div className="col-12 col-md-6">
-//                 <Form.Item
-//                   label="STOCK QUANTITY"
-//                   name="stockQuantity"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input stock quantity",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                 <Form.Item
-//                   label="INVENTORY COST"
-//                   name="inventoryCost"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input inventory cost",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="REORDER LEVEL"
-//                   name="reorderLevel"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input reorder level",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="DAYS PER REORDER"
-//                   name="daysPerReorder"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input days per reorder",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="ITEM REORDER QUANTITY"
-//                   name="itemReorderQuantity"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input item reorder quantity",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-//                  <Form.Item
-//                   label="ITEM DISCONTINUED"
-//                   name="itemDiscontinued"
-//                   rules={[
-//                     {
-//                       required: "true",
-//                       message: "Please input item discontinued",
-//                     },
-//                   ]}
-//                 >
-//                   <Input />
-//                 </Form.Item>
-
-//               </div>
-//               <div >
-//               <Button htmlType="submit" className="m-0 m-auto">Submit</Button>
-//               </div>
-//             </div>
-//           </Form>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-import React from "react";
-import { Button, Form, Input, Radio } from "antd";
-import HaitianLogo from "../Images/HaitianLogo.png";
+import React, { useEffect, useState } from "react";
+import 'antd/dist/reset.css'; 
+import { Button, Form, Input, Radio, Select } from "antd";
+import {notification, message } from "antd";
+// import HaitianLogo from "../Images/HaitianLogo.jpeg";
 import "../App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -208,9 +13,104 @@ import {
   faSquarePollVertical,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function InventoryModule() {
+export default function Inventory() {
   const [form] = Form.useForm();
-  const handleSubmit = (value) => {console.log(value);};
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const defaultLocations = ["Sharjah", "Umm Al Quwain"];
+
+      try {
+        const response = await fetch(
+          "https://script.google.com/macros/s/AKfycbx8ZcQhAi4UltWwPiOYaJbfEzBN5o9iO3zreMFHoIT3irnNICDkoqMkGgRi0w0WYU1s1Q/exec",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({ action: "getLocations" }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (result.success && Array.isArray(result.locations)) {
+          const merged = [...defaultLocations];
+
+          result.locations.forEach((loc) => {
+            if (!merged.includes(loc)) merged.push(loc);
+          });
+
+          console.log("📦 Merged Locations:", merged); // ✅ Log merged list
+          setLocations(merged);
+        } else {
+          console.log("⚠️ Backend returned no locations. Using defaults.");
+          setLocations(defaultLocations);
+        }
+      } catch (err) {
+        console.error("❌ Error fetching locations:", err);
+        setLocations(defaultLocations);
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  const handleSubmit = async (values) => {
+    console.log("Form values submitted:", values);
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbx8ZcQhAi4UltWwPiOYaJbfEzBN5o9iO3zreMFHoIT3irnNICDkoqMkGgRi0w0WYU1s1Q/exec",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            action: "addInventory", // ✅ Updated action
+            ...values,
+          }),
+        }
+      );
+
+      const result = await response.json();
+      if (result.success) {
+        notification.success({
+          message: "Success",
+          description: "Inventory data submitted successfully!",
+          duration: 3,
+          placement:"bottomRight"
+        })
+        form.resetFields();
+      } else {
+        console.error("Submission error:", result.error);
+        notification.error({
+          message: "Error",
+          description: "Submission failed: " + result.error,
+          duration: 3,
+         placement:"bottomRight"
+
+        })
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      alert("An error occurred while submitting data.");
+           notification.error({
+          message: "Error",
+          description: "An error occurred while submitting data.",
+          duration: 3,
+          placement:"bottomRight"
+
+        })
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const styl = `.ant-form-item .ant-form-item-label >label {
     position: relative;
     display: inline-flex
@@ -225,19 +125,33 @@ export default function InventoryModule() {
     color: #ff4d4f;
     font-weight: normal !important;
 }    
+ .ant-select-multiple .ant-select-selection-placeholder {
+    position: absolute;
+    top: 50%;
+    inset-inline-start: 8px;
+    inset-inline-end: 11px;
+    transform: translateY(-50%);
+    transition: all 0.3s;
+    font-weight: normal;
+}
+     .ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+    transition: none;
+    pointer-events: none;
+    font-weight: normal;
+}
 `;
   return (
     <div className="container-fluid">
       <style>{styl}</style>
       <div className="container ">
-        <div className="col-12 d-flex justify-content-center">
+        {/* <div className="col-12 d-flex justify-content-center">
           <img
             src={HaitianLogo}
             alt="HaitianLogo"
             className="img-fluid haitianLogo"
           />
-        </div>
-
+        </div> */}
+        {/* 
         <div>
           <h1
             className="text-center m-0 p-0 haitianColor mt-1 haitianInventoryText"
@@ -255,18 +169,37 @@ export default function InventoryModule() {
           >
             (Add and manage your inventory items with ease)
           </p>
+        </div> */}
+
+        <div>
+          <h1
+            className="text-center m-0 p-0 haitianColor mt-1 "
+            style={{ fontSize: "36px"  }}
+          >
+            Inventory
+          </h1>
+          <p
+            style={{
+              // fontSize: "16px",
+              textAlign: "center",
+              color: "#0D3884",
+            }}
+            className="m-0 p-0 haitianInventoryDescriptionText"
+          >
+            (Add and manage your inventory items with ease)
+          </p>
         </div>
         <div className="row d-flex flex-row mt-4">
           <Form
             form={form}
             variant="filled"
             layout="vertical"
-            className="mt-3 mt-lg-5 "
+            className="mt-3 mt-lg-3 "
             onFinish={handleSubmit}
           >
             <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly">
               {/* Basic Information */}
-              
+
               <div className="col-12 col-lg-6 p-3 p-lg-4 inventoryCards rounded-4">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
@@ -288,7 +221,7 @@ export default function InventoryModule() {
                   <div>
                     <div
                       className="fw-bold m-0 p-0"
-                      style={{ fontSize: "20px", color: "#0D3884"}}
+                      style={{ fontSize: "20px", color: "#0D3884" }}
                     >
                       Basic Information
                     </div>
@@ -303,7 +236,7 @@ export default function InventoryModule() {
                 <div className="border border-1"></div>
                 <div className="row mt-3 ">
                   <div className="col-12 col-md-6">
-                    <Form.Item
+                    {/* <Form.Item
                       label="REORDER(auto-fill)"
                       name="reorder"
                       className="fw-bold"
@@ -315,19 +248,37 @@ export default function InventoryModule() {
                       ]}
                     >
                       <Input />
-                    </Form.Item>
+                    </Form.Item> */}
+                         <Form.Item
+                                            label="MACHINES"
+                                            name="machines"
+                                            className="fw-bold"
+                                            rules={[
+                                              {
+                                                required: true,
+                                                message: "Please select machine",
+                                              },
+                                            ]}
+                                          >
+                                            <Select placeholder="Select a machine">
+                                              <Select.Option value="IMM">IMM</Select.Option>
+                                              <Select.Option value="BMM">BMM</Select.Option>
+                                              <Select.Option value="EBM">EBM</Select.Option>
+                                              <Select.Option value="SBM">SBM</Select.Option>
+                                            </Select>
+                                          </Form.Item>
                     <Form.Item
-                      label="ITEM NAME"
-                      name="itemName"
+                      label="PRODUCT NAME"
+                      name="productName"
                       className="fw-bold"
                       rules={[
                         {
                           required: "true",
-                          message: "Please input item name",
+                          message: "Please input product name",
                         },
                       ]}
                     >
-                      <Input />
+                      <Input placeholder="Enter product name"/>
                     </Form.Item>
                   </div>
                   <div className="col-12 col-md-6">
@@ -342,7 +293,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input  type="number"/>
+                      <Input type="number" placeholder="Enter item number"/>
                     </Form.Item>
                     <Form.Item
                       label="MANUFACTURER"
@@ -355,7 +306,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input />
+                      <Input placeholder="Enter manufacturer"/>
                     </Form.Item>
                   </div>
                   <Form.Item
@@ -369,7 +320,7 @@ export default function InventoryModule() {
                       },
                     ]}
                   >
-                    <Input />
+                    <Input placeholder="Enter description"/>
                   </Form.Item>
                 </div>
               </div>
@@ -423,7 +374,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input  type="number"/>
+                      <Input type="number" placeholder="Enter price" />
                     </Form.Item>
                     <Form.Item
                       label="COST PER ITEM"
@@ -436,7 +387,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input  type="number"/>
+                      <Input type="number" placeholder="Enter cost per item" />
                     </Form.Item>
                     <Form.Item
                       label="INVENTORY COST"
@@ -449,7 +400,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input  type="number"/>
+                      <Input type="number" placeholder="Enter inventory cost"/>
                     </Form.Item>
                   </div>
                 </div>
@@ -458,7 +409,7 @@ export default function InventoryModule() {
 
             <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly mt-4 mt-lg-3">
               {/* Stock Management */}
-              <div className="col-12 col-lg-6 p-3 p-lg-4 inventoryCards rounded-4 mt-lg-3">
+              <div className="col-12 col-lg-10 p-3 p-lg-4 inventoryCards rounded-4 mt-lg-3">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
                     className="d-flex align-items-center justify-content-center"
@@ -494,6 +445,15 @@ export default function InventoryModule() {
                 <div className="border border-1"></div>
 
                 <div className="row mt-3 ">
+                  <p
+                    style={{
+                      fontSize: "18px",
+                      color: "#0D3884",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Stock Available: 100
+                  </p>
                   <div className="col-12 col-md-6">
                     <Form.Item
                       label="STOCK QUANTITY"
@@ -506,8 +466,22 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input  type="number"/>
+                      <Input type="number" placeholder="Enter input stock quantity"/>
                     </Form.Item>
+                    <Form.Item
+                      label="RACK NUMBER"
+                      name="rackNumber"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: "true",
+                          message: "Please input rack number",
+                        },
+                      ]}
+                    >
+                      <Input type="number" placeholder="Enter rack number"/>
+                    </Form.Item>
+
                     <Form.Item
                       label="REORDER LEVEL"
                       name="reorderLevel"
@@ -519,22 +493,7 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input  type="number"/>
-                    </Form.Item>
-                  </div>
-                  <div className="col-12 col-md-6">
-                    <Form.Item
-                      label="DAYS PER REORDER"
-                      name="daysPerReorder"
-                      className="fw-bold"
-                      rules={[
-                        {
-                          required: "true",
-                          message: "Please input days per reorder",
-                        },
-                      ]}
-                    >
-                      <Input  type="number"/>
+                      <Input type="number" placeholder="Enter input reorder level"/>
                     </Form.Item>
                     <Form.Item
                       label="ITEM REORDER QUANTITY"
@@ -547,91 +506,87 @@ export default function InventoryModule() {
                         },
                       ]}
                     >
-                      <Input  type="number"/>
+                      <Input type="number" placeholder="Enter item reorder quantity" />
                     </Form.Item>
                   </div>
-                  <Form.Item
-                    label="ITEM DISCONTINUED"
-                    name="itemDiscontinued"
-                    className="fw-bold"
-                    rules={[
-                      {
-                        required: "true",
-                        message: "Please input item discontinued",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </div>
-              </div>
+                  <div className="col-12 col-md-6">
+                    <Form.Item
+                      label="LOCATION"
+                      name="location"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select location",
+                        },
+                      ]}
+                    >
+                      <Select
+                        mode="tags"
+                        placeholder="Select or enter a location"
+                        style={{ width: "100%" }}
+                        onChange={(value) => {
+                          if (Array.isArray(value)) {
+                            const latest = value[value.length - 1];
+                            form.setFieldsValue({ location: latest });
+                          }
+                        }}
+                        value={
+                          form.getFieldValue("location")
+                            ? [form.getFieldValue("location")]
+                            : []
+                        }
+                      >
+                        {locations.map((loc) => (
+                          <Select.Option key={loc} value={loc}>
+                            {loc}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
 
-              {/* Quick Stats */}
-              <div className="col-12 col-lg-5 mt-4 mt-lg-0 p-3 p-lg-4 inventoryCards rounded-4 mt-lg-3">
-                <div className="d-flex align-items-center gap-2 mb-1">
-                  <div
-                    className="d-flex align-items-center justify-content-center"
-                    style={{
-                      backgroundColor: "#e8f0fe",
-                      borderRadius: "12px",
-                      width: "40px",
-                      height: "40px",
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={faChartSimple}
-                      size="xl"
-                      style={{ color: "#0D3884" }}
-                    />
-                  </div>
+                   
+                    <Form.Item
+                      label="BIN NUMBER"
+                      name="binNumber"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: "true",
+                          message: "Please input bin number",
+                        },
+                      ]}
+                    >
+                      <Input type="number" placeholder="Enter bin number" />
+                    </Form.Item>
 
-                  <div>
-                    <div
-                      className="fw-bold m-0 p-0"
-                      style={{ fontSize: "20px", color: "#0D3884" }}
+                     <Form.Item
+                      label="DAYS PER REORDER"
+                      name="daysPerReorder"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: "true",
+                          message: "Please input days per reorder",
+                        },
+                      ]}
                     >
-                      Quick Stats
-                    </div>
-                    <div
-                      className="m-0 p-0"
-                      style={{ fontSize: "14px", color: "#0D3884" }}
+                      <Input type="number" placeholder="Enter days per reorder" />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="ITEM DISCONTINUED"
+                      name="itemDiscontinued"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: "true",
+                          message: "Please input item discontinued",
+                        },
+                      ]}
                     >
-                      Overview metrics
-                    </div>
-                  </div>
-                </div>
-                <div className="border border-1"></div>
-                <div className="row mt-3 ">
-                  <div className="col-12">
-                    <div
-                      className="card border border-0 p-2 text-success"
-                      style={{ backgroundColor: "rgba(67, 235, 129, 0.32)" }}
-                    >
-                      <p className="m-0 p-0 " style={{ fontSize: "20px" }}>
-                        TOTAL ITEMS
-                      </p>
-                      <p style={{ fontSize: "20px", fontWeight: "bold" }}>
-                        10000
-                      </p>
-                    </div>
-                    <div
-                      className="card mt-2 border border-0 p-2 text-warning"
-                      style={{ backgroundColor: "rgba(252, 234, 153, 0.68)" }}
-                    >
-                      <p className=" m-0 p-0 " style={{ fontSize: "20px" }}>
-                        Low Stock
-                      </p>
-                      <p style={{ fontSize: "20px", fontWeight: "bold" }}>23</p>
-                    </div>
-                    <div
-                      className="card mt-2 border border-0 p-2 text-danger"
-                      style={{ backgroundColor: "rgb(255, 197, 197)" }}
-                    >
-                      <p className="m-0 p-0" style={{ fontSize: "20px" }}>
-                        Reorder Soon
-                      </p>
-                      <p style={{ fontSize: "20px", fontWeight: "bold" }}>10</p>
-                    </div>
+                      <Input placeholder="Enter item discontinued"/>
+                    </Form.Item>
                   </div>
                 </div>
               </div>
@@ -641,8 +596,10 @@ export default function InventoryModule() {
                 htmlType="submit"
                 size="large"
                 className="submitButton mt-2"
+                disabled={loading}
+                loading = {loading}
               >
-                Submit Data
+                {loading ? "Submitting Data..." : "Submit Data"}
               </Button>
             </div>
           </Form>
