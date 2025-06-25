@@ -924,9 +924,11 @@ const handleSubmit = async (values) => {
     tools,
   } = values;
 
+  // 🔢 1. Manually define the target rowIndex (e.g. row 7)
+
   const basePayload = {
     machines,
-    immSeries: machines === "IMM" ? immSeries : "-",
+    immSeries: machines === "IMM" ? immSeries || "-" : "-",
     maSeries: machines === "IMM" ? maSeries || "-" : "-",
     juSeries: machines === "IMM" ? juSeries || "-" : "-",
     jeSeries: machines === "IMM" ? jeSeries || "-" : "-",
@@ -939,60 +941,101 @@ const handleSubmit = async (values) => {
     tools: tools || "",
   };
 
-  // Combine part details as serialized strings
-  const machineDetails = machineDataSource.map(row =>
-    `${row.partNumber || ""} | ${row.description || ""} | ${row.quantity || ""} | ${row.stockInHand || ""} | ${row.note || ""}`
-  ).join(" || ");
+  const allRows = [];
 
-  const auxiliaryDetails = auxiliariesDataSource.map(row =>
-    `${row.partNumber || ""} | ${row.description || ""} | ${row.quantity || ""} | ${row.stockInHand || ""} | ${row.note || ""}`
-  ).join(" || ");
+  // 🔁 MACHINE
+  machineDataSource.forEach((row) => {
+    allRows.push({
+      ...basePayload,
+      recordType: "machine",
+      machinePartNumber: row.partNumber || "",
+      machineDescription: row.description || "",
+      machineQuantity: row.quantity || "",
+      machineStockInHand: row.stockInHand || "",
+      machineNote: row.note || "",
+    });
+  });
 
-  const assetDetails = assetsDataSource.map(row =>
-    `${row.partNumber || ""} | ${row.description || ""} | ${row.quantity || ""} | ${row.stockInHand || ""} | ${row.note || ""}`
-  ).join(" || ");
+  // 🔁 AUXILIARIES
+  auxiliariesDataSource.forEach((row) => {
+    allRows.push({
+      ...basePayload,
+      recordType: "auxiliary",
+      auxPartNumber: row.partNumber || "",
+      auxDescription: row.description || "",
+      auxQuantity: row.quantity || "",
+      auxStockInHand: row.stockInHand || "",
+      auxNote: row.note || "",
+    });
+  });
 
-  const spareDetails = dataSource.map(row =>
-    `${row.partNumber || ""} | ${row.description || ""} | ${row.quantity || ""} | ${row.note || ""}`
-  ).join(" || ");
+  // 🔁 ASSETS
+  assetsDataSource.forEach((row) => {
+    allRows.push({
+      ...basePayload,
+      recordType: "asset",
+      assetPartNumber: row.partNumber || "",
+      assetDescription: row.description || "",
+      assetQuantity: row.quantity || "",
+      assetStockInHand: row.stockInHand || "",
+      assetNote: row.note || "",
+    });
+  });
 
-  const finalPayload = {
-    action: "addProductCategories",
-    ...basePayload,
-    machineDetails,
-    auxiliaryDetails,
-    assetDetails,
-    spareDetails,
-  };
+  // 🔁 SPARE
+  dataSource.forEach((row) => {
+    allRows.push({
+      ...basePayload,
+      recordType: "spare",
+      sparePartNumber: row.partNumber || "",
+      spareDescription: row.description || "",
+      spareQuantity: row.quantity || "",
+      spareNote: row.note || "",
+    });
+  });
 
   try {
     setLoading(true);
-    const formData = new URLSearchParams();
-    for (const key in finalPayload) {
-      formData.append(key, finalPayload[key]);
+
+    for (const row of allRows) {
+      const formData = new URLSearchParams();
+      formData.append("action", "addProductCategories");
+
+      for (const key in row) {
+        formData.append(key, row[key]);
+      }
+
+      const response = await fetch("https://script.google.com/macros/s/AKfycbzrjbBj4A7hLcD4TfmmnzpvuXOmW7K8xAczsnr_cwe9hnokQ219dd4wMhyL4Jq7J_9CLw/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString(),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.message || "Unknown error");
+      }
     }
 
-    await fetch("https://script.google.com/macros/s/AKfycbx8ZcQhAi4UltWwPiOYaJbfEzBN5o9iO3zreMFHoIT3irnNICDkoqMkGgRi0w0WYU1s1Q/exec", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData.toString(),
-    });
+     await fetch("https://script.google.com/macros/s/AKfycbzrjbBj4A7hLcD4TfmmnzpvuXOmW7K8xAczsnr_cwe9hnokQ219dd4wMhyL4Jq7J_9CLw/exec", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ action: "finalizeRowLock" }),
+  });
 
-    message.success("Submitted all data successfully.");
+    message.success("✅ All product categories saved to backend.");
     form.resetFields();
     setMachineDataSource([]);
     setAuxiliariesDataSource([]);
     setAssetsDataSource([]);
     setDataSource([]);
   } catch (err) {
-    console.error("Submission failed:", err);
-    message.error("Something went wrong!");
+    console.error("❌ Backend error:", err);
+    message.error("❌ Submission failed. See console for details.");
   } finally {
     setLoading(false);
   }
 };
-
-
 
 
   const handleAdd = () => {

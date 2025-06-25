@@ -24,7 +24,7 @@ export default function Inventory() {
 
       try {
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbx8ZcQhAi4UltWwPiOYaJbfEzBN5o9iO3zreMFHoIT3irnNICDkoqMkGgRi0w0WYU1s1Q/exec",
+          "https://script.google.com/macros/s/AKfycbzrjbBj4A7hLcD4TfmmnzpvuXOmW7K8xAczsnr_cwe9hnokQ219dd4wMhyL4Jq7J_9CLw/exec",
           {
             method: "POST",
             headers: {
@@ -64,7 +64,7 @@ export default function Inventory() {
 
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbx8ZcQhAi4UltWwPiOYaJbfEzBN5o9iO3zreMFHoIT3irnNICDkoqMkGgRi0w0WYU1s1Q/exec",
+        "https://script.google.com/macros/s/AKfycbzrjbBj4A7hLcD4TfmmnzpvuXOmW7K8xAczsnr_cwe9hnokQ219dd4wMhyL4Jq7J_9CLw/exec", 
         {
           method: "POST",
           headers: {
