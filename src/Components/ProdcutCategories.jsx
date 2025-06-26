@@ -1,400 +1,3 @@
-// import React, { useState } from "react";
-// import { Button, Form, Input, Select, Cascader, message, Table } from "antd";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faListCheck } from "@fortawesome/free-solid-svg-icons";
-// import "../App.css";
-
-// export default function ProductCategories() {
-//   const [form] = Form.useForm();
-// const [partNumber, setPartNumber] = useState("");
-//   const [description, setDescription] = useState("");
-//   const [quantity, setQuantity] = useState("");
-//   const [note, setNote] = useState("");
-//    const [dataSource, setDataSource] = useState([]);
-//   const [inputRow, setInputRow] = useState({
-//     partNumber: "",
-//     description: "",
-//     quantity: "",
-//     note: "",
-//   });
-//   const auxiliariesOptions = [
-//     {
-//       value: "Chiller",
-//       label: "Chiller",
-//       children: [
-//         {
-//           value: "Air-Cooled",
-//           label: "Air-Cooled",
-
-//               children: [
-//                 {
-//                   value: "Models XXXX",
-//                   label: "Models XXXX",
-//                 },
-//               ],
-
-//         },
-//         {
-//           value: "Water-Cooled",
-//           label: "Water-Cooled",
-
-//               children: [
-//                 {
-//                   value: "Models YYY",
-//                   label: "Models YYY",
-//                 },
-//               ],
-
-//         },
-//       ],
-
-//     },
-//     {
-//       value: "Autoloader",
-//       label: "Autoloader",
-//       children: [
-//         {
-//           value: "XXXX",
-//           label: "XXXX",
-//         },
-//       ],
-//     },
-//     { value: "Hopper dryer", label: "Hopper dryer" },
-//     { value: "3 in 1 Hopper dryer", label: "3 in 1 Hopper dryer" },
-//     { value: "Crusher", label: "Crusher" },
-//     { value: "Color Dozer Color Mixer", label: "Color Dozer Color Mixer" },
-//     { value: "Robots", label: "Robots" },
-//     { value: "Conveyor", label: "Conveyor" },
-//     { value: "Etc", label: "Etc" },
-//   ];
-
-//   const handleSubmit = (values) => {
-//     console.log("Form submitted: ", values);
-//     message.success("Inventory Category submitted successfully!");
-//   };
-
-//    const handleAdd = () => {
-//     if (
-//       !inputRow.partNumber &&
-//       !inputRow.description &&
-//       !inputRow.quantity &&
-//       !inputRow.note
-//     )
-//       return;
-
-//     const newData = {
-//       key: Date.now(),
-//       ...inputRow,
-//     };
-
-//     setDataSource([...dataSource, newData]);
-//     setInputRow({
-//       partNumber: "",
-//       description: "",
-//       quantity: "",
-//       note: "",
-//     });
-//   };
-
-//     const handleDelete = (key) => {
-//     setDataSource(dataSource.filter((item) => item.key !== key));
-//   };
-
-// const columns = [
-//     {
-//       title: "Part Number",
-//       dataIndex: "partNumber",
-//       render: (_, record, index) =>
-//         record.isInput ? (
-//           <Input
-//             placeholder="Enter part number"
-//             value={inputRow.partNumber}
-//             onChange={(e) =>
-//               setInputRow({ ...inputRow, partNumber: e.target.value })
-//             }
-//           />
-//         ) : (
-//           record.partNumber
-//         ),
-//     },
-//     {
-//       title: "Description",
-//       dataIndex: "description",
-//       render: (_, record) =>
-//         record.isInput ? (
-//           <Input.TextArea
-//             autoSize={{ minRows: 1, maxRows: 1 }}
-//             placeholder="Enter description"
-//             value={inputRow.description}
-//             onChange={(e) =>
-//               setInputRow({ ...inputRow, description: e.target.value })
-//             }
-//           />
-//         ) : (
-//           record.description
-//         ),
-//     },
-//     {
-//       title: "Quantity",
-//       dataIndex: "quantity",
-//       render: (_, record) =>
-//         record.isInput ? (
-//           <Input
-//             placeholder="Qty"
-//             value={inputRow.quantity}
-//             onChange={(e) =>
-//               setInputRow({ ...inputRow, quantity: e.target.value })
-//             }
-//           />
-//         ) : (
-//           record.quantity
-//         ),
-//     },
-//     {
-//       title: "Note",
-//       dataIndex: "note",
-//       render: (_, record) =>
-//         record.isInput ? (
-//           <Input.TextArea
-//             autoSize={{ minRows: 1, maxRows: 1 }}
-//             placeholder="Enter note"
-//             value={inputRow.note}
-//             onChange={(e) =>
-//               setInputRow({ ...inputRow, note: e.target.value })
-//             }
-//           />
-//         ) : (
-//           record.note
-//         ),
-//     },
-//     {
-//       title: "Action",
-//       render: (_, record) =>
-//         record.isInput ? (
-//           <Button type="primary" onClick={handleAdd}>
-//             Add
-//           </Button>
-//         ) : (
-//           <Button danger onClick={() => handleDelete(record.key)}>
-//             Delete
-//           </Button>
-//         ),
-//     },
-//   ];
-
-//   const displayData = [{ key: "input", isInput: true }, ...dataSource];
-
-//   const styl = `.ant-form-item .ant-form-item-explain-error {
-//     color: #ff4d4f;
-//     font-weight: normal;
-// }
-//     .ant-select-single .ant-select-selector .ant-select-selection-placeholder {
-//     transition: none;
-//     pointer-events: none;
-//     font-weight: normal;
-// }
-// `;
-
-//   return (
-//     <>
-//       <style>{styl}</style>
-//       <div className="container-fluid">
-//         <div className="container">
-//           <div>
-//             <h1
-//               className="text-center m-0 p-0 haitianColor mt-1 "
-//               style={{ fontSize: "36px" }}
-//             >
-//               Product Categories
-//             </h1>
-//             <p
-//               style={{
-//                 textAlign: "center",
-//                 color: "#0D3884",
-//               }}
-//               className="m-0 p-0 haitianInventoryDescriptionText"
-//             >
-//               (Add and manage your inventory categories with ease)
-//             </p>
-//           </div>
-
-//           <div className="row d-flex flex-row mt-4">
-//             <Form
-//               form={form}
-//               layout="vertical"
-//               onFinish={handleSubmit}
-//               className="mt-3 mt-lg-3"
-//             >
-//               <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly">
-//                 <div className="col-12 p-3 p-lg-4 inventoryCards rounded-4">
-//                   <div className="d-flex align-items-center gap-2 mb-1">
-//                     <div
-//                       className="d-flex align-items-center justify-content-center"
-//                       style={{
-//                         backgroundColor: "#e8f0fe",
-//                         borderRadius: "12px",
-//                         width: "40px",
-//                         height: "40px",
-//                       }}
-//                     >
-//                       <FontAwesomeIcon
-//                         icon={faListCheck}
-//                         size="lg"
-//                         style={{ color: "#0D3884" }}
-//                       />
-//                     </div>
-
-//                     <div>
-//                       <div
-//                         className="fw-bold m-0 p-0"
-//                         style={{ fontSize: "20px", color: "#0D3884" }}
-//                       >
-//                         Categories Information
-//                       </div>
-//                       <div
-//                         className="m-0 p-0"
-//                         style={{ fontSize: "14px", color: "#0D3884" }}
-//                       >
-//                         Details about inventory categories
-//                       </div>
-//                     </div>
-//                   </div>
-
-//                   <div className="border border-1"></div>
-
-//                   <div className="row mt-3">
-//                     <div className="col-12 col-md-6">
-//                       <Form.Item
-//                         label="Machines"
-//                         name="machines"
-//                         className="fw-bold"
-//                         rules={[
-//                           {
-//                             required: true,
-//                             message: "Please select machine",
-//                           },
-//                         ]}
-//                       >
-//                         <Select placeholder="Select a machine">
-//                           <Select.Option value="IMM">IMM</Select.Option>
-//                           <Select.Option value="BMM">BMM</Select.Option>
-//                           <Select.Option value="EBM">EBM</Select.Option>
-//                           <Select.Option value="SBM">SBM</Select.Option>
-//                         </Select>
-//                       </Form.Item>
-//                       <Form.Item
-//                         label="Assets"
-//                         name="assets"
-//                         className="fw-bold"
-//                         rules={[
-//                           {
-//                             required: true,
-//                             message: "Please select assets",
-//                           },
-//                         ]}
-//                       >
-//                         <Select placeholder="Select an asset">
-//                           <Select.Option value="Furniture">
-//                             Furniture
-//                           </Select.Option>
-//                           <Select.Option value="Vehicles">
-//                             Vehicles
-//                           </Select.Option>
-//                           <Select.Option value="IT">IT</Select.Option>
-//                           <Select.Option value="Utilities">
-//                             Utilities
-//                           </Select.Option>
-//                         </Select>
-//                       </Form.Item>
-//                     </div>
-
-//                     <div className="col-12 col-md-6">
-//                       <Form.Item
-//                         label="Auxiliaries"
-//                         name="auxiliaries"
-//                         className="fw-bold"
-//                         rules={[
-//                           {
-//                             required: true,
-//                             message: "Please select auxiliaries",
-//                           },
-//                         ]}
-//                       >
-//                         <Cascader
-//                           options={auxiliariesOptions}
-//                           placeholder="Select auxiliaries"
-//                         />
-//                       </Form.Item>
-//                     </div>
-//                     {/* <Form.Item
-//                       label="Spare Parts"
-//                       name="spareParts"
-//                       className="fw-bold"
-//                       rules={[
-//                         {
-//                           required: true,
-//                           message: "Please enter spare parts",
-//                         },
-//                       ]}
-//                     >
-//                       <Input placeholder="Enter spare parts" />
-//                     </Form.Item> */}
-//                                  <div className="col-12">
-//                       <h6>Spare Parts</h6>
-//                         <Table
-//         columns={columns}
-//         dataSource={displayData}
-//         pagination={false}
-//         rowKey="key"
-//       />
-//                     </div>
-
-//                     <div className="col-12">
-//                       <Form.Item
-//                         label="Consumables (Stationery)"
-//                         name="consumables"
-//                         className="fw-bold"
-//                         rules={[
-//                           {
-//                             required: true,
-//                             message: "Please input consumables",
-//                           },
-//                         ]}
-//                       >
-//                         <Input placeholder="Enter consumables" />
-//                       </Form.Item>
-
-//                       <Form.Item
-//                         label="Tools"
-//                         name="tools"
-//                         className="fw-bold"
-//                         rules={[
-//                           {
-//                             required: true,
-//                             message: "Please input tools",
-//                           },
-//                         ]}
-//                       >
-//                         <Input placeholder="Enter tools" />
-//                       </Form.Item>
-//                     </div>
-
-//                     <div className="col-12 text-center mt-3">
-//                       <Button type="primary" htmlType="submit">
-//                         Submit Category
-//                       </Button>
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-//             </Form>
-//           </div>
-//         </div>
-//       </div>
-//     </>
-//   );
-// }
-
 import React, { useState } from "react";
 import { Button, Form, Input, Select, Cascader, message, Table } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -761,153 +364,7 @@ export default function ProductCategories() {
     },
   ];
 
-  // const handleSubmit = (values) => {
-  //   console.log("Form Values:", values); // Values from Ant Design form
-
-  //   // Additional data from dynamic tables
-  //   console.log("Machine Details:", machineDataSource);
-  //   console.log("Assets Details:", assetsDataSource);
-  //   console.log("Auxiliaries Details:", auxiliariesDataSource);
-  //   console.log("Spare Parts:", dataSource);
-
-  //   message.success("Inventory Category submitted successfully!");
-  // };
-
-// const handleSubmit = async (values) => {
-//   const {
-//     machines,
-//     immSeries,
-//     maSeries,
-//     juSeries,
-//     jeSeries,
-//     veSeries,
-//     zeSeries,
-//     haSeries,
-//     auxiliaries,
-//     assets,
-//     consumables,
-//     tools,
-//   } = values;
-
-//   const allRows = [];
-
-//   // MACHINE rows
-//   machineDataSource.forEach((row) => {
-//     allRows.push({
-//       recordType: "machine",
-//       machines,
-//       immSeries,
-//       maSeries,
-//       juSeries,
-//       jeSeries,
-//       veSeries,
-//       zeSeries,
-//       haSeries,
-//       machinePartNumber: row.partNumber || "",
-//       machineDescription: row.description || "",
-//       machineQuantity: row.quantity || "",
-//       machineStockInHand: row.stockInHand || "",
-//       machineNote: row.note || "",
-//     });
-//   });
-
-//   // AUXILIARY rows
-//   auxiliariesDataSource.forEach((row) => {
-//     allRows.push({
-//       recordType: "auxiliary",
-//       machines,
-//       immSeries,
-//       maSeries,
-//       juSeries,
-//       jeSeries,
-//       veSeries,
-//       zeSeries,
-//       haSeries,
-//       auxiliaries: Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "",
-//       auxPartNumber: row.partNumber || "",
-//       auxDescription: row.description || "",
-//       auxQuantity: row.quantity || "",
-//       auxStockInHand: row.stockInHand || "",
-//       auxNote: row.note || "",
-//     });
-//   });
-
-//   // ASSET rows
-//   assetsDataSource.forEach((row) => {
-//     allRows.push({
-//       recordType: "asset",
-//       machines,
-//       immSeries,
-//       maSeries,
-//       juSeries,
-//       jeSeries,
-//       veSeries,
-//       zeSeries,
-//       haSeries,
-//       assets,
-//       assetPartNumber: row.partNumber || "",
-//       assetDescription: row.description || "",
-//       assetQuantity: row.quantity || "",
-//       assetStockInHand: row.stockInHand || "",
-//       assetNote: row.note || "",
-//     });
-//   });
-
-//   // SPARE rows
-//   dataSource.forEach((row) => {
-//     allRows.push({
-//       recordType: "spare",
-//       machines,
-//       immSeries,
-//       maSeries,
-//       juSeries,
-//       jeSeries,
-//       veSeries,
-//       zeSeries,
-//       haSeries,
-//       consumables,
-//       tools,
-//       sparePartNumber: row.partNumber || "",
-//       spareDescription: row.description || "",
-//       spareQuantity: row.quantity || "",
-//       spareNote: row.note || "",
-//     });
-//   });
-
-//   try {
-//     setLoading(true);
-//     for (const row of allRows) {
-//       const formData = new URLSearchParams();
-//       formData.append("action", "addProductCategories");
-//       Object.entries(row).forEach(([key, value]) => {
-//         if (value !== undefined && value !== null) {
-//           formData.append(key, value);
-//         }
-//       });
-
-//       await fetch("https://script.google.com/macros/s/AKfycbxhwQ4tuNrzp_zCMFmxKahRlYsoWp_uWYEQykm9F0eqbRWIS5JLDejB7ZCx0X30r_XzQw/exec", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/x-www-form-urlencoded",
-//         },
-//         body: formData.toString(),
-//       });
-//     }
-
-//     message.success("Submitted successfully.");
-//     form.resetFields();
-//     setMachineDataSource([]);
-//     setAuxiliariesDataSource([]);
-//     setAssetsDataSource([]);
-//     setDataSource([]);
-//   } catch (err) {
-//     console.error("Error submitting form:", err);
-//     message.error("Submission failed.");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
+  
 const handleSubmit = async (values) => {
   const {
     machines,
@@ -924,119 +381,96 @@ const handleSubmit = async (values) => {
     tools,
   } = values;
 
-  // 🔢 1. Manually define the target rowIndex (e.g. row 7)
-
-  const basePayload = {
-    machines,
-    immSeries: machines === "IMM" ? immSeries || "-" : "-",
-    maSeries: machines === "IMM" ? maSeries || "-" : "-",
-    juSeries: machines === "IMM" ? juSeries || "-" : "-",
-    jeSeries: machines === "IMM" ? jeSeries || "-" : "-",
-    veSeries: machines === "IMM" ? veSeries || "-" : "-",
-    zeSeries: machines === "IMM" ? zeSeries || "-" : "-",
-    haSeries: machines === "IMM" ? haSeries || "-" : "-",
-    auxiliaries: Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-",
-    assets: assets || "",
-    consumables: consumables || "",
-    tools: tools || "",
-  };
-
-  const allRows = [];
-
-  // 🔁 MACHINE
-  machineDataSource.forEach((row) => {
-    allRows.push({
-      ...basePayload,
-      recordType: "machine",
-      machinePartNumber: row.partNumber || "",
-      machineDescription: row.description || "",
-      machineQuantity: row.quantity || "",
-      machineStockInHand: row.stockInHand || "",
-      machineNote: row.note || "",
-    });
-  });
-
-  // 🔁 AUXILIARIES
-  auxiliariesDataSource.forEach((row) => {
-    allRows.push({
-      ...basePayload,
-      recordType: "auxiliary",
-      auxPartNumber: row.partNumber || "",
-      auxDescription: row.description || "",
-      auxQuantity: row.quantity || "",
-      auxStockInHand: row.stockInHand || "",
-      auxNote: row.note || "",
-    });
-  });
-
-  // 🔁 ASSETS
-  assetsDataSource.forEach((row) => {
-    allRows.push({
-      ...basePayload,
-      recordType: "asset",
-      assetPartNumber: row.partNumber || "",
-      assetDescription: row.description || "",
-      assetQuantity: row.quantity || "",
-      assetStockInHand: row.stockInHand || "",
-      assetNote: row.note || "",
-    });
-  });
-
-  // 🔁 SPARE
-  dataSource.forEach((row) => {
-    allRows.push({
-      ...basePayload,
-      recordType: "spare",
-      sparePartNumber: row.partNumber || "",
-      spareDescription: row.description || "",
-      spareQuantity: row.quantity || "",
-      spareNote: row.note || "",
-    });
-  });
-
   try {
     setLoading(true);
 
-    for (const row of allRows) {
+    const rowLockResponse = await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ action: "getRowLock" }),
+    });
+
+    const { rowIndex } = await rowLockResponse.json();
+    let currentRow = parseInt(rowIndex);
+
+    // 🔁 Send machine rows
+    for (const [i, row] of machineDataSource.entries()) {
       const formData = new URLSearchParams();
       formData.append("action", "addProductCategories");
+      formData.append("recordType", "machine");
+      formData.append("rowIndex", currentRow);
+      formData.append("isFirstMachine", i === 0 ? "true" : "false");
 
-      for (const key in row) {
-        formData.append(key, row[key]);
+      formData.append("machines", machines);
+      formData.append("immSeries", immSeries || "-");
+      formData.append("maSeries", maSeries || "-");
+      formData.append("juSeries", juSeries || "-");
+      formData.append("jeSeries", jeSeries || "-");
+      formData.append("veSeries", veSeries || "-");
+      formData.append("zeSeries", zeSeries || "-");
+      formData.append("haSeries", haSeries || "-");
+
+      formData.append("machinePartNumber", row.partNumber || "");
+      formData.append("machineDescription", row.description || "");
+      formData.append("machineQuantity", row.quantity || "");
+      formData.append("machineStockInHand", row.stockInHand || "");
+      formData.append("machineNote", row.note || "");
+
+      if (i === 0) {
+        formData.append("consumables", consumables || "");
+        formData.append("tools", tools || "");
+        formData.append("auxiliaries", Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-");
+
+        // asset
+        if (assetsDataSource.length > 0) {
+          const asset = assetsDataSource[0];
+          formData.append("assets", assets || "");
+          formData.append("assetPartNumber", asset.partNumber || "");
+          formData.append("assetDescription", asset.description || "");
+          formData.append("assetQuantity", asset.quantity || "");
+          formData.append("assetStockInHand", asset.stockInHand || "");
+          formData.append("assetNote", asset.note || "");
+        }
+
+        // spare
+        if (dataSource.length > 0) {
+          const spare = dataSource[0];
+          formData.append("sparePartNumber", spare.partNumber || "");
+          formData.append("spareDescription", spare.description || "");
+          formData.append("spareQuantity", spare.quantity || "");
+          formData.append("spareNote", spare.note || "");
+        }
       }
 
-      const response = await fetch("https://script.google.com/macros/s/AKfycbzrjbBj4A7hLcD4TfmmnzpvuXOmW7K8xAczsnr_cwe9hnokQ219dd4wMhyL4Jq7J_9CLw/exec", {
+      await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
       });
 
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message || "Unknown error");
-      }
+      currentRow++;
     }
 
-     await fetch("https://script.google.com/macros/s/AKfycbzrjbBj4A7hLcD4TfmmnzpvuXOmW7K8xAczsnr_cwe9hnokQ219dd4wMhyL4Jq7J_9CLw/exec", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ action: "finalizeRowLock" }),
-  });
+    // 🔓 Finalize row lock
+    await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ action: "finalizeRowLock" }),
+    });
 
-    message.success("✅ All product categories saved to backend.");
+    message.success("✅ Product categories saved.");
     form.resetFields();
     setMachineDataSource([]);
     setAuxiliariesDataSource([]);
     setAssetsDataSource([]);
     setDataSource([]);
   } catch (err) {
-    console.error("❌ Backend error:", err);
-    message.error("❌ Submission failed. See console for details.");
+    console.error("❌ Submission failed:", err);
+    message.error("❌ Something went wrong.");
   } finally {
     setLoading(false);
   }
 };
-
 
   const handleAdd = () => {
     if (
