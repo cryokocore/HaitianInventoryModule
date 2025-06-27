@@ -19,12 +19,12 @@ export default function Inventory() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchLocations = async () => {  
       const defaultLocations = ["Sharjah", "Umm Al Quwain"];
 
       try {
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec",
+          "https://script.google.com/macros/s/AKfycbzXYHsX3yiS0FbMCCr6YYYxs-gS0jNqQY-P6_p3Yf7xjfNYjDSjyZcB_TRhFLZQY_Sk/exec",
           {
             method: "POST",
             headers: {
@@ -64,7 +64,7 @@ export default function Inventory() {
 
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", 
+        "https://script.google.com/macros/s/AKfycbzXYHsX3yiS0FbMCCr6YYYxs-gS0jNqQY-P6_p3Yf7xjfNYjDSjyZcB_TRhFLZQY_Sk/exec", 
         {
           method: "POST",
           headers: {

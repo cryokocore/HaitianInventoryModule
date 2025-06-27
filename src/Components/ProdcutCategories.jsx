@@ -365,6 +365,445 @@ export default function ProductCategories() {
   ];
 
   
+// const handleSubmit = async (values) => {
+//   const {
+//     machines,
+//     immSeries,
+//     maSeries,
+//     juSeries,
+//     jeSeries,
+//     veSeries,
+//     zeSeries,
+//     haSeries,
+//     auxiliaries,
+//     assets,
+//     consumables,
+//     tools,
+//   } = values;
+
+//   try {
+//     setLoading(true);
+
+//     const rowLockResponse = await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({ action: "getRowLock" }),
+//     });
+
+//     const { rowIndex } = await rowLockResponse.json();
+//     let currentRow = parseInt(rowIndex);
+
+//     // 🔁 Send machine rows
+//     for (const [i, row] of machineDataSource.entries()) {
+//       const formData = new URLSearchParams();
+//       formData.append("action", "addProductCategories");
+//       formData.append("recordType", "machine");
+//       formData.append("rowIndex", currentRow);
+//       formData.append("isFirstMachine", i === 0 ? "true" : "false");
+
+//       formData.append("machines", machines);
+//       formData.append("immSeries", immSeries || "-");
+//       formData.append("maSeries", maSeries || "-");
+//       formData.append("juSeries", juSeries || "-");
+//       formData.append("jeSeries", jeSeries || "-");
+//       formData.append("veSeries", veSeries || "-");
+//       formData.append("zeSeries", zeSeries || "-");
+//       formData.append("haSeries", haSeries || "-");
+
+//       formData.append("machinePartNumber", row.partNumber || "");
+//       formData.append("machineDescription", row.description || "");
+//       formData.append("machineQuantity", row.quantity || "");
+//       formData.append("machineStockInHand", row.stockInHand || "");
+//       formData.append("machineNote", row.note || "");
+
+//       if (i === 0) {
+//         formData.append("consumables", consumables || "");
+//         formData.append("tools", tools || "");
+//         formData.append("auxiliaries", Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-");
+
+//         // asset
+//         if (assetsDataSource.length > 0) {
+//           const asset = assetsDataSource[0];
+//           formData.append("assets", assets || "");
+//           formData.append("assetPartNumber", asset.partNumber || "");
+//           formData.append("assetDescription", asset.description || "");
+//           formData.append("assetQuantity", asset.quantity || "");
+//           formData.append("assetStockInHand", asset.stockInHand || "");
+//           formData.append("assetNote", asset.note || "");
+//         }
+
+//         // spare
+//         if (dataSource.length > 0) {
+//           const spare = dataSource[0];
+//           formData.append("sparePartNumber", spare.partNumber || "");
+//           formData.append("spareDescription", spare.description || "");
+//           formData.append("spareQuantity", spare.quantity || "");
+//           formData.append("spareNote", spare.note || "");
+//         }
+//       }
+
+//       await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: formData.toString(),
+//       });
+
+//       currentRow++;
+//     }
+
+//     // 🔓 Finalize row lock
+//     await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({ action: "finalizeRowLock" }),
+//     });
+
+//     message.success("✅ Product categories saved.");
+//     form.resetFields();
+//     setMachineDataSource([]);
+//     setAuxiliariesDataSource([]);
+//     setAssetsDataSource([]);
+//     setDataSource([]);
+//   } catch (err) {
+//     console.error("❌ Submission failed:", err);
+//     message.error("❌ Something went wrong.");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+// const handleSubmit = async (values) => {
+//   const {
+//     machines,
+//     immSeries,
+//     maSeries,
+//     juSeries,
+//     jeSeries,
+//     veSeries,
+//     zeSeries,
+//     haSeries,
+//     auxiliaries,
+//     assets,
+//     consumables,
+//     tools,
+//   } = values;
+
+//   const GAS_URL = "https://script.google.com/macros/s/AKfycbxCjSd720kclpeY9PGHmTytubupwrLsiAKhnKwYrXJH0dyjEhMVSHXNKlBdhrffAaQc0w/exec";
+
+//   try {
+//     setLoading(true);
+
+//     const rowLockResponse = await fetch(GAS_URL, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({ action: "getRowLock" }),
+//     });
+//     const { rowIndex } = await rowLockResponse.json();
+//     let currentRow = parseInt(rowIndex) + 1;
+
+//     // Submit machines
+//     for (const [i, row] of machineDataSource.entries()) {
+//       const formData = new URLSearchParams();
+//       formData.append("action", "addProductCategories");
+//       formData.append("recordType", "machine");
+//       formData.append("rowIndex", currentRow);
+//       formData.append("isFirstMachine", i === 0 ? "true" : "false");
+
+//       formData.append("machines", machines);
+//       formData.append("immSeries", immSeries || "-");
+//       formData.append("maSeries", maSeries || "-");
+//       formData.append("juSeries", juSeries || "-");
+//       formData.append("jeSeries", jeSeries || "-");
+//       formData.append("veSeries", veSeries || "-");
+//       formData.append("zeSeries", zeSeries || "-");
+//       formData.append("haSeries", haSeries || "-");
+
+//       formData.append("machinePartNumber", row.partNumber || "");
+//       formData.append("machineDescription", row.description || "");
+//       formData.append("machineQuantity", row.quantity || "");
+//       formData.append("machineStockInHand", row.stockInHand || "100");
+//       formData.append("machineNote", row.note || "");
+
+//       if (i === 0) {
+//         formData.append("consumables", consumables || "");
+//         formData.append("tools", tools || "");
+//         formData.append("auxiliaries", Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-");
+//         formData.append("assets", assets || "");
+
+//         if (assetsDataSource.length > 0) {
+//           const asset = assetsDataSource[0];
+//           formData.append("assetPartNumber", asset.partNumber || "");
+//           formData.append("assetDescription", asset.description || "");
+//           formData.append("assetQuantity", asset.quantity || "");
+//           formData.append("assetStockInHand", asset.stockInHand || "100");
+//           formData.append("assetNote", asset.note || "");
+//         }
+
+//         if (dataSource.length > 0) {
+//           const spare = dataSource[0];
+//           formData.append("sparePartNumber", spare.partNumber || "");
+//           formData.append("spareDescription", spare.description || "");
+//           formData.append("spareQuantity", spare.quantity || "");
+//           formData.append("spareNote", spare.note || "");
+//         }
+//       }
+
+//       await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: formData.toString(),
+//       });
+
+//       currentRow++;
+//     }
+
+//     // Assets
+//     for (let i = 1; i < assetsDataSource.length; i++) {
+//       const asset = assetsDataSource[i];
+//       const formData = new URLSearchParams();
+//       formData.append("action", "addProductCategories");
+//       formData.append("recordType", "machine");
+//       formData.append("rowIndex", currentRow);
+
+//       // 👇 Machine context
+//       formData.append("machines", machines);
+//       formData.append("immSeries", immSeries || "-");
+//       formData.append("maSeries", maSeries || "-");
+//       formData.append("juSeries", juSeries || "-");
+//       formData.append("jeSeries", jeSeries || "-");
+//       formData.append("veSeries", veSeries || "-");
+//       formData.append("zeSeries", zeSeries || "-");
+//       formData.append("haSeries", haSeries || "-");
+
+//       formData.append("assets", assets || "");
+//       formData.append("assetPartNumber", asset.partNumber || "");
+//       formData.append("assetDescription", asset.description || "");
+//       formData.append("assetQuantity", asset.quantity || "");
+//       formData.append("assetStockInHand", asset.stockInHand || "100");
+//       formData.append("assetNote", asset.note || "");
+
+//       await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: formData.toString(),
+//       });
+
+//       currentRow++;
+//     }
+
+//     // Spares
+//     for (let i = 1; i < dataSource.length; i++) {
+//       const spare = dataSource[i];
+//       const formData = new URLSearchParams();
+//       formData.append("action", "addProductCategories");
+//       formData.append("recordType", "machine");
+//       formData.append("rowIndex", currentRow);
+
+//       // 👇 Machine context
+//       formData.append("machines", machines);
+//       formData.append("immSeries", immSeries || "-");
+//       formData.append("maSeries", maSeries || "-");
+//       formData.append("juSeries", juSeries || "-");
+//       formData.append("jeSeries", jeSeries || "-");
+//       formData.append("veSeries", veSeries || "-");
+//       formData.append("zeSeries", zeSeries || "-");
+//       formData.append("haSeries", haSeries || "-");
+
+//       formData.append("sparePartNumber", spare.partNumber || "");
+//       formData.append("spareDescription", spare.description || "");
+//       formData.append("spareQuantity", spare.quantity || "");
+//       formData.append("spareNote", spare.note || "");
+
+//       await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: formData.toString(),
+//       });
+
+//       currentRow++;
+//     }
+
+//     // Auxiliaries
+//     for (let i = 1; i < auxiliariesDataSource.length; i++) {
+//       const aux = auxiliariesDataSource[i];
+//       const formData = new URLSearchParams();
+//       formData.append("action", "addProductCategories");
+//       formData.append("recordType", "machine");
+//       formData.append("rowIndex", currentRow);
+
+//       // 👇 Machine context
+//       formData.append("machines", machines);
+//       formData.append("immSeries", immSeries || "-");
+//       formData.append("maSeries", maSeries || "-");
+//       formData.append("juSeries", juSeries || "-");
+//       formData.append("jeSeries", jeSeries || "-");
+//       formData.append("veSeries", veSeries || "-");
+//       formData.append("zeSeries", zeSeries || "-");
+//       formData.append("haSeries", haSeries || "-");
+
+//       formData.append("auxiliaries", Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-");
+//       formData.append("assetPartNumber", aux.partNumber || "");
+//       formData.append("assetDescription", aux.description || "");
+//       formData.append("assetQuantity", aux.quantity || "");
+//       formData.append("assetStockInHand", aux.stockInHand || "100");
+//       formData.append("assetNote", aux.note || "");
+
+//       await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: formData.toString(),
+//       });
+
+//       currentRow++;
+//     }
+
+//     // Finalize lock (optional)
+//     await fetch(GAS_URL, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({ action: "finalizeRowLock" }),
+//     });
+
+//     message.success("✅ Product categories saved.");
+//     form.resetFields();
+//     setMachineDataSource([]);
+//     setAuxiliariesDataSource([]);
+//     setAssetsDataSource([]);
+//     setDataSource([]);
+//   } catch (err) {
+//     console.error("❌ Submission failed:", err);
+//     message.error("❌ Something went wrong.");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+//Almost working code
+// const handleSubmit = async (values) => {
+//   const {
+//     machines,
+//     immSeries,
+//     maSeries,
+//     juSeries,
+//     jeSeries,
+//     veSeries,
+//     zeSeries,
+//     haSeries,
+//     auxiliaries,
+//     assets,
+//     consumables,
+//     tools,
+//   } = values;
+
+//   const GAS_URL = "https://script.google.com/macros/s/AKfycbw_wBOBLfsQr3ehUxlZOwIavFVMB2tuMk2AXWUu9jaJkJ7ZQg20A6M-QoMBCEk7bQoyig/exec"; // 🔁 Replace with your actual deployed Apps Script URL
+
+//   try {
+//     setLoading(true);
+
+//     // Step 1: Get the latest row index
+//     const rowLockResponse = await fetch(GAS_URL, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({ action: "getRowLock" }),
+//     });
+//     const { rowIndex } = await rowLockResponse.json();
+//     let currentRow = parseInt(rowIndex || "1", 10) + 1;
+
+//     // Step 2: Get max length of all data arrays
+//     const maxLength = Math.max(
+//       machineDataSource.length,
+//       auxiliariesDataSource.length,
+//       assetsDataSource.length,
+//       dataSource.length
+//     );
+
+//     // Step 3: Loop once per complete row (machine + aux + asset + spare)
+//     for (let i = 0; i < maxLength; i++) {
+//       const machine = machineDataSource[i] || {};
+//       const auxiliary = auxiliariesDataSource[i] || {};
+//       const asset = assetsDataSource[i] || {};
+//       const spare = dataSource[i] || {};
+
+//       const formData = new URLSearchParams({
+//         action: "addProductCategories",
+//         recordType: "machine",
+//         rowIndex: currentRow,
+
+//         // ✅ Machine type fields
+//         machines,
+//         immSeries: immSeries || "-",
+//         maSeries: maSeries || "-",
+//         juSeries: juSeries || "-",
+//         jeSeries: jeSeries || "-",
+//         veSeries: veSeries || "-",
+//         zeSeries: zeSeries || "-",
+//         haSeries: haSeries || "-",
+
+//         // ✅ Machine part details
+//         machinePartNumber: machine.partNumber || "",
+//         machineDescription: machine.description || "",
+//         machineQuantity: machine.quantity || "",
+//         machineStockInHand: machine.stockInHand || "100",
+//         machineNote: machine.note || "",
+
+//         // ✅ Consumables/tools only on first row
+//         consumables: i === 0 ? consumables || "" : "",
+//         tools: i === 0 ? tools || "" : "",
+//         auxiliaries: i === 0 ? (Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "") : "",
+
+//         // ✅ Auxiliary part (mapped to columns R–V)
+//         assetPartNumber: auxiliary.partNumber || "",
+//         assetDescription: auxiliary.description || "",
+//         assetQuantity: auxiliary.quantity || "",
+//         assetStockInHand: auxiliary.stockInHand || "100",
+//         assetNote: auxiliary.note || "",
+
+//         // ✅ Asset section (W–AB)
+//         assets: assets || "",
+//         assetPartNumber: asset.partNumber || "",
+//         assetDescription: asset.description || "",
+//         assetQuantity: asset.quantity || "",
+//         assetStockInHand: asset.stockInHand || "100",
+//         assetNote: asset.note || "",
+
+//         // ✅ Spare part (AC–AF)
+//         sparePartNumber: spare.partNumber || "",
+//         spareDescription: spare.description || "",
+//         spareQuantity: spare.quantity || "",
+//         spareNote: spare.note || "",
+//       });
+
+//       await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: formData.toString(),
+//       });
+
+//       currentRow++;
+//     }
+
+//     // Step 4: Finalize row lock (optional)
+//     await fetch(GAS_URL, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({ action: "finalizeRowLock" }),
+//     });
+
+//     // ✅ Cleanup and notify
+//     message.success("✅ Product categories saved successfully.");
+//     form.resetFields();
+//     setMachineDataSource([]);
+//     setAuxiliariesDataSource([]);
+//     setAssetsDataSource([]);
+//     setDataSource([]);
+//   } catch (err) {
+//     console.error("❌ Submission failed:", err);
+//     message.error("❌ Something went wrong. Check the console.");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
 const handleSubmit = async (values) => {
   const {
     machines,
@@ -381,68 +820,92 @@ const handleSubmit = async (values) => {
     tools,
   } = values;
 
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzXYHsX3yiS0FbMCCr6YYYxs-gS0jNqQY-P6_p3Yf7xjfNYjDSjyZcB_TRhFLZQY_Sk/exec"; 
   try {
     setLoading(true);
 
-    const rowLockResponse = await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
+    const rowLockResponse = await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ action: "getRowLock" }),
     });
 
     const { rowIndex } = await rowLockResponse.json();
-    let currentRow = parseInt(rowIndex);
+    // let currentRow = Math.max(3, parseInt(rowIndex || "1", 10) + 1);
+    let currentRow = parseInt(rowIndex || "3", 10);
 
-    // 🔁 Send machine rows
-    for (const [i, row] of machineDataSource.entries()) {
-      const formData = new URLSearchParams();
-      formData.append("action", "addProductCategories");
-      formData.append("recordType", "machine");
-      formData.append("rowIndex", currentRow);
-      formData.append("isFirstMachine", i === 0 ? "true" : "false");
 
-      formData.append("machines", machines);
-      formData.append("immSeries", immSeries || "-");
-      formData.append("maSeries", maSeries || "-");
-      formData.append("juSeries", juSeries || "-");
-      formData.append("jeSeries", jeSeries || "-");
-      formData.append("veSeries", veSeries || "-");
-      formData.append("zeSeries", zeSeries || "-");
-      formData.append("haSeries", haSeries || "-");
+    const maxLength = Math.max(
+      machineDataSource.length,
+      auxiliariesDataSource.length,
+      assetsDataSource.length,
+      dataSource.length
+    );
 
-      formData.append("machinePartNumber", row.partNumber || "");
-      formData.append("machineDescription", row.description || "");
-      formData.append("machineQuantity", row.quantity || "");
-      formData.append("machineStockInHand", row.stockInHand || "");
-      formData.append("machineNote", row.note || "");
+    for (let i = 0; i < maxLength; i++) {
+      const machine = machineDataSource[i] || {};
+      const auxiliary = auxiliariesDataSource[i] || {};
+      const asset = assetsDataSource[i] || {};
+      const spare = dataSource[i] || {};
 
-      if (i === 0) {
-        formData.append("consumables", consumables || "");
-        formData.append("tools", tools || "");
-        formData.append("auxiliaries", Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-");
+      const formData = new URLSearchParams({
+        action: "addProductCategories",
+        recordType: "machine",
+        rowIndex: currentRow,
 
-        // asset
-        if (assetsDataSource.length > 0) {
-          const asset = assetsDataSource[0];
-          formData.append("assets", assets || "");
-          formData.append("assetPartNumber", asset.partNumber || "");
-          formData.append("assetDescription", asset.description || "");
-          formData.append("assetQuantity", asset.quantity || "");
-          formData.append("assetStockInHand", asset.stockInHand || "");
-          formData.append("assetNote", asset.note || "");
-        }
+        // Machine Type Info
+        machines,
+        immSeries: immSeries || "-",
+        maSeries: maSeries || "-",
+        juSeries: juSeries || "-",
+        jeSeries: jeSeries || "-",
+        veSeries: veSeries || "-",
+        zeSeries: zeSeries || "-",
+        haSeries: haSeries || "-",
 
-        // spare
-        if (dataSource.length > 0) {
-          const spare = dataSource[0];
-          formData.append("sparePartNumber", spare.partNumber || "");
-          formData.append("spareDescription", spare.description || "");
-          formData.append("spareQuantity", spare.quantity || "");
-          formData.append("spareNote", spare.note || "");
-        }
-      }
+        // Machine Details
+        machinePartNumber: machine.partNumber || "-",
+        machineDescription: machine.description || "-",
+        machineQuantity: machine.quantity || "-",
+        machineStockInHand: machine.stockInHand || "100",
+        machineNote: machine.note || "-",
 
-      await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
+        // General
+        // consumables: i === 0 ? consumables || "" : "",
+        consumables: consumables || "",
+
+        // tools: i === 0 ? tools || "" : "",
+        tools: tools || "",
+        // auxiliaries: i === 0 ? Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "" : "",
+                auxiliaries: Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "" || "",
+
+
+        // Auxiliary Details
+        auxPartNumber: auxiliary.partNumber || "-",
+        auxDescription: auxiliary.description || "-",
+        auxQuantity: auxiliary.quantity || "-",
+        auxStockInHand: auxiliary.stockInHand || "100",
+        auxNote: auxiliary.note || "-",
+
+        // Asset
+        assets: assets || "-",
+        assetPartNumber: asset.partNumber || "-",
+        assetDescription: asset.description || "-",
+        assetQuantity: asset.quantity || "-",
+        assetStockInHand: asset.stockInHand || "100",
+        assetNote: asset.note || "-",
+
+        // Spare Part
+        sparePartNumber: spare.partNumber || "-",
+        spareDescription: spare.description || "-",
+        spareQuantity: spare.quantity || "-",
+        spareNote: spare.note || "-",
+      });
+
+      console.log(`📤 Submitting row ${currentRow}:`, Object.fromEntries(formData.entries()));
+
+
+      await fetch(GAS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
@@ -451,14 +914,15 @@ const handleSubmit = async (values) => {
       currentRow++;
     }
 
-    // 🔓 Finalize row lock
-    await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
+    await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ action: "finalizeRowLock" }),
     });
 
-    message.success("✅ Product categories saved.");
+    
+
+    message.success("✅ Product categories saved successfully.");
     form.resetFields();
     setMachineDataSource([]);
     setAuxiliariesDataSource([]);
@@ -466,11 +930,12 @@ const handleSubmit = async (values) => {
     setDataSource([]);
   } catch (err) {
     console.error("❌ Submission failed:", err);
-    message.error("❌ Something went wrong.");
+    message.error("❌ Something went wrong. Check console.");
   } finally {
     setLoading(false);
   }
 };
+
 
   const handleAdd = () => {
     if (
