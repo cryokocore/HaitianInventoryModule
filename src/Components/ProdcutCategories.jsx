@@ -15,6 +15,7 @@ export default function ProductCategories() {
   const [assetsDataSource, setAssetsDataSource] = useState([]);
   const [auxiliariesDataSource, setAuxiliariesDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [inputRow, setInputRow] = useState({
     partNumber: "",
     description: "",
@@ -30,7 +31,7 @@ export default function ProductCategories() {
   });
   const [selectedAssets, setSelectedAssets] = useState(null);
   const [selectedAuxiliaries, setSelectedAuxiliaries] = useState(null);
-  
+
   const [auxiliariesInputRow, setAuxiliariesInputRow] = useState({
     partNumber: "",
     description: "",
@@ -364,448 +365,277 @@ export default function ProductCategories() {
     },
   ];
 
-  
-// const handleSubmit = async (values) => {
-//   const {
-//     machines,
-//     immSeries,
-//     maSeries,
-//     juSeries,
-//     jeSeries,
-//     veSeries,
-//     zeSeries,
-//     haSeries,
-//     auxiliaries,
-//     assets,
-//     consumables,
-//     tools,
-//   } = values;
+  // const handleSubmit = async (values) => {
+  //   const {
+  //     machines,
+  //     immSeries,
+  //     maSeries,
+  //     juSeries,
+  //     jeSeries,
+  //     veSeries,
+  //     zeSeries,
+  //     haSeries,
+  //     auxiliaries,
+  //     assets,
+  //     consumables,
+  //     tools,
+  //   } = values;
 
-//   try {
-//     setLoading(true);
+  //   const GAS_URL =
+  //     "https://script.google.com/macros/s/AKfycbxOCy1LyaxrfprtwT59DyB0jL3oA_5QIJQ0yoDkGmLNFWI36Z0M0OOPn3h8J2idYqdEdQ/exec";
+  //   try {
+  //     setLoading(true);
 
-//     const rowLockResponse = await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({ action: "getRowLock" }),
-//     });
+  //     const rowLockResponse = await fetch(GAS_URL, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //       body: new URLSearchParams({ action: "getRowLock" }),
+  //     });
 
-//     const { rowIndex } = await rowLockResponse.json();
-//     let currentRow = parseInt(rowIndex);
+  //     const { rowIndex } = await rowLockResponse.json();
+  //     // let currentRow = Math.max(3, parseInt(rowIndex || "1", 10) + 1);
+  //     let currentRow = parseInt(rowIndex || "3", 10);
 
-//     // 🔁 Send machine rows
-//     for (const [i, row] of machineDataSource.entries()) {
-//       const formData = new URLSearchParams();
-//       formData.append("action", "addProductCategories");
-//       formData.append("recordType", "machine");
-//       formData.append("rowIndex", currentRow);
-//       formData.append("isFirstMachine", i === 0 ? "true" : "false");
+  //     const maxLength = Math.max(
+  //       machineDataSource.length,
+  //       auxiliariesDataSource.length,
+  //       assetsDataSource.length,
+  //       dataSource.length
+  //     );
 
-//       formData.append("machines", machines);
-//       formData.append("immSeries", immSeries || "-");
-//       formData.append("maSeries", maSeries || "-");
-//       formData.append("juSeries", juSeries || "-");
-//       formData.append("jeSeries", jeSeries || "-");
-//       formData.append("veSeries", veSeries || "-");
-//       formData.append("zeSeries", zeSeries || "-");
-//       formData.append("haSeries", haSeries || "-");
+  //     for (let i = 0; i < maxLength; i++) {
+  //       const machine = machineDataSource[i] || {};
+  //       const auxiliary = auxiliariesDataSource[i] || {};
+  //       const asset = assetsDataSource[i] || {};
+  //       const spare = dataSource[i] || {};
 
-//       formData.append("machinePartNumber", row.partNumber || "");
-//       formData.append("machineDescription", row.description || "");
-//       formData.append("machineQuantity", row.quantity || "");
-//       formData.append("machineStockInHand", row.stockInHand || "");
-//       formData.append("machineNote", row.note || "");
+  //       const formData = new URLSearchParams({
+  //         action: "addProductCategories",
+  //         recordType: "machine",
+  //         rowIndex: currentRow,
 
-//       if (i === 0) {
-//         formData.append("consumables", consumables || "");
-//         formData.append("tools", tools || "");
-//         formData.append("auxiliaries", Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-");
+  //         // Machine Type Info
+  //         machines,
+  //         immSeries: immSeries || "-",
+  //         maSeries: maSeries || "-",
+  //         juSeries: juSeries || "-",
+  //         jeSeries: jeSeries || "-",
+  //         veSeries: veSeries || "-",
+  //         zeSeries: zeSeries || "-",
+  //         haSeries: haSeries || "-",
 
-//         // asset
-//         if (assetsDataSource.length > 0) {
-//           const asset = assetsDataSource[0];
-//           formData.append("assets", assets || "");
-//           formData.append("assetPartNumber", asset.partNumber || "");
-//           formData.append("assetDescription", asset.description || "");
-//           formData.append("assetQuantity", asset.quantity || "");
-//           formData.append("assetStockInHand", asset.stockInHand || "");
-//           formData.append("assetNote", asset.note || "");
-//         }
+  //         // Machine Details
+  //         machinePartNumber: machine.partNumber || "-",
+  //         machineDescription: machine.description || "-",
+  //         machineQuantity: machine.quantity || "-",
+  //         machineStockInHand: machine.stockInHand || "100",
+  //         machineNote: machine.note || "-",
 
-//         // spare
-//         if (dataSource.length > 0) {
-//           const spare = dataSource[0];
-//           formData.append("sparePartNumber", spare.partNumber || "");
-//           formData.append("spareDescription", spare.description || "");
-//           formData.append("spareQuantity", spare.quantity || "");
-//           formData.append("spareNote", spare.note || "");
-//         }
-//       }
+  //         // General
+  //         // consumables: i === 0 ? consumables || "" : "",
+  //         consumables: consumables || "",
 
-//       await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: formData.toString(),
-//       });
+  //         // tools: i === 0 ? tools || "" : "",
+  //         tools: tools || "",
+  //         // auxiliaries: i === 0 ? Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "" : "",
+  //         auxiliaries: Array.isArray(auxiliaries)
+  //           ? auxiliaries.join(" / ")
+  //           : "" || "",
 
-//       currentRow++;
-//     }
+  //         // Auxiliary Details
+  //         auxPartNumber: auxiliary.partNumber || "-",
+  //         auxDescription: auxiliary.description || "-",
+  //         auxQuantity: auxiliary.quantity || "-",
+  //         auxStockInHand: auxiliary.stockInHand || "100",
+  //         auxNote: auxiliary.note || "-",
 
-//     // 🔓 Finalize row lock
-//     await fetch("https://script.google.com/macros/s/AKfycbwldkYAVwcykUMH0rbetquKelYUa0qp-YlTZmF9lQGetkf30rm4x7spcjmOtI80R9DjPQ/exec", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({ action: "finalizeRowLock" }),
-//     });
+  //         // Asset
+  //         assets: assets || "-",
+  //         assetPartNumber: asset.partNumber || "-",
+  //         assetDescription: asset.description || "-",
+  //         assetQuantity: asset.quantity || "-",
+  //         assetStockInHand: asset.stockInHand || "100",
+  //         assetNote: asset.note || "-",
 
-//     message.success("✅ Product categories saved.");
-//     form.resetFields();
-//     setMachineDataSource([]);
-//     setAuxiliariesDataSource([]);
-//     setAssetsDataSource([]);
-//     setDataSource([]);
-//   } catch (err) {
-//     console.error("❌ Submission failed:", err);
-//     message.error("❌ Something went wrong.");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+  //         // Spare Part
+  //         sparePartNumber: spare.partNumber || "-",
+  //         spareDescription: spare.description || "-",
+  //         spareQuantity: spare.quantity || "-",
+  //         spareNote: spare.note || "-",
+  //       });
 
-// const handleSubmit = async (values) => {
-//   const {
-//     machines,
-//     immSeries,
-//     maSeries,
-//     juSeries,
-//     jeSeries,
-//     veSeries,
-//     zeSeries,
-//     haSeries,
-//     auxiliaries,
-//     assets,
-//     consumables,
-//     tools,
-//   } = values;
+  //       console.log(
+  //         `📤 Submitting row ${currentRow}:`,
+  //         Object.fromEntries(formData.entries())
+  //       );
 
-//   const GAS_URL = "https://script.google.com/macros/s/AKfycbxCjSd720kclpeY9PGHmTytubupwrLsiAKhnKwYrXJH0dyjEhMVSHXNKlBdhrffAaQc0w/exec";
+  //       await fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: formData.toString(),
+  //       });
 
-//   try {
-//     setLoading(true);
+  //       currentRow++;
+  //     }
 
-//     const rowLockResponse = await fetch(GAS_URL, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({ action: "getRowLock" }),
-//     });
-//     const { rowIndex } = await rowLockResponse.json();
-//     let currentRow = parseInt(rowIndex) + 1;
+  //     await fetch(GAS_URL, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //       body: new URLSearchParams({ action: "finalizeRowLock" }),
+  //     });
 
-//     // Submit machines
-//     for (const [i, row] of machineDataSource.entries()) {
-//       const formData = new URLSearchParams();
-//       formData.append("action", "addProductCategories");
-//       formData.append("recordType", "machine");
-//       formData.append("rowIndex", currentRow);
-//       formData.append("isFirstMachine", i === 0 ? "true" : "false");
+  //     message.success("Product categories submitted successfully.");
+  //     form.resetFields();
+  //     setMachineDataSource([]);
+  //     setAuxiliariesDataSource([]);
+  //     setAssetsDataSource([]);
+  //     setDataSource([]);
+  //   } catch (err) {
+  //     console.error("Submission failed:", err);
+  //     message.error("Something went wrong. Check console.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-//       formData.append("machines", machines);
-//       formData.append("immSeries", immSeries || "-");
-//       formData.append("maSeries", maSeries || "-");
-//       formData.append("juSeries", juSeries || "-");
-//       formData.append("jeSeries", jeSeries || "-");
-//       formData.append("veSeries", veSeries || "-");
-//       formData.append("zeSeries", zeSeries || "-");
-//       formData.append("haSeries", haSeries || "-");
+  // const handleSubmit = async (values) => {
+  //   const {
+  //     machines,
+  //     immSeries,
+  //     maSeries,
+  //     juSeries,
+  //     jeSeries,
+  //     veSeries,
+  //     zeSeries,
+  //     haSeries,
+  //     auxiliaries,
+  //     assets,
+  //     consumables,
+  //     tools,
+  //   } = values;
 
-//       formData.append("machinePartNumber", row.partNumber || "");
-//       formData.append("machineDescription", row.description || "");
-//       formData.append("machineQuantity", row.quantity || "");
-//       formData.append("machineStockInHand", row.stockInHand || "100");
-//       formData.append("machineNote", row.note || "");
+  //   const GAS_URL =
+  //     "https://script.google.com/macros/s/AKfycbzNyUPuVYT-g2rgKOIv99Am3SkocZJiLQVvyYk7wW9Eq2ldCDU6Y8HWHbNFLFde8Vsolg/exec";
 
-//       if (i === 0) {
-//         formData.append("consumables", consumables || "");
-//         formData.append("tools", tools || "");
-//         formData.append("auxiliaries", Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-");
-//         formData.append("assets", assets || "");
+  //   try {
+  //     setLoading(true);
 
-//         if (assetsDataSource.length > 0) {
-//           const asset = assetsDataSource[0];
-//           formData.append("assetPartNumber", asset.partNumber || "");
-//           formData.append("assetDescription", asset.description || "");
-//           formData.append("assetQuantity", asset.quantity || "");
-//           formData.append("assetStockInHand", asset.stockInHand || "100");
-//           formData.append("assetNote", asset.note || "");
-//         }
+  //     // Get locked starting row
+  //     const rowLockResponse = await fetch(GAS_URL, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //       body: new URLSearchParams({ action: "getRowLock" }),
+  //     });
 
-//         if (dataSource.length > 0) {
-//           const spare = dataSource[0];
-//           formData.append("sparePartNumber", spare.partNumber || "");
-//           formData.append("spareDescription", spare.description || "");
-//           formData.append("spareQuantity", spare.quantity || "");
-//           formData.append("spareNote", spare.note || "");
-//         }
-//       }
+  //     const { rowIndex } = await rowLockResponse.json();
+  //     let currentRow = parseInt(rowIndex || "3", 10);
 
-//       await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: formData.toString(),
-//       });
+  //     const maxLength = Math.max(
+  //       machineDataSource.length,
+  //       auxiliariesDataSource.length,
+  //       assetsDataSource.length,
+  //       dataSource.length
+  //     );
 
-//       currentRow++;
-//     }
+  //     for (let i = 0; i < maxLength; i++) {
+  //       const machine = machineDataSource[i] || {};
+  //       const auxiliary = auxiliariesDataSource[i] || {};
+  //       const asset = assetsDataSource[i] || {};
+  //       const spare = dataSource[i] || {};
 
-//     // Assets
-//     for (let i = 1; i < assetsDataSource.length; i++) {
-//       const asset = assetsDataSource[i];
-//       const formData = new URLSearchParams();
-//       formData.append("action", "addProductCategories");
-//       formData.append("recordType", "machine");
-//       formData.append("rowIndex", currentRow);
+  //       const formData = new URLSearchParams({
+  //         action: "addProductCategories",
+  //         recordType: "machine",
+  //         rowIndex: currentRow.toString(),
 
-//       // 👇 Machine context
-//       formData.append("machines", machines);
-//       formData.append("immSeries", immSeries || "-");
-//       formData.append("maSeries", maSeries || "-");
-//       formData.append("juSeries", juSeries || "-");
-//       formData.append("jeSeries", jeSeries || "-");
-//       formData.append("veSeries", veSeries || "-");
-//       formData.append("zeSeries", zeSeries || "-");
-//       formData.append("haSeries", haSeries || "-");
+  //         // Machine Type Info
+  //         machines,
+  //         immSeries: immSeries || "-",
+  //         maSeries: maSeries || "-",
+  //         juSeries: juSeries || "-",
+  //         jeSeries: jeSeries || "-",
+  //         veSeries: veSeries || "-",
+  //         zeSeries: zeSeries || "-",
+  //         haSeries: haSeries || "-",
 
-//       formData.append("assets", assets || "");
-//       formData.append("assetPartNumber", asset.partNumber || "");
-//       formData.append("assetDescription", asset.description || "");
-//       formData.append("assetQuantity", asset.quantity || "");
-//       formData.append("assetStockInHand", asset.stockInHand || "100");
-//       formData.append("assetNote", asset.note || "");
+  //         // Machine Details
+  //         machinePartNumber: machine.partNumber || "-",
+  //         machineDescription: machine.description || "-",
+  //         machineQuantity: machine.quantity || "-",
+  //         machineStockInHand: machine.stockInHand || "100",
+  //         machineNote: machine.note || "-",
 
-//       await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: formData.toString(),
-//       });
+  //         // Send Consumables/Tools only once
+  //         consumables: i === 0 ? consumables || "" : "",
+  //         tools: i === 0 ? tools || "" : "",
 
-//       currentRow++;
-//     }
+  //         // Auxiliaries (array to joined string once)
+  //         auxiliaries:
+  //           i === 0
+  //             ? Array.isArray(auxiliaries)
+  //               ? auxiliaries.join(" / ")
+  //               : auxiliaries || ""
+  //             : "",
 
-//     // Spares
-//     for (let i = 1; i < dataSource.length; i++) {
-//       const spare = dataSource[i];
-//       const formData = new URLSearchParams();
-//       formData.append("action", "addProductCategories");
-//       formData.append("recordType", "machine");
-//       formData.append("rowIndex", currentRow);
+  //         auxPartNumber: auxiliary.partNumber || "-",
+  //         auxDescription: auxiliary.description || "-",
+  //         auxQuantity: auxiliary.quantity || "-",
+  //         auxStockInHand: auxiliary.stockInHand || "100",
+  //         auxNote: auxiliary.note || "-",
 
-//       // 👇 Machine context
-//       formData.append("machines", machines);
-//       formData.append("immSeries", immSeries || "-");
-//       formData.append("maSeries", maSeries || "-");
-//       formData.append("juSeries", juSeries || "-");
-//       formData.append("jeSeries", jeSeries || "-");
-//       formData.append("veSeries", veSeries || "-");
-//       formData.append("zeSeries", zeSeries || "-");
-//       formData.append("haSeries", haSeries || "-");
+  //         // Asset
+  //         assets: i === 0 ? assets || "-" : "",
+  //         assetPartNumber: asset.partNumber || "-",
+  //         assetDescription: asset.description || "-",
+  //         assetQuantity: asset.quantity || "-",
+  //         assetStockInHand: asset.stockInHand || "100",
+  //         assetNote: asset.note || "-",
 
-//       formData.append("sparePartNumber", spare.partNumber || "");
-//       formData.append("spareDescription", spare.description || "");
-//       formData.append("spareQuantity", spare.quantity || "");
-//       formData.append("spareNote", spare.note || "");
+  //         // Spare Part
+  //         sparePartNumber: spare.partNumber || "-",
+  //         spareDescription: spare.description || "-",
+  //         spareQuantity: spare.quantity || "-",
+  //         spareNote: spare.note || "-",
+  //       });
 
-//       await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: formData.toString(),
-//       });
+  //       console.log(`📤 Submitting row ${currentRow}:`, Object.fromEntries(formData.entries()));
+     
 
-//       currentRow++;
-//     }
+  //       await fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: formData.toString(),
+  //       });
 
-//     // Auxiliaries
-//     for (let i = 1; i < auxiliariesDataSource.length; i++) {
-//       const aux = auxiliariesDataSource[i];
-//       const formData = new URLSearchParams();
-//       formData.append("action", "addProductCategories");
-//       formData.append("recordType", "machine");
-//       formData.append("rowIndex", currentRow);
+  //       currentRow++; // only increment locally after each row sent
+  //     }
 
-//       // 👇 Machine context
-//       formData.append("machines", machines);
-//       formData.append("immSeries", immSeries || "-");
-//       formData.append("maSeries", maSeries || "-");
-//       formData.append("juSeries", juSeries || "-");
-//       formData.append("jeSeries", jeSeries || "-");
-//       formData.append("veSeries", veSeries || "-");
-//       formData.append("zeSeries", zeSeries || "-");
-//       formData.append("haSeries", haSeries || "-");
+    
 
-//       formData.append("auxiliaries", Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "-");
-//       formData.append("assetPartNumber", aux.partNumber || "");
-//       formData.append("assetDescription", aux.description || "");
-//       formData.append("assetQuantity", aux.quantity || "");
-//       formData.append("assetStockInHand", aux.stockInHand || "100");
-//       formData.append("assetNote", aux.note || "");
+  //     // ✅ Finalize row lock
+  //     await fetch(GAS_URL, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //       body: new URLSearchParams({ action: "finalizeRowLock" }),
+  //     });
 
-//       await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: formData.toString(),
-//       });
+  //     message.success("Product categories submitted successfully.");
+  //     form.resetFields();
+  //     setMachineDataSource([]);
+  //     setAuxiliariesDataSource([]);
+  //     setAssetsDataSource([]);
+  //     setDataSource([]);
+  //   } catch (err) {
+  //     console.error("Submission failed:", err);
+  //     message.error("Something went wrong. Check console.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-//       currentRow++;
-//     }
-
-//     // Finalize lock (optional)
-//     await fetch(GAS_URL, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({ action: "finalizeRowLock" }),
-//     });
-
-//     message.success("✅ Product categories saved.");
-//     form.resetFields();
-//     setMachineDataSource([]);
-//     setAuxiliariesDataSource([]);
-//     setAssetsDataSource([]);
-//     setDataSource([]);
-//   } catch (err) {
-//     console.error("❌ Submission failed:", err);
-//     message.error("❌ Something went wrong.");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-//Almost working code
-// const handleSubmit = async (values) => {
-//   const {
-//     machines,
-//     immSeries,
-//     maSeries,
-//     juSeries,
-//     jeSeries,
-//     veSeries,
-//     zeSeries,
-//     haSeries,
-//     auxiliaries,
-//     assets,
-//     consumables,
-//     tools,
-//   } = values;
-
-//   const GAS_URL = "https://script.google.com/macros/s/AKfycbw_wBOBLfsQr3ehUxlZOwIavFVMB2tuMk2AXWUu9jaJkJ7ZQg20A6M-QoMBCEk7bQoyig/exec"; // 🔁 Replace with your actual deployed Apps Script URL
-
-//   try {
-//     setLoading(true);
-
-//     // Step 1: Get the latest row index
-//     const rowLockResponse = await fetch(GAS_URL, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({ action: "getRowLock" }),
-//     });
-//     const { rowIndex } = await rowLockResponse.json();
-//     let currentRow = parseInt(rowIndex || "1", 10) + 1;
-
-//     // Step 2: Get max length of all data arrays
-//     const maxLength = Math.max(
-//       machineDataSource.length,
-//       auxiliariesDataSource.length,
-//       assetsDataSource.length,
-//       dataSource.length
-//     );
-
-//     // Step 3: Loop once per complete row (machine + aux + asset + spare)
-//     for (let i = 0; i < maxLength; i++) {
-//       const machine = machineDataSource[i] || {};
-//       const auxiliary = auxiliariesDataSource[i] || {};
-//       const asset = assetsDataSource[i] || {};
-//       const spare = dataSource[i] || {};
-
-//       const formData = new URLSearchParams({
-//         action: "addProductCategories",
-//         recordType: "machine",
-//         rowIndex: currentRow,
-
-//         // ✅ Machine type fields
-//         machines,
-//         immSeries: immSeries || "-",
-//         maSeries: maSeries || "-",
-//         juSeries: juSeries || "-",
-//         jeSeries: jeSeries || "-",
-//         veSeries: veSeries || "-",
-//         zeSeries: zeSeries || "-",
-//         haSeries: haSeries || "-",
-
-//         // ✅ Machine part details
-//         machinePartNumber: machine.partNumber || "",
-//         machineDescription: machine.description || "",
-//         machineQuantity: machine.quantity || "",
-//         machineStockInHand: machine.stockInHand || "100",
-//         machineNote: machine.note || "",
-
-//         // ✅ Consumables/tools only on first row
-//         consumables: i === 0 ? consumables || "" : "",
-//         tools: i === 0 ? tools || "" : "",
-//         auxiliaries: i === 0 ? (Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "") : "",
-
-//         // ✅ Auxiliary part (mapped to columns R–V)
-//         assetPartNumber: auxiliary.partNumber || "",
-//         assetDescription: auxiliary.description || "",
-//         assetQuantity: auxiliary.quantity || "",
-//         assetStockInHand: auxiliary.stockInHand || "100",
-//         assetNote: auxiliary.note || "",
-
-//         // ✅ Asset section (W–AB)
-//         assets: assets || "",
-//         assetPartNumber: asset.partNumber || "",
-//         assetDescription: asset.description || "",
-//         assetQuantity: asset.quantity || "",
-//         assetStockInHand: asset.stockInHand || "100",
-//         assetNote: asset.note || "",
-
-//         // ✅ Spare part (AC–AF)
-//         sparePartNumber: spare.partNumber || "",
-//         spareDescription: spare.description || "",
-//         spareQuantity: spare.quantity || "",
-//         spareNote: spare.note || "",
-//       });
-
-//       await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: formData.toString(),
-//       });
-
-//       currentRow++;
-//     }
-
-//     // Step 4: Finalize row lock (optional)
-//     await fetch(GAS_URL, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({ action: "finalizeRowLock" }),
-//     });
-
-//     // ✅ Cleanup and notify
-//     message.success("✅ Product categories saved successfully.");
-//     form.resetFields();
-//     setMachineDataSource([]);
-//     setAuxiliariesDataSource([]);
-//     setAssetsDataSource([]);
-//     setDataSource([]);
-//   } catch (err) {
-//     console.error("❌ Submission failed:", err);
-//     message.error("❌ Something went wrong. Check the console.");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-const handleSubmit = async (values) => {
+  const handleSubmit = async (values) => {
   const {
+    productCategory,
     machines,
     immSeries,
     maSeries,
@@ -820,7 +650,9 @@ const handleSubmit = async (values) => {
     tools,
   } = values;
 
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzXYHsX3yiS0FbMCCr6YYYxs-gS0jNqQY-P6_p3Yf7xjfNYjDSjyZcB_TRhFLZQY_Sk/exec"; 
+  const GAS_URL =
+    "https://script.google.com/macros/s/AKfycbzNyUPuVYT-g2rgKOIv99Am3SkocZJiLQVvyYk7wW9Eq2ldCDU6Y8HWHbNFLFde8Vsolg/exec";
+
   try {
     setLoading(true);
 
@@ -831,9 +663,7 @@ const handleSubmit = async (values) => {
     });
 
     const { rowIndex } = await rowLockResponse.json();
-    // let currentRow = Math.max(3, parseInt(rowIndex || "1", 10) + 1);
     let currentRow = parseInt(rowIndex || "3", 10);
-
 
     const maxLength = Math.max(
       machineDataSource.length,
@@ -851,7 +681,7 @@ const handleSubmit = async (values) => {
       const formData = new URLSearchParams({
         action: "addProductCategories",
         recordType: "machine",
-        rowIndex: currentRow,
+        rowIndex: currentRow.toString(),
 
         // Machine Type Info
         machines,
@@ -870,40 +700,77 @@ const handleSubmit = async (values) => {
         machineStockInHand: machine.stockInHand || "100",
         machineNote: machine.note || "-",
 
-        // General
-        // consumables: i === 0 ? consumables || "" : "",
-        consumables: consumables || "",
+        consumables: i === 0 ? consumables || "" : "-",
+        tools: i === 0 ? tools || "" : "",
 
-        // tools: i === 0 ? tools || "" : "",
-        tools: tools || "",
-        // auxiliaries: i === 0 ? Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "" : "",
-                auxiliaries: Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "" || "",
+        // auxiliaries:
+        //   i === 0
+        //     ? Array.isArray(auxiliaries)
+        //       ? auxiliaries.join(" / ")
+        //       : auxiliaries || ""
+        //     : "",
 
-
-        // Auxiliary Details
+        auxiliaries: Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : auxiliaries || "",
+        
         auxPartNumber: auxiliary.partNumber || "-",
         auxDescription: auxiliary.description || "-",
         auxQuantity: auxiliary.quantity || "-",
         auxStockInHand: auxiliary.stockInHand || "100",
         auxNote: auxiliary.note || "-",
 
-        // Asset
+        // assets: i === 0 ? assets || "-" : "",
         assets: assets || "-",
+
         assetPartNumber: asset.partNumber || "-",
         assetDescription: asset.description || "-",
         assetQuantity: asset.quantity || "-",
         assetStockInHand: asset.stockInHand || "100",
         assetNote: asset.note || "-",
 
-        // Spare Part
         sparePartNumber: spare.partNumber || "-",
         spareDescription: spare.description || "-",
         spareQuantity: spare.quantity || "-",
         spareNote: spare.note || "-",
       });
 
-      console.log(`📤 Submitting row ${currentRow}:`, Object.fromEntries(formData.entries()));
+      console.log(
+        `📤 Submitting row ${currentRow}:`,
+        Object.fromEntries(formData.entries())
+      );
 
+      await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString(),
+      });
+
+      currentRow++;
+    }
+
+    if (maxLength === 0 && (consumables || tools)) {
+      const formData = new URLSearchParams({
+        action: "addProductCategories",
+        recordType: "general",
+        rowIndex: currentRow.toString(),
+        machines: machines || "-",
+        immSeries: immSeries || "-",
+        maSeries: maSeries || "-",
+        juSeries: juSeries || "-",
+        jeSeries: jeSeries || "-",
+        veSeries: veSeries || "-",
+        zeSeries: zeSeries || "-",
+        haSeries: haSeries || "-",
+        auxiliaries:
+          Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : auxiliaries || "",
+        assets: assets || "-",
+        consumables: consumables || "-",
+        tools: tools || "-",
+      });
+
+      console.log(
+        `📤 Submitting (consumables/tools only) row ${currentRow}:`,
+        Object.fromEntries(formData.entries())
+      );
 
       await fetch(GAS_URL, {
         method: "POST",
@@ -920,17 +787,15 @@ const handleSubmit = async (values) => {
       body: new URLSearchParams({ action: "finalizeRowLock" }),
     });
 
-    
-
-    message.success("✅ Product categories saved successfully.");
+    message.success("Product categories submitted successfully.");
     form.resetFields();
     setMachineDataSource([]);
     setAuxiliariesDataSource([]);
     setAssetsDataSource([]);
     setDataSource([]);
   } catch (err) {
-    console.error("❌ Submission failed:", err);
-    message.error("❌ Something went wrong. Check console.");
+    console.error("Submission failed:", err);
+    message.error("Something went wrong. Check console.");
   } finally {
     setLoading(false);
   }
@@ -1544,398 +1409,455 @@ const handleSubmit = async (values) => {
           </div>
 
           <div className="row d-flex flex-row mt-4">
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleSubmit}
-              className="mt-3 mt-lg-3"
-            >
-              <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly productsCards rounded-4">
-                <div className="col-12 p-3 p-lg-4  ">
-                  <div className="d-flex align-items-center gap-2 mb-1">
+            <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly productsCards rounded-4">
+              <div className="col-12 p-3 p-lg-4  ">
+                <div className="d-flex align-items-center gap-2 mb-1">
+                  <div
+                    className="d-flex align-items-center justify-content-center"
+                    style={{
+                      backgroundColor: "#e8f0fe",
+                      borderRadius: "12px",
+                      width: "40px",
+                      height: "40px",
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      icon={faListCheck}
+                      size="lg"
+                      style={{ color: "#0D3884" }}
+                    />
+                  </div>
+                  <div>
                     <div
-                      className="d-flex align-items-center justify-content-center"
-                      style={{
-                        backgroundColor: "#e8f0fe",
-                        borderRadius: "12px",
-                        width: "40px",
-                        height: "40px",
-                      }}
+                      className="fw-bold m-0 p-0"
+                      style={{ fontSize: "20px", color: "#0D3884" }}
                     >
-                      <FontAwesomeIcon
-                        icon={faListCheck}
-                        size="lg"
-                        style={{ color: "#0D3884" }}
-                      />
+                      Categories Information
                     </div>
-                    <div>
-                      <div
-                        className="fw-bold m-0 p-0"
-                        style={{ fontSize: "20px", color: "#0D3884" }}
-                      >
-                        Categories Information
-                      </div>
-                      <div
-                        className="m-0 p-0"
-                        style={{ fontSize: "14px", color: "#0D3884" }}
-                      >
-                        Details about product categories
-                      </div>
+                    <div
+                      className="m-0 p-0"
+                      style={{ fontSize: "14px", color: "#0D3884" }}
+                    >
+                      Details about product categories
                     </div>
                   </div>
+                </div>
 
-                  <div className="border border-1"></div>
+                <div className="border border-1"></div>
 
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleSubmit}
+                  className="mt-3 mt-lg-3"
+                >
                   <div className="row mt-3">
                     <div className="rounded-2 p-2">
                       <Form.Item
-                        label="Machines"
-                        name="machines"
-                        className="fw-bold"
-                        rules={[
-                          { required: true, message: "Please select machine" },
-                        ]}
-                      >
-                        <Select
-                          placeholder="Select a machine"
-                          onChange={(value) => {
-                            setSelectedMachine(value);
-                            setSelectedIMMSeries(null);
-                            form.setFieldsValue({
-                              immSeries: undefined,
-                              maSeries: undefined,
-                              juSeries: undefined,
-                              haSeries: undefined,
-                            });
-                          }}
-                        >
-                          <Select.Option value="IMM">IMM</Select.Option>
-                          <Select.Option value="BMM">BMM</Select.Option>
-                          <Select.Option value="EBM">EBM</Select.Option>
-                          <Select.Option value="SBM">SBM</Select.Option>
-                        </Select>
-                      </Form.Item>
-
-                      {selectedMachine === "IMM" && (
-                        <>
-                          <Form.Item
-                            label="IMM Series"
-                            name="immSeries"
-                            className="fw-bold"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please select IMM series",
-                              },
-                            ]}
-                          >
-                            <Select
-                              placeholder="Select IMM Series"
-                              onChange={(value) => {
-                                setSelectedIMMSeries(value);
-                                form.setFieldsValue({
-                                  maSeries: undefined,
-                                  juSeries: undefined,
-                                  haSeries: undefined,
-                                });
-                              }}
-                            >
-                              {IMMSeriesOptions.map((opt) => (
-                                <Select.Option
-                                  key={opt.value}
-                                  value={opt.value}
-                                >
-                                  {opt.label}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-
-                          {selectedIMMSeries === "MA" && (
-                            <Form.Item
-                              label="MA Series"
-                              name="maSeries"
-                              className="fw-bold"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please select MA series",
-                                },
-                              ]}
-                            >
-                              <Select placeholder="Select MA Series">
-                                {MAOptions.map((item) => (
-                                  <Select.Option key={item} value={item}>
-                                    {item}
-                                  </Select.Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          )}
-
-                          {selectedIMMSeries === "JU" && (
-                            <Form.Item
-                              label="JU Series"
-                              name="juSeries"
-                              className="fw-bold"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please select JU series",
-                                },
-                              ]}
-                            >
-                              <Select placeholder="Select JU Series">
-                                {JUOptions.map((item) => (
-                                  <Select.Option key={item} value={item}>
-                                    {item}
-                                  </Select.Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          )}
-
-                          {selectedIMMSeries === "HA" && (
-                            <Form.Item
-                              label="HA Series"
-                              name="haSeries"
-                              className="fw-bold"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please select HA series",
-                                },
-                              ]}
-                            >
-                              <Select placeholder="Select HA Series">
-                                {HAOptions.map((item) => (
-                                  <Select.Option key={item} value={item}>
-                                    {item}
-                                  </Select.Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          )}
-
-                          {selectedIMMSeries === "JE" && (
-                            <Form.Item
-                              label="JE Series"
-                              name="jeSeries"
-                              className="fw-bold"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please select JE series",
-                                },
-                              ]}
-                            >
-                              <Select placeholder="Select JE Series">
-                                {JEOptions.map((item) => (
-                                  <Select.Option key={item} value={item}>
-                                    {item}
-                                  </Select.Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          )}
-
-                          {selectedIMMSeries === "VE" && (
-                            <Form.Item
-                              label="VE Series"
-                              name="veSeries"
-                              className="fw-bold"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please select VE series",
-                                },
-                              ]}
-                            >
-                              <Select placeholder="Select VE Series">
-                                {VEOptions.map((item) => (
-                                  <Select.Option key={item} value={item}>
-                                    {item}
-                                  </Select.Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          )}
-                          {selectedIMMSeries === "ZE" && (
-                            <Form.Item
-                              label="ZE Series"
-                              name="zeSeries"
-                              className="fw-bold"
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Please select ZE series",
-                                },
-                              ]}
-                            >
-                              <Select placeholder="Select ZE Series">
-                                {ZEOptions.map((item) => (
-                                  <Select.Option key={item} value={item}>
-                                    {item}
-                                  </Select.Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          )}
-                        </>
-                      )}
-
-                      {selectedMachine && (
-                        <div className="col-12">
-                          <h6
-                            className="haitianColor ms-1 text-decoration-underline"
-                            style={{ fontWeight: "500" }}
-                          >
-                            Machines Details
-                          </h6>
-                          <Table
-                            columns={machineColumns}
-                            dataSource={displayMachineData}
-                            pagination={false}
-                            rowKey="key"
-                            bordered
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className=" rounded-2 p-1 ">
-                      <div className="col-12">
-                        <Form.Item
-                          label="Consumables (Stationery)"
-                          name="consumables"
-                          className="fw-bold"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please input consumables",
-                            },
-                          ]}
-                        >
-                          <Input placeholder="Enter consumables" />
-                        </Form.Item>
-
-                        <Form.Item
-                          label="Tools"
-                          name="tools"
-                          className="fw-bold"
-                          rules={[
-                            { required: true, message: "Please input tools" },
-                          ]}
-                        >
-                          <Input placeholder="Enter tools" />
-                        </Form.Item>
-                      </div>
-                    </div>
-
-                    <div className=" rounded-2 p-1 ">
-                      <Form.Item
-                        label="Auxiliaries"
-                        name="auxiliaries"
+                        label="Product Category"
+                        name="productCategory"
                         className="fw-bold"
                         rules={[
                           {
                             required: true,
-                            message: "Please select auxiliaries",
+                            message: "Please select a category",
                           },
                         ]}
                       >
-                        <div style={{ width: "100%" }}>
-                          <Cascader
-                            options={auxiliariesOptions}
-                            placeholder="Select auxiliaries"
-                            style={{ width: "100%" }}
-                            value={form.getFieldValue("auxiliaries")} 
-                            onChange={(value) => {
-                              form.setFieldsValue({ auxiliaries: value }); 
-                              setSelectedAuxiliaries(value); 
-                            }}
-                          />
-                        </div>
-                      </Form.Item>
-                      {selectedAuxiliaries && (
-                        <div className="col-12">
-                          <h6
-                            className="haitianColor ms-1 text-decoration-underline"
-                            style={{ fontWeight: "500" }}
-                          >
-                            Auxiliaries Details
-                          </h6>
-                          <Table
-                            bordered
-                            columns={auxiliariesColumns}
-                            dataSource={displayAuxiliariesData}
-                            pagination={false}
-                            rowKey="key"
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className=" rounded-2 p-1 ">
-                      <Form.Item
-                        label="Assets"
-                        name="assets"
-                        className="fw-bold"
-                        rules={[
-                          { required: true, message: "Please select assets" },
-                        ]}
-                      >
                         <Select
-                          placeholder="Select an asset"
+                          placeholder="Select a category"
                           onChange={(value) => {
-                            setSelectedAssets(value);
+                            setSelectedCategory(value);
+                            setSelectedMachine(null);
+                            setSelectedIMMSeries(null);
+                            setSelectedAssets(null);
+                            setSelectedAuxiliaries(null);
                           }}
                         >
-                          <Select.Option value="Furniture">
-                            Furniture
+                          <Select.Option value="Machines">
+                            Machines
                           </Select.Option>
-                          <Select.Option value="Vehicles">
-                            Vehicles
+                          <Select.Option value="Consumables">
+                            Consumables (Stationery)
                           </Select.Option>
-                          <Select.Option value="IT">IT</Select.Option>
-                          <Select.Option value="Utilities">
-                            Utilities
+                          <Select.Option value="Tools">Tools</Select.Option>
+                          <Select.Option value="Auxiliaries">
+                            Auxiliaries
+                          </Select.Option>
+                          <Select.Option value="Assets">Assets</Select.Option>
+                          <Select.Option value="SpareParts">
+                            Spare Parts
                           </Select.Option>
                         </Select>
                       </Form.Item>
-                      {selectedAssets && (
+                    </div>
+
+                    {selectedCategory === "Machines" && (
+                      <div className="rounded-2 p-2">
+                        <Form.Item
+                          label="Machines"
+                          name="machines"
+                          className="fw-bold"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select machine",
+                            },
+                          ]}
+                        >
+                          <Select
+                            placeholder="Select a machine"
+                            onChange={(value) => {
+                              setSelectedMachine(value);
+                              setSelectedIMMSeries(null);
+                              form.setFieldsValue({
+                                immSeries: undefined,
+                                maSeries: undefined,
+                                juSeries: undefined,
+                                haSeries: undefined,
+                              });
+                            }}
+                          >
+                            <Select.Option value="IMM">IMM</Select.Option>
+                            <Select.Option value="BMM">BMM</Select.Option>
+                            <Select.Option value="EBM">EBM</Select.Option>
+                            <Select.Option value="SBM">SBM</Select.Option>
+                          </Select>
+                        </Form.Item>
+
+                        {selectedMachine === "IMM" && (
+                          <>
+                            <Form.Item
+                              label="IMM Series"
+                              name="immSeries"
+                              className="fw-bold"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please select IMM series",
+                                },
+                              ]}
+                            >
+                              <Select
+                                placeholder="Select IMM Series"
+                                onChange={(value) => {
+                                  setSelectedIMMSeries(value);
+                                  form.setFieldsValue({
+                                    maSeries: undefined,
+                                    juSeries: undefined,
+                                    haSeries: undefined,
+                                  });
+                                }}
+                              >
+                                {IMMSeriesOptions.map((opt) => (
+                                  <Select.Option
+                                    key={opt.value}
+                                    value={opt.value}
+                                  >
+                                    {opt.label}
+                                  </Select.Option>
+                                ))}
+                              </Select>
+                            </Form.Item>
+
+                            {selectedIMMSeries === "MA" && (
+                              <Form.Item
+                                label="MA Series"
+                                name="maSeries"
+                                className="fw-bold"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please select MA series",
+                                  },
+                                ]}
+                              >
+                                <Select placeholder="Select MA Series">
+                                  {MAOptions.map((item) => (
+                                    <Select.Option key={item} value={item}>
+                                      {item}
+                                    </Select.Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            )}
+
+                            {selectedIMMSeries === "JU" && (
+                              <Form.Item
+                                label="JU Series"
+                                name="juSeries"
+                                className="fw-bold"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please select JU series",
+                                  },
+                                ]}
+                              >
+                                <Select placeholder="Select JU Series">
+                                  {JUOptions.map((item) => (
+                                    <Select.Option key={item} value={item}>
+                                      {item}
+                                    </Select.Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            )}
+
+                            {selectedIMMSeries === "HA" && (
+                              <Form.Item
+                                label="HA Series"
+                                name="haSeries"
+                                className="fw-bold"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please select HA series",
+                                  },
+                                ]}
+                              >
+                                <Select placeholder="Select HA Series">
+                                  {HAOptions.map((item) => (
+                                    <Select.Option key={item} value={item}>
+                                      {item}
+                                    </Select.Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            )}
+
+                            {selectedIMMSeries === "JE" && (
+                              <Form.Item
+                                label="JE Series"
+                                name="jeSeries"
+                                className="fw-bold"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please select JE series",
+                                  },
+                                ]}
+                              >
+                                <Select placeholder="Select JE Series">
+                                  {JEOptions.map((item) => (
+                                    <Select.Option key={item} value={item}>
+                                      {item}
+                                    </Select.Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            )}
+
+                            {selectedIMMSeries === "VE" && (
+                              <Form.Item
+                                label="VE Series"
+                                name="veSeries"
+                                className="fw-bold"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please select VE series",
+                                  },
+                                ]}
+                              >
+                                <Select placeholder="Select VE Series">
+                                  {VEOptions.map((item) => (
+                                    <Select.Option key={item} value={item}>
+                                      {item}
+                                    </Select.Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            )}
+                            {selectedIMMSeries === "ZE" && (
+                              <Form.Item
+                                label="ZE Series"
+                                name="zeSeries"
+                                className="fw-bold"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Please select ZE series",
+                                  },
+                                ]}
+                              >
+                                <Select placeholder="Select ZE Series">
+                                  {ZEOptions.map((item) => (
+                                    <Select.Option key={item} value={item}>
+                                      {item}
+                                    </Select.Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            )}
+                          </>
+                        )}
+
+                        {selectedMachine && (
+                          <div className="col-12">
+                            <h6
+                              className="haitianColor ms-1 text-decoration-underline"
+                              style={{ fontWeight: "500" }}
+                            >
+                              Machines Details
+                            </h6>
+                            <Table
+                              columns={machineColumns}
+                              dataSource={displayMachineData}
+                              pagination={false}
+                              rowKey="key"
+                              bordered
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {selectedCategory === "Consumables" && (
+                      <div className="rounded-2 p-1 ">
                         <div className="col-12">
-                          <h6 className="haitianColor ms-1 text-decoration-underline">
-                            Assets Details
-                          </h6>
+                          <Form.Item
+                            label="Consumables (Stationery)"
+                            name="consumables"
+                            className="fw-bold"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please input consumables",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter consumables" />
+                          </Form.Item>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedCategory === "Tools" && (
+                      <div className="rounded-2 p-1 ">
+                        <div className="col-12">
+                          <Form.Item
+                            label="Tools"
+                            name="tools"
+                            className="fw-bold"
+                            rules={[
+                              { required: true, message: "Please input tools" },
+                            ]}
+                          >
+                            <Input placeholder="Enter tools" />
+                          </Form.Item>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedCategory === "Auxiliaries" && (
+                      <div className=" rounded-2 p-1 ">
+                        <Form.Item
+                          label="Auxiliaries"
+                          name="auxiliaries"
+                          className="fw-bold"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select auxiliaries",
+                            },
+                          ]}
+                        >
+                          <div style={{ width: "100%" }}>
+                            <Cascader
+                              options={auxiliariesOptions}
+                              placeholder="Select auxiliaries"
+                              style={{ width: "100%" }}
+                              value={form.getFieldValue("auxiliaries")}
+                              onChange={(value) => {
+                                form.setFieldsValue({ auxiliaries: value });
+                                setSelectedAuxiliaries(value);
+                              }}
+                            />
+                          </div>
+                        </Form.Item>
+                        {selectedAuxiliaries && (
+                          <div className="col-12">
+                            <h6
+                              className="haitianColor ms-1 text-decoration-underline"
+                              style={{ fontWeight: "500" }}
+                            >
+                              Auxiliaries Details
+                            </h6>
+                            <Table
+                              bordered
+                              columns={auxiliariesColumns}
+                              dataSource={displayAuxiliariesData}
+                              pagination={false}
+                              rowKey="key"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {selectedCategory === "Assets" && (
+                      <div className=" rounded-2 p-1 ">
+                        <Form.Item
+                          label="Assets"
+                          name="assets"
+                          className="fw-bold"
+                          rules={[
+                            { required: true, message: "Please select assets" },
+                          ]}
+                        >
+                          <Select
+                            placeholder="Select an asset"
+                            onChange={(value) => {
+                              setSelectedAssets(value);
+                            }}
+                          >
+                            <Select.Option value="Furniture">
+                              Furniture
+                            </Select.Option>
+                            <Select.Option value="Vehicles">
+                              Vehicles
+                            </Select.Option>
+                            <Select.Option value="IT">IT</Select.Option>
+                            <Select.Option value="Utilities">
+                              Utilities
+                            </Select.Option>
+                          </Select>
+                        </Form.Item>
+                        {selectedAssets && (
+                          <div className="col-12">
+                            <h6 className="haitianColor ms-1 text-decoration-underline">
+                              Assets Details
+                            </h6>
+                            <Table
+                              bordered
+                              columns={assetsColumns}
+                              dataSource={displayAssetsData}
+                              pagination={false}
+                              rowKey="key"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {selectedCategory === "SpareParts" && (
+                      <div className=" rounded-2 p-1 ">
+                        <div className="col-12">
+                          <h6 className="haitianColor fw-bold">Spare Parts</h6>
                           <Table
-                            bordered
-                            columns={assetsColumns}
-                            dataSource={displayAssetsData}
+                            columns={columns}
+                            dataSource={displayData}
                             pagination={false}
                             rowKey="key"
+                            bordered
                           />
                         </div>
-                      )}
-                    </div>
-
-                    <div className=" rounded-2 p-1 ">
-                      <div className="col-12">
-                        <h6 className="haitianColor fw-bold">Spare Parts</h6>
-                        <Table
-                          columns={columns}
-                          dataSource={displayData}
-                          pagination={false}
-                          rowKey="key"
-                          bordered
-                        />
                       </div>
-                    </div>
+                    )}
 
                     <div className="col-12 text-center mt-4 mb-3">
-                      {/* <Button type="primary" htmlType="submit">
-                        Submit Category
-                      </Button> */}
+                      
                       <Button
                         htmlType="submit"
                         size="large"
@@ -1949,9 +1871,9 @@ const handleSubmit = async (values) => {
                       </Button>
                     </div>
                   </div>
-                </div>
+                </Form>
               </div>
-            </Form>
+            </div>
           </div>
         </div>
       </div>
