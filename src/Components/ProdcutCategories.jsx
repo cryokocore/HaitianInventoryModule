@@ -151,7 +151,6 @@ export default function ProductCategories() {
         { value: "HTHD-600MHL/EAF/W", label: "HTHD-600MHL/EAF/W" },
       ],
     },
-    { value: "3 in 1 Hopper dryer", label: "3 in 1 Hopper dryer" },
     {
       value: "Crusher",
       label: "Crusher",
@@ -172,7 +171,6 @@ export default function ProductCategories() {
         { value: "HTSS800/W", label: "HTSS800/W" },
       ],
     },
-    { value: "Color Dozer Color Mixer", label: "Color Dozer Color Mixer" },
     {
       value: "Color Mixer",
       label: "Color Mixer",
@@ -599,7 +597,6 @@ export default function ProductCategories() {
   //       });
 
   //       console.log(`📤 Submitting row ${currentRow}:`, Object.fromEntries(formData.entries()));
-     
 
   //       await fetch(GAS_URL, {
   //         method: "POST",
@@ -609,8 +606,6 @@ export default function ProductCategories() {
 
   //       currentRow++; // only increment locally after each row sent
   //     }
-
-    
 
   //     // ✅ Finalize row lock
   //     await fetch(GAS_URL, {
@@ -634,173 +629,178 @@ export default function ProductCategories() {
   // };
 
   const handleSubmit = async (values) => {
-  const {
-    productCategory,
-    machines,
-    immSeries,
-    maSeries,
-    juSeries,
-    jeSeries,
-    veSeries,
-    zeSeries,
-    haSeries,
-    auxiliaries,
-    assets,
-    consumables,
-    tools,
-  } = values;
+    const {
+      productCategory,
+      machines,
+      immSeries,
+      maSeries,
+      juSeries,
+      jeSeries,
+      veSeries,
+      zeSeries,
+      haSeries,
+      auxiliaries,
+      assets,
+      consumables,
+      tools,
+    } = values;
 
-  const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbzNyUPuVYT-g2rgKOIv99Am3SkocZJiLQVvyYk7wW9Eq2ldCDU6Y8HWHbNFLFde8Vsolg/exec";
+    const GAS_URL =
+      "https://script.google.com/macros/s/AKfycby2hQhAVRdRc4HtVkHaa0KIeKnL5LZBUhHbroC3hbhRqVsMgQEDDLaBtvH_xcxWpMkNpQ/exec";
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const rowLockResponse = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ action: "getRowLock" }),
-    });
-
-    const { rowIndex } = await rowLockResponse.json();
-    let currentRow = parseInt(rowIndex || "3", 10);
-
-    const maxLength = Math.max(
-      machineDataSource.length,
-      auxiliariesDataSource.length,
-      assetsDataSource.length,
-      dataSource.length
-    );
-
-    for (let i = 0; i < maxLength; i++) {
-      const machine = machineDataSource[i] || {};
-      const auxiliary = auxiliariesDataSource[i] || {};
-      const asset = assetsDataSource[i] || {};
-      const spare = dataSource[i] || {};
-
-      const formData = new URLSearchParams({
-        action: "addProductCategories",
-        recordType: "machine",
-        rowIndex: currentRow.toString(),
-
-        // Machine Type Info
-        machines,
-        immSeries: immSeries || "-",
-        maSeries: maSeries || "-",
-        juSeries: juSeries || "-",
-        jeSeries: jeSeries || "-",
-        veSeries: veSeries || "-",
-        zeSeries: zeSeries || "-",
-        haSeries: haSeries || "-",
-
-        // Machine Details
-        machinePartNumber: machine.partNumber || "-",
-        machineDescription: machine.description || "-",
-        machineQuantity: machine.quantity || "-",
-        machineStockInHand: machine.stockInHand || "100",
-        machineNote: machine.note || "-",
-
-        consumables: i === 0 ? consumables || "" : "-",
-        tools: i === 0 ? tools || "" : "",
-
-        // auxiliaries:
-        //   i === 0
-        //     ? Array.isArray(auxiliaries)
-        //       ? auxiliaries.join(" / ")
-        //       : auxiliaries || ""
-        //     : "",
-
-        auxiliaries: Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : auxiliaries || "",
-        
-        auxPartNumber: auxiliary.partNumber || "-",
-        auxDescription: auxiliary.description || "-",
-        auxQuantity: auxiliary.quantity || "-",
-        auxStockInHand: auxiliary.stockInHand || "100",
-        auxNote: auxiliary.note || "-",
-
-        // assets: i === 0 ? assets || "-" : "",
-        assets: assets || "-",
-
-        assetPartNumber: asset.partNumber || "-",
-        assetDescription: asset.description || "-",
-        assetQuantity: asset.quantity || "-",
-        assetStockInHand: asset.stockInHand || "100",
-        assetNote: asset.note || "-",
-
-        sparePartNumber: spare.partNumber || "-",
-        spareDescription: spare.description || "-",
-        spareQuantity: spare.quantity || "-",
-        spareNote: spare.note || "-",
+      const rowLockResponse = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "getRowLock" }),
       });
 
-      console.log(
-        `📤 Submitting row ${currentRow}:`,
-        Object.fromEntries(formData.entries())
+      const { rowIndex } = await rowLockResponse.json();
+      let currentRow = parseInt(rowIndex || "3", 10);
+
+      const maxLength = Math.max(
+        machineDataSource.length,
+        auxiliariesDataSource.length,
+        assetsDataSource.length,
+        dataSource.length
       );
+
+      for (let i = 0; i < maxLength; i++) {
+        const machine = machineDataSource[i] || {};
+        const auxiliary = auxiliariesDataSource[i] || {};
+        const asset = assetsDataSource[i] || {};
+        const spare = dataSource[i] || {};
+
+        const formData = new URLSearchParams({
+          action: "addProductCategories",
+          recordType: "machine",
+          rowIndex: currentRow.toString(),
+
+          // Machine Type Info
+          machines,
+          immSeries: immSeries || "-",
+          maSeries: maSeries || "-",
+          juSeries: juSeries || "-",
+          jeSeries: jeSeries || "-",
+          veSeries: veSeries || "-",
+          zeSeries: zeSeries || "-",
+          haSeries: haSeries || "-",
+
+          // Machine Details
+          machinePartNumber: machine.partNumber || "-",
+          machineDescription: machine.description || "-",
+          machineQuantity: machine.quantity || "-",
+          machineStockInHand: machine.stockInHand || "100",
+          machineNote: machine.note || "-",
+
+          consumables: i === 0 ? consumables || "" : "",
+          tools: i === 0 ? tools || "" : "",
+
+          // consumables: i === 0 && consumables ? consumables : "",
+          // tools: i === 0 && tools ? tools : "",
+
+          // auxiliaries:
+          //   i === 0
+          //     ? Array.isArray(auxiliaries)
+          //       ? auxiliaries.join(" / ")
+          //       : auxiliaries || ""
+          //     : "",
+
+          auxiliaries: Array.isArray(auxiliaries)
+            ? auxiliaries.join(" / ")
+            : auxiliaries || "",
+
+          auxPartNumber: auxiliary.partNumber || "-",
+          auxDescription: auxiliary.description || "-",
+          auxQuantity: auxiliary.quantity || "-",
+          auxStockInHand: auxiliary.stockInHand || "100",
+          auxNote: auxiliary.note || "-",
+
+          // assets: i === 0 ? assets || "-" : "",
+          assets: assets || "-",
+
+          assetPartNumber: asset.partNumber || "-",
+          assetDescription: asset.description || "-",
+          assetQuantity: asset.quantity || "-",
+          assetStockInHand: asset.stockInHand || "100",
+          assetNote: asset.note || "-",
+
+          sparePartNumber: spare.partNumber || "-",
+          spareDescription: spare.description || "-",
+          spareQuantity: spare.quantity || "-",
+          spareNote: spare.note || "-",
+        });
+
+        console.log(
+          `📤 Submitting row ${currentRow}:`,
+          Object.fromEntries(formData.entries())
+        );
+
+        await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString(),
+        });
+
+        currentRow++;
+      }
+
+      if (maxLength === 0 && (consumables || tools)) {
+        const formData = new URLSearchParams({
+          action: "addProductCategories",
+          recordType: "general",
+          rowIndex: currentRow.toString(),
+          machines: machines || "-",
+          immSeries: immSeries || "-",
+          maSeries: maSeries || "-",
+          juSeries: juSeries || "-",
+          jeSeries: jeSeries || "-",
+          veSeries: veSeries || "-",
+          zeSeries: zeSeries || "-",
+          haSeries: haSeries || "-",
+          auxiliaries: Array.isArray(auxiliaries)
+            ? auxiliaries.join(" / ")
+            : auxiliaries || "",
+          assets: assets || "-",
+          consumables: consumables || "-",
+          tools: tools || "-",
+        });
+
+        console.log(
+          `📤 Submitting (consumables/tools only) row ${currentRow}:`,
+          Object.fromEntries(formData.entries())
+        );
+
+        await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString(),
+        });
+
+        currentRow++;
+      }
 
       await fetch(GAS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString(),
+        body: new URLSearchParams({ action: "finalizeRowLock" }),
       });
 
-      currentRow++;
+      message.success("Product categories submitted successfully.");
+      form.resetFields();
+      setMachineDataSource([]);
+      setAuxiliariesDataSource([]);
+      setAssetsDataSource([]);
+      setDataSource([]);
+    } catch (err) {
+      console.error("Submission failed:", err);
+      message.error("Something went wrong. Check console.");
+    } finally {
+      setLoading(false);
     }
-
-    if (maxLength === 0 && (consumables || tools)) {
-      const formData = new URLSearchParams({
-        action: "addProductCategories",
-        recordType: "general",
-        rowIndex: currentRow.toString(),
-        machines: machines || "-",
-        immSeries: immSeries || "-",
-        maSeries: maSeries || "-",
-        juSeries: juSeries || "-",
-        jeSeries: jeSeries || "-",
-        veSeries: veSeries || "-",
-        zeSeries: zeSeries || "-",
-        haSeries: haSeries || "-",
-        auxiliaries:
-          Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : auxiliaries || "",
-        assets: assets || "-",
-        consumables: consumables || "-",
-        tools: tools || "-",
-      });
-
-      console.log(
-        `📤 Submitting (consumables/tools only) row ${currentRow}:`,
-        Object.fromEntries(formData.entries())
-      );
-
-      await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString(),
-      });
-
-      currentRow++;
-    }
-
-    await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ action: "finalizeRowLock" }),
-    });
-
-    message.success("Product categories submitted successfully.");
-    form.resetFields();
-    setMachineDataSource([]);
-    setAuxiliariesDataSource([]);
-    setAssetsDataSource([]);
-    setDataSource([]);
-  } catch (err) {
-    console.error("Submission failed:", err);
-    message.error("Something went wrong. Check console.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const handleAdd = () => {
     if (
@@ -1472,6 +1472,24 @@ export default function ProductCategories() {
                             setSelectedIMMSeries(null);
                             setSelectedAssets(null);
                             setSelectedAuxiliaries(null);
+                            setMachineDataSource([]);
+                            setAuxiliariesDataSource([]);
+                            setAssetsDataSource([]);
+                            setDataSource([]);
+                            form.setFieldsValue({
+                              machines: undefined,
+                              immSeries: undefined,
+                              maSeries: undefined,
+                              juSeries: undefined,
+                              jeSeries: undefined,
+                              veSeries: undefined,
+                              zeSeries: undefined,
+                              haSeries: undefined,
+                              auxiliaries: undefined,
+                              assets: undefined,
+                              consumables: undefined,
+                              tools: undefined,
+                            });
                           }}
                         >
                           <Select.Option value="Machines">
@@ -1509,6 +1527,7 @@ export default function ProductCategories() {
                             placeholder="Select a machine"
                             onChange={(value) => {
                               setSelectedMachine(value);
+                              setMachineDataSource([]);
                               setSelectedIMMSeries(null);
                               form.setFieldsValue({
                                 immSeries: undefined,
@@ -1542,10 +1561,14 @@ export default function ProductCategories() {
                                 placeholder="Select IMM Series"
                                 onChange={(value) => {
                                   setSelectedIMMSeries(value);
+                                  setMachineDataSource([]);
                                   form.setFieldsValue({
                                     maSeries: undefined,
                                     juSeries: undefined,
                                     haSeries: undefined,
+                                    jeSeries: undefined,
+                                    veSeries: undefined,
+                                    zeSeries: undefined,
                                   });
                                 }}
                               >
@@ -1572,7 +1595,7 @@ export default function ProductCategories() {
                                   },
                                 ]}
                               >
-                                <Select placeholder="Select MA Series">
+                                <Select placeholder="Select MA Series" >
                                   {MAOptions.map((item) => (
                                     <Select.Option key={item} value={item}>
                                       {item}
@@ -1857,7 +1880,6 @@ export default function ProductCategories() {
                     )}
 
                     <div className="col-12 text-center mt-4 mb-3">
-                      
                       <Button
                         htmlType="submit"
                         size="large"
