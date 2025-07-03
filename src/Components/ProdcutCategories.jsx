@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Form, Input, Select, Cascader, message, Table } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
@@ -20,6 +20,7 @@ export default function ProductCategories() {
     partNumber: "",
     description: "",
     quantity: "",
+    stockInHand: "",
     note: "",
   });
   const [machineinputRow, setMachineInputRow] = useState({
@@ -50,6 +51,8 @@ export default function ProductCategories() {
   const [selectedMachine, setSelectedMachine] = useState(null);
 
   const [selectedIMMSeries, setSelectedIMMSeries] = useState(null);
+   const GAS_URL =
+      "https://script.google.com/macros/s/AKfycbzr-I0ng6HnlHmSz46FY88fclR5SYtzhOhBR0nlYKBLT_K3oYcmfzKgFRuii6asv2NKaw/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -363,270 +366,149 @@ export default function ProductCategories() {
     },
   ];
 
-  // const handleSubmit = async (values) => {
-  //   const {
-  //     machines,
-  //     immSeries,
-  //     maSeries,
-  //     juSeries,
-  //     jeSeries,
-  //     veSeries,
-  //     zeSeries,
-  //     haSeries,
-  //     auxiliaries,
-  //     assets,
-  //     consumables,
-  //     tools,
-  //   } = values;
+  useEffect(() => {
+  const fetchStockInHand = async () => {
+    if (!machineinputRow.partNumber.trim()) return;
 
-  //   const GAS_URL =
-  //     "https://script.google.com/macros/s/AKfycbxOCy1LyaxrfprtwT59DyB0jL3oA_5QIJQ0yoDkGmLNFWI36Z0M0OOPn3h8J2idYqdEdQ/exec";
-  //   try {
-  //     setLoading(true);
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getStockForPartNumber",
+          partNumber: machineinputRow.partNumber.trim(),
+        }),
+      });
 
-  //     const rowLockResponse = await fetch(GAS_URL, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //       body: new URLSearchParams({ action: "getRowLock" }),
-  //     });
+      const result = await res.json();
+      console.log("✅ Stock fetch response:", result);
 
-  //     const { rowIndex } = await rowLockResponse.json();
-  //     // let currentRow = Math.max(3, parseInt(rowIndex || "1", 10) + 1);
-  //     let currentRow = parseInt(rowIndex || "3", 10);
+      if (result.success) {
+        setMachineInputRow(prev => ({
+          ...prev,
+          stockInHand: result.stockInHand.toString(),
+        }));
+      } else {
+        setMachineInputRow(prev => ({
+          ...prev,
+          stockInHand: "0",
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching stock:", err);
+    }
+  };
 
-  //     const maxLength = Math.max(
-  //       machineDataSource.length,
-  //       auxiliariesDataSource.length,
-  //       assetsDataSource.length,
-  //       dataSource.length
-  //     );
+  fetchStockInHand();
+}, [machineinputRow.partNumber]);
 
-  //     for (let i = 0; i < maxLength; i++) {
-  //       const machine = machineDataSource[i] || {};
-  //       const auxiliary = auxiliariesDataSource[i] || {};
-  //       const asset = assetsDataSource[i] || {};
-  //       const spare = dataSource[i] || {};
 
-  //       const formData = new URLSearchParams({
-  //         action: "addProductCategories",
-  //         recordType: "machine",
-  //         rowIndex: currentRow,
+useEffect(() => {
+  const fetchStockInHand = async () => {
+    if (!auxiliariesInputRow.partNumber.trim()) return;
 
-  //         // Machine Type Info
-  //         machines,
-  //         immSeries: immSeries || "-",
-  //         maSeries: maSeries || "-",
-  //         juSeries: juSeries || "-",
-  //         jeSeries: jeSeries || "-",
-  //         veSeries: veSeries || "-",
-  //         zeSeries: zeSeries || "-",
-  //         haSeries: haSeries || "-",
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getStockForPartNumber",
+          partNumber: auxiliariesInputRow.partNumber.trim(),
+        }),
+      });
 
-  //         // Machine Details
-  //         machinePartNumber: machine.partNumber || "-",
-  //         machineDescription: machine.description || "-",
-  //         machineQuantity: machine.quantity || "-",
-  //         machineStockInHand: machine.stockInHand || "100",
-  //         machineNote: machine.note || "-",
+      const result = await res.json();
+      if (result.success) {
+        setAuxiliariesInputRow(prev => ({
+          ...prev,
+          stockInHand: result.stockInHand.toString(),
+        }));
+      } else {
+        setAuxiliariesInputRow(prev => ({
+          ...prev,
+          stockInHand: "0",
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching stock (Auxiliaries):", err);
+    }
+  };
 
-  //         // General
-  //         // consumables: i === 0 ? consumables || "" : "",
-  //         consumables: consumables || "",
+  fetchStockInHand();
+}, [auxiliariesInputRow.partNumber]);
 
-  //         // tools: i === 0 ? tools || "" : "",
-  //         tools: tools || "",
-  //         // auxiliaries: i === 0 ? Array.isArray(auxiliaries) ? auxiliaries.join(" / ") : "" : "",
-  //         auxiliaries: Array.isArray(auxiliaries)
-  //           ? auxiliaries.join(" / ")
-  //           : "" || "",
 
-  //         // Auxiliary Details
-  //         auxPartNumber: auxiliary.partNumber || "-",
-  //         auxDescription: auxiliary.description || "-",
-  //         auxQuantity: auxiliary.quantity || "-",
-  //         auxStockInHand: auxiliary.stockInHand || "100",
-  //         auxNote: auxiliary.note || "-",
+useEffect(() => {
+  const fetchStockInHand = async () => {
+    if (!assetsInputRow.partNumber.trim()) return;
 
-  //         // Asset
-  //         assets: assets || "-",
-  //         assetPartNumber: asset.partNumber || "-",
-  //         assetDescription: asset.description || "-",
-  //         assetQuantity: asset.quantity || "-",
-  //         assetStockInHand: asset.stockInHand || "100",
-  //         assetNote: asset.note || "-",
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getStockForPartNumber",
+          partNumber: assetsInputRow.partNumber.trim(),
+        }),
+      });
 
-  //         // Spare Part
-  //         sparePartNumber: spare.partNumber || "-",
-  //         spareDescription: spare.description || "-",
-  //         spareQuantity: spare.quantity || "-",
-  //         spareNote: spare.note || "-",
-  //       });
+      const result = await res.json();
+      if (result.success) {
+        setAssetsInputRow(prev => ({
+          ...prev,
+          stockInHand: result.stockInHand.toString(),
+        }));
+      } else {
+        setAssetsInputRow(prev => ({
+          ...prev,
+          stockInHand: "0",
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching stock (Assets):", err);
+    }
+  };
 
-  //       console.log(
-  //         `📤 Submitting row ${currentRow}:`,
-  //         Object.fromEntries(formData.entries())
-  //       );
+  fetchStockInHand();
+}, [assetsInputRow.partNumber]);
 
-  //       await fetch(GAS_URL, {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //         body: formData.toString(),
-  //       });
 
-  //       currentRow++;
-  //     }
+useEffect(() => {
+  const fetchStockInHand = async () => {
+    if (!inputRow.partNumber.trim()) return;
 
-  //     await fetch(GAS_URL, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //       body: new URLSearchParams({ action: "finalizeRowLock" }),
-  //     });
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getStockForPartNumber",
+          partNumber: inputRow.partNumber.trim(),
+        }),
+      });
 
-  //     message.success("Product categories submitted successfully.");
-  //     form.resetFields();
-  //     setMachineDataSource([]);
-  //     setAuxiliariesDataSource([]);
-  //     setAssetsDataSource([]);
-  //     setDataSource([]);
-  //   } catch (err) {
-  //     console.error("Submission failed:", err);
-  //     message.error("Something went wrong. Check console.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+      const result = await res.json();
+      if (result.success) {
+        setInputRow(prev => ({
+          ...prev,
+          stockInHand: result.stockInHand.toString(),
+        }));
+      } else {
+        setInputRow(prev => ({
+          ...prev,
+          stockInHand: "0",
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching stock (Spare Parts):", err);
+    }
+  };
 
-  // const handleSubmit = async (values) => {
-  //   const {
-  //     machines,
-  //     immSeries,
-  //     maSeries,
-  //     juSeries,
-  //     jeSeries,
-  //     veSeries,
-  //     zeSeries,
-  //     haSeries,
-  //     auxiliaries,
-  //     assets,
-  //     consumables,
-  //     tools,
-  //   } = values;
+  fetchStockInHand();
+}, [inputRow.partNumber]);
 
-  //   const GAS_URL =
-  //     "https://script.google.com/macros/s/AKfycbzNyUPuVYT-g2rgKOIv99Am3SkocZJiLQVvyYk7wW9Eq2ldCDU6Y8HWHbNFLFde8Vsolg/exec";
 
-  //   try {
-  //     setLoading(true);
 
-  //     // Get locked starting row
-  //     const rowLockResponse = await fetch(GAS_URL, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //       body: new URLSearchParams({ action: "getRowLock" }),
-  //     });
-
-  //     const { rowIndex } = await rowLockResponse.json();
-  //     let currentRow = parseInt(rowIndex || "3", 10);
-
-  //     const maxLength = Math.max(
-  //       machineDataSource.length,
-  //       auxiliariesDataSource.length,
-  //       assetsDataSource.length,
-  //       dataSource.length
-  //     );
-
-  //     for (let i = 0; i < maxLength; i++) {
-  //       const machine = machineDataSource[i] || {};
-  //       const auxiliary = auxiliariesDataSource[i] || {};
-  //       const asset = assetsDataSource[i] || {};
-  //       const spare = dataSource[i] || {};
-
-  //       const formData = new URLSearchParams({
-  //         action: "addProductCategories",
-  //         recordType: "machine",
-  //         rowIndex: currentRow.toString(),
-
-  //         // Machine Type Info
-  //         machines,
-  //         immSeries: immSeries || "-",
-  //         maSeries: maSeries || "-",
-  //         juSeries: juSeries || "-",
-  //         jeSeries: jeSeries || "-",
-  //         veSeries: veSeries || "-",
-  //         zeSeries: zeSeries || "-",
-  //         haSeries: haSeries || "-",
-
-  //         // Machine Details
-  //         machinePartNumber: machine.partNumber || "-",
-  //         machineDescription: machine.description || "-",
-  //         machineQuantity: machine.quantity || "-",
-  //         machineStockInHand: machine.stockInHand || "100",
-  //         machineNote: machine.note || "-",
-
-  //         // Send Consumables/Tools only once
-  //         consumables: i === 0 ? consumables || "" : "",
-  //         tools: i === 0 ? tools || "" : "",
-
-  //         // Auxiliaries (array to joined string once)
-  //         auxiliaries:
-  //           i === 0
-  //             ? Array.isArray(auxiliaries)
-  //               ? auxiliaries.join(" / ")
-  //               : auxiliaries || ""
-  //             : "",
-
-  //         auxPartNumber: auxiliary.partNumber || "-",
-  //         auxDescription: auxiliary.description || "-",
-  //         auxQuantity: auxiliary.quantity || "-",
-  //         auxStockInHand: auxiliary.stockInHand || "100",
-  //         auxNote: auxiliary.note || "-",
-
-  //         // Asset
-  //         assets: i === 0 ? assets || "-" : "",
-  //         assetPartNumber: asset.partNumber || "-",
-  //         assetDescription: asset.description || "-",
-  //         assetQuantity: asset.quantity || "-",
-  //         assetStockInHand: asset.stockInHand || "100",
-  //         assetNote: asset.note || "-",
-
-  //         // Spare Part
-  //         sparePartNumber: spare.partNumber || "-",
-  //         spareDescription: spare.description || "-",
-  //         spareQuantity: spare.quantity || "-",
-  //         spareNote: spare.note || "-",
-  //       });
-
-  //       console.log(`📤 Submitting row ${currentRow}:`, Object.fromEntries(formData.entries()));
-
-  //       await fetch(GAS_URL, {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //         body: formData.toString(),
-  //       });
-
-  //       currentRow++; // only increment locally after each row sent
-  //     }
-
-  //     // ✅ Finalize row lock
-  //     await fetch(GAS_URL, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //       body: new URLSearchParams({ action: "finalizeRowLock" }),
-  //     });
-
-  //     message.success("Product categories submitted successfully.");
-  //     form.resetFields();
-  //     setMachineDataSource([]);
-  //     setAuxiliariesDataSource([]);
-  //     setAssetsDataSource([]);
-  //     setDataSource([]);
-  //   } catch (err) {
-  //     console.error("Submission failed:", err);
-  //     message.error("Something went wrong. Check console.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleSubmit = async (values) => {
     const {
@@ -645,8 +527,7 @@ export default function ProductCategories() {
       tools,
     } = values;
 
-    const GAS_URL =
-      "https://script.google.com/macros/s/AKfycby2hQhAVRdRc4HtVkHaa0KIeKnL5LZBUhHbroC3hbhRqVsMgQEDDLaBtvH_xcxWpMkNpQ/exec";
+   
 
     try {
       setLoading(true);
@@ -730,6 +611,7 @@ export default function ProductCategories() {
           sparePartNumber: spare.partNumber || "-",
           spareDescription: spare.description || "-",
           spareQuantity: spare.quantity || "-",
+          spareStockInHand: spare.stockInHand || "100",
           spareNote: spare.note || "-",
         });
 
@@ -813,7 +695,7 @@ export default function ProductCategories() {
 
     const newData = { key: Date.now(), ...inputRow };
     setDataSource([...dataSource, newData]);
-    setInputRow({ partNumber: "", description: "", quantity: "", note: "" });
+    setInputRow({ partNumber: "", description: "", quantity: "", stockInHand: "", note: "" });
   };
 
   const handleDelete = (key) => {
@@ -870,6 +752,24 @@ export default function ProductCategories() {
           record.quantity
         ),
     },
+    {
+  title: "Stock in Hand",
+  dataIndex: "stockInHand",
+  render: (_, record) =>
+    record.isInput ? (
+      // <Input
+      //   placeholder="Stock in hand"
+      //   value={inputRow.stockInHand}
+      //   onChange={(e) =>
+      //     setInputRow({ ...inputRow, stockInHand: e.target.value })
+      //   }
+      // />
+       <Input value={100} disabled />
+    ) : (
+      record.stockInHand || "-"
+    ),
+},
+
     {
       title: "Note",
       dataIndex: "note",
@@ -1299,8 +1199,10 @@ export default function ProductCategories() {
           //     })
           //   }
           // />
-          <Input value={100} disabled />
-        ) : (
+<Input
+  value={machineinputRow.stockInHand || "0"}
+  disabled
+/>        ) : (
           record.stockInHand || "-"
         ),
     },
