@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Button, Form, Input, Select, Cascader, message, Table } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Select,
+  Cascader,
+  message,
+  Table,
+  notification,
+} from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
 import "../App.css";
+
+notification.config({
+  maxCount: 2,
+  placement: "bottomRight",
+  duration: 3,
+});
 
 export default function ProductCategories() {
   const [form] = Form.useForm();
@@ -32,7 +47,6 @@ export default function ProductCategories() {
   });
   const [selectedAssets, setSelectedAssets] = useState(null);
   const [selectedAuxiliaries, setSelectedAuxiliaries] = useState(null);
-
   const [auxiliariesInputRow, setAuxiliariesInputRow] = useState({
     partNumber: "",
     description: "",
@@ -40,7 +54,6 @@ export default function ProductCategories() {
     stockInHand: "",
     note: "",
   });
-
   const [assetsInputRow, setAssetsInputRow] = useState({
     partNumber: "",
     description: "",
@@ -49,10 +62,14 @@ export default function ProductCategories() {
     note: "",
   });
   const [selectedMachine, setSelectedMachine] = useState(null);
-
   const [selectedIMMSeries, setSelectedIMMSeries] = useState(null);
-   const GAS_URL =
-      "https://script.google.com/macros/s/AKfycbzr-I0ng6HnlHmSz46FY88fclR5SYtzhOhBR0nlYKBLT_K3oYcmfzKgFRuii6asv2NKaw/exec";
+  const [assetsFetching, setAssetsFetching] = useState(false);
+  const [machineFetching, setMachineFetching] = useState(false);
+  const [auxiliariesFetching, setAuxiliariesFetching] = useState(false);
+  const [sparePartsFetching, setSparePartsFetching] = useState(false);
+
+  const GAS_URL =
+    "https://script.google.com/macros/s/AKfycby7HMaVvNjaEt0eIFtzuHawXZFVowahWxWsR6QQxS8IAql5KhxvsiLE_p6Jz0XddS1igg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -367,148 +384,154 @@ export default function ProductCategories() {
   ];
 
   useEffect(() => {
-  const fetchStockInHand = async () => {
-    if (!machineinputRow.partNumber.trim()) return;
+    const fetchStockInHand = async () => {
+      if (!machineinputRow.partNumber.trim()) return;
+      setMachineFetching(true);
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "getStockForPartNumber",
+            partNumber: machineinputRow.partNumber.trim(),
+          }),
+        });
 
-    try {
-      const res = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "getStockForPartNumber",
-          partNumber: machineinputRow.partNumber.trim(),
-        }),
-      });
+        const result = await res.json();
+        console.log("✅ Stock fetch response:", result);
 
-      const result = await res.json();
-      console.log("✅ Stock fetch response:", result);
-
-      if (result.success) {
-        setMachineInputRow(prev => ({
-          ...prev,
-          stockInHand: result.stockInHand.toString(),
-        }));
-      } else {
-        setMachineInputRow(prev => ({
-          ...prev,
-          stockInHand: "0",
-        }));
+        if (result.success) {
+          setMachineInputRow((prev) => ({
+            ...prev,
+            stockInHand: result.stockInHand.toString(),
+          }));
+        } else {
+          setMachineInputRow((prev) => ({
+            ...prev,
+            stockInHand: "0",
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching stock:", err);
+      } finally {
+        setMachineFetching(false);
       }
-    } catch (err) {
-      console.error("Error fetching stock:", err);
-    }
-  };
+    };
 
-  fetchStockInHand();
-}, [machineinputRow.partNumber]);
+    fetchStockInHand();
+  }, [machineinputRow.partNumber]);
 
+  useEffect(() => {
+    const fetchStockInHand = async () => {
+      if (!auxiliariesInputRow.partNumber.trim()) return;
+      setAuxiliariesFetching(true);
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "getStockForPartNumber",
+            partNumber: auxiliariesInputRow.partNumber.trim(),
+            category: "Auxiliaries",
+          }),
+        });
 
-useEffect(() => {
-  const fetchStockInHand = async () => {
-    if (!auxiliariesInputRow.partNumber.trim()) return;
-
-    try {
-      const res = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "getStockForPartNumber",
-          partNumber: auxiliariesInputRow.partNumber.trim(),
-        }),
-      });
-
-      const result = await res.json();
-      if (result.success) {
-        setAuxiliariesInputRow(prev => ({
-          ...prev,
-          stockInHand: result.stockInHand.toString(),
-        }));
-      } else {
-        setAuxiliariesInputRow(prev => ({
-          ...prev,
-          stockInHand: "0",
-        }));
+        const result = await res.json();
+        if (result.success) {
+          setAuxiliariesInputRow((prev) => ({
+            ...prev,
+            stockInHand: result.stockInHand.toString(),
+          }));
+        } else {
+          setAuxiliariesInputRow((prev) => ({
+            ...prev,
+            stockInHand: "0",
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching stock (Auxiliaries):", err);
+      } finally {
+        setAuxiliariesFetching(false);
       }
-    } catch (err) {
-      console.error("Error fetching stock (Auxiliaries):", err);
-    }
-  };
+    };
 
-  fetchStockInHand();
-}, [auxiliariesInputRow.partNumber]);
+    fetchStockInHand();
+  }, [auxiliariesInputRow.partNumber]);
 
+  useEffect(() => {
+    const fetchStockInHand = async () => {
+      if (!assetsInputRow.partNumber.trim()) return;
+      setAssetsFetching(true);
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "getStockForPartNumber",
+            partNumber: assetsInputRow.partNumber.trim(),
+            category: "Assets",
+          }),
+        });
 
-useEffect(() => {
-  const fetchStockInHand = async () => {
-    if (!assetsInputRow.partNumber.trim()) return;
-
-    try {
-      const res = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "getStockForPartNumber",
-          partNumber: assetsInputRow.partNumber.trim(),
-        }),
-      });
-
-      const result = await res.json();
-      if (result.success) {
-        setAssetsInputRow(prev => ({
-          ...prev,
-          stockInHand: result.stockInHand.toString(),
-        }));
-      } else {
-        setAssetsInputRow(prev => ({
-          ...prev,
-          stockInHand: "0",
-        }));
+        const result = await res.json();
+        console.log("✅ Stock fetch response:", result);
+        if (result.success) {
+          setAssetsInputRow((prev) => ({
+            ...prev,
+            stockInHand: result.stockInHand.toString(),
+          }));
+        } else {
+          setAssetsInputRow((prev) => ({
+            ...prev,
+            stockInHand: "0",
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching stock (Assets):", err);
+      } finally {
+        setAssetsFetching(false);
       }
-    } catch (err) {
-      console.error("Error fetching stock (Assets):", err);
-    }
-  };
+    };
 
-  fetchStockInHand();
-}, [assetsInputRow.partNumber]);
+    fetchStockInHand();
+  }, [assetsInputRow.partNumber]);
 
+  useEffect(() => {
+    const fetchStockInHand = async () => {
+      if (!inputRow.partNumber.trim()) return;
+      setSparePartsFetching(true);
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "getStockForPartNumber",
+            partNumber: inputRow.partNumber.trim(),
+            category: "Spare Parts",
+          }),
+        });
 
-useEffect(() => {
-  const fetchStockInHand = async () => {
-    if (!inputRow.partNumber.trim()) return;
-
-    try {
-      const res = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "getStockForPartNumber",
-          partNumber: inputRow.partNumber.trim(),
-        }),
-      });
-
-      const result = await res.json();
-      if (result.success) {
-        setInputRow(prev => ({
-          ...prev,
-          stockInHand: result.stockInHand.toString(),
-        }));
-      } else {
-        setInputRow(prev => ({
-          ...prev,
-          stockInHand: "0",
-        }));
+        const result = await res.json();
+        if (result.success) {
+          setInputRow((prev) => ({
+            ...prev,
+            stockInHand: result.stockInHand.toString(),
+          }));
+        } else {
+          setInputRow((prev) => ({
+            ...prev,
+            stockInHand: "0",
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching stock (Spare Parts):", err);
+      } finally {
+        setSparePartsFetching(false);
       }
-    } catch (err) {
-      console.error("Error fetching stock (Spare Parts):", err);
-    }
-  };
+    };
 
-  fetchStockInHand();
-}, [inputRow.partNumber]);
-
-
-
+    fetchStockInHand();
+  }, [inputRow.partNumber]);
 
   const handleSubmit = async (values) => {
     const {
@@ -526,8 +549,6 @@ useEffect(() => {
       consumables,
       tools,
     } = values;
-
-   
 
     try {
       setLoading(true);
@@ -573,7 +594,7 @@ useEffect(() => {
           machinePartNumber: machine.partNumber || "-",
           machineDescription: machine.description || "-",
           machineQuantity: machine.quantity || "-",
-          machineStockInHand: machine.stockInHand || "100",
+          machineStockInHand: machine.stockInHand || "0",
           machineNote: machine.note || "-",
 
           consumables: i === 0 ? consumables || "" : "",
@@ -596,7 +617,7 @@ useEffect(() => {
           auxPartNumber: auxiliary.partNumber || "-",
           auxDescription: auxiliary.description || "-",
           auxQuantity: auxiliary.quantity || "-",
-          auxStockInHand: auxiliary.stockInHand || "100",
+          auxStockInHand: auxiliary.stockInHand || "0",
           auxNote: auxiliary.note || "-",
 
           // assets: i === 0 ? assets || "-" : "",
@@ -605,13 +626,13 @@ useEffect(() => {
           assetPartNumber: asset.partNumber || "-",
           assetDescription: asset.description || "-",
           assetQuantity: asset.quantity || "-",
-          assetStockInHand: asset.stockInHand || "100",
+          assetStockInHand: asset.stockInHand || "0",
           assetNote: asset.note || "-",
 
           sparePartNumber: spare.partNumber || "-",
           spareDescription: spare.description || "-",
           spareQuantity: spare.quantity || "-",
-          spareStockInHand: spare.stockInHand || "100",
+          spareStockInHand: spare.stockInHand || "0",
           spareNote: spare.note || "-",
         });
 
@@ -670,15 +691,24 @@ useEffect(() => {
         body: new URLSearchParams({ action: "finalizeRowLock" }),
       });
 
-      message.success("Product categories submitted successfully.");
+      notification.success({
+        message: "Succes",
+        description: "Data Submitted Successfully",
+      });
       form.resetFields();
+      setSelectedCategory(null);
       setMachineDataSource([]);
       setAuxiliariesDataSource([]);
       setAssetsDataSource([]);
       setDataSource([]);
     } catch (err) {
-      console.error("Submission failed:", err);
-      message.error("Something went wrong. Check console.");
+      // console.error("Submission failed:", err);
+      // message.error("Something went wrong. Check console.");
+      notification.error({
+        message: "Error",
+        description: "Submission failed:",
+        err,
+      });
     } finally {
       setLoading(false);
     }
@@ -690,13 +720,58 @@ useEffect(() => {
       !inputRow.description &&
       !inputRow.quantity &&
       !inputRow.note
-    )
+    ) {
+      notification.error({
+        message: "Error",
+        description:
+          "Part Number, description, qauantity and note are required",
+      });
       return;
-
-    const newData = { key: Date.now(), ...inputRow };
+    }
+    const newData = {
+      key: Date.now(),
+      ...inputRow,
+      stockInHand: inputRow.stockInHand || "0",
+    };
     setDataSource([...dataSource, newData]);
-    setInputRow({ partNumber: "", description: "", quantity: "", stockInHand: "", note: "" });
+    setInputRow({
+      partNumber: "",
+      description: "",
+      quantity: "",
+      stockInHand: "",
+      note: "",
+    });
   };
+
+  //   const handleAdd = () => {
+  //   const { partNumber, description, quantity } = inputRow;
+
+  //   if (!partNumber || !quantity) {
+  //     // message.error("Part Number and Quantity are required.");
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Part Number and Quantity are required"
+  //     })
+
+  //     return;
+  //   }
+
+  //   const newData = {
+  //     key: Date.now(),
+  //     ...inputRow,
+  //     stockInHand: inputRow.stockInHand || "0",
+  //   };
+
+  //   setDataSource([...dataSource, newData]);
+
+  //   setInputRow({
+  //     partNumber: "",
+  //     description: "",
+  //     quantity: "",
+  //     stockInHand: "",
+  //     note: "",
+  //   });
+  // };
 
   const handleDelete = (key) => {
     setDataSource(dataSource.filter((item) => item.key !== key));
@@ -753,22 +828,24 @@ useEffect(() => {
         ),
     },
     {
-  title: "Stock in Hand",
-  dataIndex: "stockInHand",
-  render: (_, record) =>
-    record.isInput ? (
-      // <Input
-      //   placeholder="Stock in hand"
-      //   value={inputRow.stockInHand}
-      //   onChange={(e) =>
-      //     setInputRow({ ...inputRow, stockInHand: e.target.value })
-      //   }
-      // />
-       <Input value={100} disabled />
-    ) : (
-      record.stockInHand || "-"
-    ),
-},
+      title: "Stock in Hand",
+      dataIndex: "stockInHand",
+      render: (_, record) =>
+        record.isInput ? (
+          // <Input
+          //   placeholder="Stock in hand"
+          //   value={inputRow.stockInHand}
+          //   onChange={(e) =>
+          //     setInputRow({ ...inputRow, stockInHand: e.target.value })
+          //   }
+          // />
+          //  <Input value={100} disabled />
+
+          <Input value={inputRow.stockInHand || "0"} disabled />
+        ) : (
+          record.stockInHand || "-"
+        ),
+    },
 
     {
       title: "Note",
@@ -789,7 +866,11 @@ useEffect(() => {
       title: "Action",
       render: (_, record) =>
         record.isInput ? (
-          <Button className="addButton ps-4 pe-4" onClick={handleAdd}>
+          <Button
+            className="addButton ps-4 pe-4"
+            onClick={handleAdd}
+            disabled={sparePartsFetching}
+          >
             Add
           </Button>
         ) : (
@@ -816,10 +897,19 @@ useEffect(() => {
       !auxiliariesInputRow.description &&
       !auxiliariesInputRow.quantity &&
       !auxiliariesInputRow.note
-    )
+    ) {
+      notification.error({
+        message: "Error",
+        description:
+          "Part Number, description, qauantity and note are required",
+      });
       return;
-
-    const newData = { key: Date.now(), ...auxiliariesInputRow };
+    }
+    const newData = {
+      key: Date.now(),
+      ...auxiliariesInputRow,
+      stockInHand: auxiliariesInputRow.stockInHand || "0",
+    };
     setAuxiliariesDataSource([...auxiliariesDataSource, newData]);
     setAuxiliariesInputRow({
       partNumber: "",
@@ -909,7 +999,7 @@ useEffect(() => {
           //     })
           //   }
           // />
-          <Input value={100} disabled />
+          <Input value={auxiliariesInputRow.stockInHand || "0"} disabled />
         ) : (
           record.stockInHand || "-"
         ),
@@ -941,6 +1031,7 @@ useEffect(() => {
           <Button
             className="addButton ps-4 pe-4"
             onClick={handleAuxiliariesAdd}
+            disabled={auxiliariesFetching}
           >
             Add
           </Button>
@@ -966,10 +1057,19 @@ useEffect(() => {
       !assetsInputRow.description &&
       !assetsInputRow.quantity &&
       !assetsInputRow.note
-    )
+    ) {
+      notification.error({
+        message: "Error",
+        description:
+          "Part Number, description, qauantity and note are required",
+      });
       return;
-
-    const newData = { key: Date.now(), ...assetsInputRow };
+    }
+    const newData = {
+      key: Date.now(),
+      ...assetsInputRow,
+      stockInHand: assetsInputRow.stockInHand || "0",
+    };
     setAssetsDataSource([...assetsDataSource, newData]);
     setAssetsInputRow({
       partNumber: "",
@@ -1057,7 +1157,7 @@ useEffect(() => {
           //     })
           //   }
           // />
-          <Input value={100} disabled />
+          <Input value={assetsInputRow.stockInHand || "0"} disabled />
         ) : (
           record.stockInHand || "-"
         ),
@@ -1083,7 +1183,11 @@ useEffect(() => {
       title: "Action",
       render: (_, record) =>
         record.isInput ? (
-          <Button className="addButton ps-4 pe-4" onClick={handleAssetsAdd}>
+          <Button
+            className="addButton ps-4 pe-4"
+            onClick={handleAssetsAdd}
+            disabled={assetsFetching}
+          >
             Add
           </Button>
         ) : (
@@ -1108,10 +1212,19 @@ useEffect(() => {
       !machineinputRow.description &&
       !machineinputRow.quantity &&
       !machineinputRow.note
-    )
+    ) {
+      notification.error({
+        message: "Error",
+        description:
+          "Part Number, description, qauantity and note are required",
+      });
       return;
-
-    const newData = { key: Date.now(), ...machineinputRow };
+    }
+    const newData = {
+      key: Date.now(),
+      ...machineinputRow,
+      stockInHand: machineinputRow.stockInHand || "0",
+    };
     setMachineDataSource([...machineDataSource, newData]);
     setMachineInputRow({
       partNumber: "",
@@ -1199,10 +1312,8 @@ useEffect(() => {
           //     })
           //   }
           // />
-<Input
-  value={machineinputRow.stockInHand || "0"}
-  disabled
-/>        ) : (
+          <Input value={machineinputRow.stockInHand || "0"} disabled />
+        ) : (
           record.stockInHand || "-"
         ),
     },
@@ -1227,7 +1338,11 @@ useEffect(() => {
       title: "Action",
       render: (_, record) =>
         record.isInput ? (
-          <Button className="addButton ps-4 pe-4" onClick={handleMachineAdd}>
+          <Button
+            className="addButton ps-4 pe-4"
+            onClick={handleMachineAdd}
+            disabled={machineFetching}
+          >
             Add
           </Button>
         ) : (
@@ -1370,6 +1485,34 @@ useEffect(() => {
                           placeholder="Select a category"
                           onChange={(value) => {
                             setSelectedCategory(value);
+                            setMachineInputRow({
+                              partNumber: "",
+                              description: "",
+                              quantity: "",
+                              stockInHand: "",
+                              note: "",
+                            });
+                            setAssetsInputRow({
+                              partNumber: "",
+                              description: "",
+                              quantity: "",
+                              stockInHand: "",
+                              note: "",
+                            });
+                            setAuxiliariesInputRow({
+                              partNumber: "",
+                              description: "",
+                              quantity: "",
+                              stockInHand: "",
+                              note: "",
+                            });
+                            setInputRow({
+                              partNumber: "",
+                              description: "",
+                              quantity: "",
+                              stockInHand: "",
+                              note: "",
+                            });
                             setSelectedMachine(null);
                             setSelectedIMMSeries(null);
                             setSelectedAssets(null);
@@ -1497,7 +1640,7 @@ useEffect(() => {
                                   },
                                 ]}
                               >
-                                <Select placeholder="Select MA Series" >
+                                <Select placeholder="Select MA Series">
                                   {MAOptions.map((item) => (
                                     <Select.Option key={item} value={item}>
                                       {item}
@@ -1786,7 +1929,15 @@ useEffect(() => {
                         htmlType="submit"
                         size="large"
                         className="submitButton mt-2"
-                        disabled={loading}
+                        disabled={
+                          loading ||
+                          (machineDataSource.length === 0 &&
+                            auxiliariesDataSource.length === 0 &&
+                            assetsDataSource.length === 0 &&
+                            dataSource.length === 0 &&
+                            !form.getFieldValue("consumables") &&
+                            !form.getFieldValue("tools"))
+                        }
                         loading={loading}
                       >
                         {loading

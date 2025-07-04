@@ -24,7 +24,7 @@ export default function Inventory() {
 
       try {
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbzr-I0ng6HnlHmSz46FY88fclR5SYtzhOhBR0nlYKBLT_K3oYcmfzKgFRuii6asv2NKaw/exec",
+          "https://script.google.com/macros/s/AKfycby7HMaVvNjaEt0eIFtzuHawXZFVowahWxWsR6QQxS8IAql5KhxvsiLE_p6Jz0XddS1igg/exec",
           {
             method: "POST",
             headers: {
@@ -64,7 +64,7 @@ export default function Inventory() {
 
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzr-I0ng6HnlHmSz46FY88fclR5SYtzhOhBR0nlYKBLT_K3oYcmfzKgFRuii6asv2NKaw/exec", 
+        "https://script.google.com/macros/s/AKfycby7HMaVvNjaEt0eIFtzuHawXZFVowahWxWsR6QQxS8IAql5KhxvsiLE_p6Jz0XddS1igg/exec", 
         {
           method: "POST",
           headers: {
@@ -72,7 +72,7 @@ export default function Inventory() {
           },
           body: new URLSearchParams({
             action: "addInventory", // ✅ Updated action
-            ...values,
+            ...values,  
           }),
         }
       );
