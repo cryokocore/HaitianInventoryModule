@@ -37,6 +37,8 @@ export default function ProductCategories() {
     quantity: "",
     stockInHand: "",
     note: "",
+    price: "",
+      totalPrice: "", 
   });
   const [machineinputRow, setMachineInputRow] = useState({
     partNumber: "",
@@ -44,6 +46,8 @@ export default function ProductCategories() {
     quantity: "",
     stockInHand: "",
     note: "",
+     price: "",
+    totalPrice: "",
   });
   const [selectedAssets, setSelectedAssets] = useState(null);
   const [selectedAuxiliaries, setSelectedAuxiliaries] = useState(null);
@@ -53,6 +57,8 @@ export default function ProductCategories() {
     quantity: "",
     stockInHand: "",
     note: "",
+     price: "",
+    totalPrice: "",
   });
   const [assetsInputRow, setAssetsInputRow] = useState({
     partNumber: "",
@@ -60,6 +66,7 @@ export default function ProductCategories() {
     quantity: "",
     stockInHand: "",
     note: "",
+    totalPrice: "",
   });
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [selectedIMMSeries, setSelectedIMMSeries] = useState(null);
@@ -68,8 +75,20 @@ export default function ProductCategories() {
   const [auxiliariesFetching, setAuxiliariesFetching] = useState(false);
   const [sparePartsFetching, setSparePartsFetching] = useState(false);
 
+  const updateTotalPrice = (price, quantity) => {
+  const p = parseFloat(price);
+  const q = parseFloat(quantity);
+  if (!isNaN(p) && !isNaN(q)) {
+    return (p * q).toFixed(2);
+  }
+  return "";
+};
+
+
+
+
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycby7HMaVvNjaEt0eIFtzuHawXZFVowahWxWsR6QQxS8IAql5KhxvsiLE_p6Jz0XddS1igg/exec";
+    "https://script.google.com/macros/s/AKfycbwGlRLncbKQ-Y1CTLDk3I7nP2jb2M7-Z6VC2MjHRnqQUxtI6u36f5697svHGFaTGZRMyw/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -394,6 +413,7 @@ export default function ProductCategories() {
           body: new URLSearchParams({
             action: "getStockForPartNumber",
             partNumber: machineinputRow.partNumber.trim(),
+            category: "Machine",
           }),
         });
 
@@ -622,13 +642,11 @@ export default function ProductCategories() {
 
           // assets: i === 0 ? assets || "-" : "",
           assets: assets || "-",
-
           assetPartNumber: asset.partNumber || "-",
           assetDescription: asset.description || "-",
           assetQuantity: asset.quantity || "-",
           assetStockInHand: asset.stockInHand || "0",
           assetNote: asset.note || "-",
-
           sparePartNumber: spare.partNumber || "-",
           spareDescription: spare.description || "-",
           spareQuantity: spare.quantity || "-",
@@ -715,16 +733,11 @@ export default function ProductCategories() {
   };
 
   const handleAdd = () => {
-    if (
-      !inputRow.partNumber &&
-      !inputRow.description &&
-      !inputRow.quantity &&
-      !inputRow.note
-    ) {
+    if (!inputRow.partNumber && !inputRow.description && !inputRow.quantity) {
       notification.error({
         message: "Error",
         description:
-          "Part Number, description, qauantity and note are required",
+          "Part Number, description and qauantity are required feilds",
       });
       return;
     }
@@ -732,6 +745,7 @@ export default function ProductCategories() {
       key: Date.now(),
       ...inputRow,
       stockInHand: inputRow.stockInHand || "0",
+      // price: inputRow.price || "0",
     };
     setDataSource([...dataSource, newData]);
     setInputRow({
@@ -811,22 +825,45 @@ export default function ProductCategories() {
           record.description
         ),
     },
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Input
+    //         placeholder="Qty"
+    //         value={inputRow.quantity}
+    //         onChange={(e) =>
+    //           setInputRow({ ...inputRow, quantity: e.target.value })
+    //         }
+    //       />
+    //     ) : (
+    //       record.quantity
+    //     ),
+    // },
     {
-      title: "Quantity",
-      dataIndex: "quantity",
-      render: (_, record) =>
-        record.isInput ? (
-          <Input
-            placeholder="Qty"
-            value={inputRow.quantity}
-            onChange={(e) =>
-              setInputRow({ ...inputRow, quantity: e.target.value })
-            }
-          />
-        ) : (
-          record.quantity
-        ),
-    },
+  title: "Quantity",
+  dataIndex: "quantity",
+  render: (_, record) =>
+    record.isInput ? (
+      <Input
+        placeholder="Qty"
+        type="number"
+        value={inputRow.quantity}
+        onChange={(e) => {
+          const quantity = e.target.value;
+          setInputRow((prev) => ({
+            ...prev,
+            quantity,
+            totalPrice: updateTotalPrice(prev.price, quantity),
+          }));
+        }}
+      />
+    ) : (
+      record.quantity
+    ),
+},
+
     {
       title: "Stock in Hand",
       dataIndex: "stockInHand",
@@ -863,6 +900,39 @@ export default function ProductCategories() {
         ),
     },
     {
+  title: "Price (per item)",
+  dataIndex: "price",
+  render: (_, record) =>
+    record.isInput ? (
+      <Input
+        placeholder="Price"
+        type="number"
+        value={inputRow.price}
+        onChange={(e) => {
+          const price = e.target.value;
+          setInputRow((prev) => ({
+            ...prev,
+            price,
+            totalPrice: updateTotalPrice(price, prev.quantity),
+          }));
+        }}
+      />
+    ) : (
+      record.price || "-"
+    ),
+},
+
+    {
+  title: "Total Price",
+  dataIndex: "totalPrice",
+  render: (_, record) =>
+    record.isInput ? (
+      <Input value={inputRow.totalPrice || ""} disabled />
+    ) : (
+      record.totalPrice || "-"
+    ),
+},
+    {
       title: "Action",
       render: (_, record) =>
         record.isInput ? (
@@ -895,13 +965,12 @@ export default function ProductCategories() {
     if (
       !auxiliariesInputRow.partNumber &&
       !auxiliariesInputRow.description &&
-      !auxiliariesInputRow.quantity &&
-      !auxiliariesInputRow.note
+      !auxiliariesInputRow.quantity
     ) {
       notification.error({
         message: "Error",
         description:
-          "Part Number, description, qauantity and note are required",
+          "Part Number, description and qauantity are required feilds",
       });
       return;
     }
@@ -972,13 +1041,23 @@ export default function ProductCategories() {
         record.isInput ? (
           <Input
             placeholder="Qty"
+            type="number"
             value={auxiliariesInputRow.quantity}
-            onChange={(e) =>
-              setAuxiliariesInputRow({
-                ...auxiliariesInputRow,
-                quantity: e.target.value,
-              })
-            }
+            // onChange={(e) =>
+              
+            //   setAuxiliariesInputRow({
+            //     ...auxiliariesInputRow,
+            //     quantity: e.target.value,
+            //   })
+            // }
+             onChange={(e) => {
+          const quantity = e.target.value;
+          setAuxiliariesInputRow((prev) => ({
+            ...prev,
+            quantity,
+            totalPrice: updateTotalPrice(prev.price, quantity),
+          }));
+        }}
           />
         ) : (
           record.quantity
@@ -1024,6 +1103,42 @@ export default function ProductCategories() {
           record.note
         ),
     },
+{
+  title: "Price (per item)",
+  dataIndex: "price",
+  render: (_, record) =>
+    record.isInput ? (
+      <Input
+        placeholder="Price"
+        type="number"
+        value={auxiliariesInputRow.price} // Or machineinputRow / assetsInputRow
+        onChange={(e) => {
+          const price = e.target.value;
+          setAuxiliariesInputRow((prev) => ({
+            ...prev,
+            price,
+            totalPrice: updateTotalPrice(price, prev.quantity),
+          }));
+        }}
+      />
+    ) : (
+      record.price || "-"
+    ),
+},
+
+
+{
+  title: "Total Price",
+  dataIndex: "totalPrice",
+  render: (_, record) =>
+    record.isInput ? (
+      <Input value={auxiliariesInputRow.totalPrice || ""} disabled />
+    ) : (
+      record.totalPrice || "-"
+    ),
+},
+
+
     {
       title: "Action",
       render: (_, record) =>
@@ -1055,13 +1170,12 @@ export default function ProductCategories() {
     if (
       !assetsInputRow.partNumber &&
       !assetsInputRow.description &&
-      !assetsInputRow.quantity &&
-      !assetsInputRow.note
+      !assetsInputRow.quantity
     ) {
       notification.error({
         message: "Error",
         description:
-          "Part Number, description, qauantity and note are required",
+          "Part Number, description and qauantity are required feilds",
       });
       return;
     }
@@ -1123,25 +1237,50 @@ export default function ProductCategories() {
           record.description
         ),
     },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      render: (_, record) =>
-        record.isInput ? (
-          <Input
-            placeholder="Qty"
-            value={assetsInputRow.quantity}
-            onChange={(e) =>
-              setAssetsInputRow({
-                ...assetsInputRow,
-                quantity: e.target.value,
-              })
-            }
-          />
-        ) : (
-          record.quantity
-        ),
-    },
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Input
+    //         placeholder="Qty"
+    //         value={assetsInputRow.quantity}
+      
+    //          onChange={(e) => {
+    //       const quantity = e.target.value;
+    //       setAssetsInputRow((prev) => ({
+    //         ...prev,
+    //         quantity,
+    //         totalPrice: updateTotalPrice(prev.price, quantity),
+    //       }));
+    //     }}
+    //       />
+    //     ) : (
+    //       record.quantity
+    //     ),
+    // },
+     {
+    title: "Quantity",
+    dataIndex: "quantity",
+    render: (_, record) =>
+      record.isInput ? (
+        <Input
+          placeholder="Qty"
+          type="number"
+          value={assetsInputRow.quantity}
+          onChange={(e) => {
+            const quantity = e.target.value;
+            setAssetsInputRow((prev) => ({
+              ...prev,
+              quantity,
+              totalPrice: updateTotalPrice(prev.price, quantity),
+            }));
+          }}
+        />
+      ) : (
+        record.quantity
+      ),
+  },
     {
       title: "Stock in Hand",
       dataIndex: "stockInHand",
@@ -1180,6 +1319,38 @@ export default function ProductCategories() {
         ),
     },
     {
+    title: "Price (per item)",
+    dataIndex: "price",
+    render: (_, record) =>
+      record.isInput ? (
+        <Input
+          placeholder="Price"
+          type="number"
+          value={assetsInputRow.price}
+          onChange={(e) => {
+            const price = e.target.value;
+            setAssetsInputRow((prev) => ({
+              ...prev,
+              price,
+              totalPrice: updateTotalPrice(price, prev.quantity),
+            }));
+          }}
+        />
+      ) : (
+        record.price || "-"
+      ),
+  },
+  {
+    title: "Total Price",
+    dataIndex: "totalPrice",
+    render: (_, record) =>
+      record.isInput ? (
+        <Input value={assetsInputRow.totalPrice || ""} disabled />
+      ) : (
+        record.totalPrice || "-"
+      ),
+  },
+    {
       title: "Action",
       render: (_, record) =>
         record.isInput ? (
@@ -1210,13 +1381,12 @@ export default function ProductCategories() {
     if (
       !machineinputRow.partNumber &&
       !machineinputRow.description &&
-      !machineinputRow.quantity &&
-      !machineinputRow.note
+      !machineinputRow.quantity
     ) {
       notification.error({
         message: "Error",
         description:
-          "Part Number, description, qauantity and note are required",
+          "Part Number, description and qauantity are required feilds",
       });
       return;
     }
@@ -1278,25 +1448,47 @@ export default function ProductCategories() {
           record.description
         ),
     },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      render: (_, record) =>
-        record.isInput ? (
-          <Input
-            placeholder="Qty"
-            value={machineinputRow.quantity}
-            onChange={(e) =>
-              setMachineInputRow({
-                ...machineinputRow,
-                quantity: e.target.value,
-              })
-            }
-          />
-        ) : (
-          record.quantity
-        ),
-    },
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Input
+    //         placeholder="Qty"
+    //         value={machineinputRow.quantity}
+    //         onChange={(e) =>
+    //           setMachineInputRow({
+    //             ...machineinputRow,
+    //             quantity: e.target.value,
+    //           })
+    //         }
+    //       />
+    //     ) : (
+    //       record.quantity
+    //     ),
+    // },
+     {
+    title: "Quantity",
+    dataIndex: "quantity",
+    render: (_, record) =>
+      record.isInput ? (
+        <Input
+          placeholder="Qty"
+          type="number"
+          value={machineinputRow.quantity}
+          onChange={(e) => {
+            const quantity = e.target.value;
+            setMachineInputRow((prev) => ({
+              ...prev,
+              quantity,
+              totalPrice: updateTotalPrice(prev.price, quantity),
+            }));
+          }}
+        />
+      ) : (
+        record.quantity
+      ),
+  },
     {
       title: "Stock in Hand",
       dataIndex: "stockInHand",
@@ -1334,6 +1526,38 @@ export default function ProductCategories() {
           record.note
         ),
     },
+    {
+    title: "Price (per item)",
+    dataIndex: "price",
+    render: (_, record) =>
+      record.isInput ? (
+        <Input
+          placeholder="Price"
+          type="number"
+          value={machineinputRow.price}
+          onChange={(e) => {
+            const price = e.target.value;
+            setMachineInputRow((prev) => ({
+              ...prev,
+              price,
+              totalPrice: updateTotalPrice(price, prev.quantity),
+            }));
+          }}
+        />
+      ) : (
+        record.price || "-"
+      ),
+  },
+  {
+    title: "Total Price",
+    dataIndex: "totalPrice",
+    render: (_, record) =>
+      record.isInput ? (
+        <Input value={machineinputRow.totalPrice || ""} disabled />
+      ) : (
+        record.totalPrice || "-"
+      ),
+  },
     {
       title: "Action",
       render: (_, record) =>
@@ -1467,6 +1691,7 @@ export default function ProductCategories() {
                   layout="vertical"
                   onFinish={handleSubmit}
                   className="mt-3 mt-lg-3"
+                  disabled={loading}
                 >
                   <div className="row mt-3">
                     <div className="rounded-2 p-2">
