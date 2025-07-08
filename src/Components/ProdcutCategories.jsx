@@ -86,7 +86,7 @@ export default function ProductCategories() {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbzCrq3X9CbWGai0iCz_AvyieJA9oh4KDGoy0mIT-KUJb7cj1eab-6uVNQ6UZRB6R9H90g/exec";
+    "https://script.google.com/macros/s/AKfycbzppCIp8qpKBAVLBf-UssRzM95v-loEzfLSweiOiOigT9GzbYxl5iV53_YSbRTVnieY/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -1528,7 +1528,7 @@ export default function ProductCategories() {
   return (
     <>
       <style>{styl}</style>
-      <div className="container-fluid">
+      <div className="container-fluid ">
         <div className="container">
           <div>
             <h1
@@ -1545,8 +1545,8 @@ export default function ProductCategories() {
             </p>
           </div>
 
-          <div className="row d-flex flex-row mt-4">
-            <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly productsCards rounded-4">
+          <div className="row d-flex flex-row mt-4 ">
+            <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly rounded-4" >
               <div className="col-12 p-3 p-lg-4  ">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
