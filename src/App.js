@@ -77,6 +77,11 @@ import Inventory from './Components/Inventory';
 import ProductCategories from './Components/ProdcutCategories';
 import Login from "./Components/Login";
 import { notification} from "antd";
+notification.config({
+  maxCount: 2,
+  placement: "bottomRight",
+  duration: 3,
+});
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);

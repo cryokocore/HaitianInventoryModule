@@ -1,22 +1,23 @@
-  .App {
-    text-align: center;
-  }
+.App {
+  text-align: center;
+}
 
-  .haitianLogo{
-  width:25% !important;
+.haitianLogo {
+  width: 25% !important;
   text-align: center;
   margin: 0 auto !important;
-  }
+}
 
-  .haitianColor{
-    color: #0D3884 !important;
-  }
+.haitianColor {
+  color: #0d3884 !important;
+}
 
-  body{
-    background-color: #f0f0f033 !important;
-  }
+body {
+  background-color: #f0f0f033 !important;
+  /* background-color: #6e6e6e0e !important; */
+}
 
-  /* .inventoryCards{
+/* .inventoryCards{
     border: 1px solid #f6f6f6 !important;
     transition: all 0.3s ease-in-out;
     background-color: #f0f0f033 !important;
@@ -27,175 +28,208 @@
   transform: scale(1.03);
   } */
 
-  .inventoryCards{
-    border: 1px solid #f6f6f6 !important;
-    transition: all 0.3s ease-in-out;
-    /* background-color: rgba(255, 255, 255, 0.119)!important; */
-    background-color: #f0f0f033 !important;
-  }
+.inventoryCards {
+  border: 1px solid #f6f6f6 !important;
+  transition: all 0.3s ease-in-out;
+  /* background-color: rgba(255, 255, 255, 0.119)!important; */
+  background-color: #f0f0f033 !important;
+}
 
-  .inventoryCards:hover{
+.inventoryCards:hover {
   /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082); */
-      border: 1px solid #efeeee !important;
-    box-shadow: 10px 10px 6px rgba(0, 0, 0, 0.2);
-    background-color: #f0f0f00a !important;
-  }
-  .loginContainer{
-    width: 34% !important;
-  }
+  border: 1px solid #efeeee !important;
+  box-shadow: 10px 10px 6px rgba(0, 0, 0, 0.2);
+  background-color: #f0f0f00a !important;
+}
+.loginContainer {
+  width: 34% !important;
+}
 
+.productsCards {
+  border: 1px solid #f6f6f6 !important;
+  transition: all 0.3s ease-in-out;
+  /* background-color: rgba(255, 255, 255, 0.119)!important; */
+  background-color: #f0f0f029 !important;
+}
 
-  .productsCards{
-    border: 1px solid #f6f6f6 !important;
-    transition: all 0.3s ease-in-out;
-    /* background-color: rgba(255, 255, 255, 0.119)!important; */
-    background-color: #f0f0f029 !important;
-  }
-
-  .productsCards:hover{
+.productsCards:hover {
   /* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082); */
-      border: 1px solid #efeeee !important;
-    box-shadow: 6px 6px 3px rgba(0, 0, 0, 0.1);
-    background-color: #f0f0f00a !important;
-  }  
+  border: 1px solid #efeeee !important;
+  box-shadow: 6px 6px 3px rgba(0, 0, 0, 0.1);
+  background-color: #f0f0f00a !important;
+}
 
-  .submitButton{
-    width: 50% !important;
-    background-color: #0D3884 !important;
-    color: white !important;
-    font-size: 20px !important;
-    border: 2px solid #0D3884 !important;
-    transition: all 0.4s ease-in-out !important;
-    font-weight: 500 !important;
-    box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
-  }
-   .submitButton:hover{
-      color: #0D3884 !important;
-    background-color: white !important;
-    border: 2px solid #0D3884 !important;
-    font-size: 20px !important;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
-  }
+.submitButton {
+  width: 50% !important;
+  background-color: #0d3884 !important;
+  color: white !important;
+  font-size: 20px !important;
+  border: 2px solid #0d3884 !important;
+  transition: all 0.4s ease-in-out !important;
+  font-weight: 500 !important;
+  box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
+}
+.submitButton:hover {
+  color: #0d3884 !important;
+  background-color: white !important;
+  border: 2px solid #0d3884 !important;
+  font-size: 20px !important;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
+}
 
-   .addButton{
-    background-color: #0D3884 !important;
-    color: white !important;
-    font-size: 16px !important;
-    border: 2px solid #0D3884 !important;
-    transition: all 0.4s ease-in-out !important;
-    box-shadow: 0 2px 4px rgba(13, 56, 132, 0.3);
-    font-weight: 600 !important;
+.addButton {
+  background-color: #0d3884 !important;
+  color: white !important;
+  font-size: 16px !important;
+  border: 2px solid #0d3884 !important;
+  transition: all 0.4s ease-in-out !important;
+  box-shadow: 0 2px 4px rgba(13, 56, 132, 0.3);
+  font-weight: 600 !important;
+}
+.addButton:hover {
+  color: #0d3884 !important;
+  background-color: white !important;
+  border: 2px solid #0d3884 !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
+}
 
-  }
-   .addButton:hover{
-      color: #0D3884 !important;
-    background-color: white !important;
-    border: 2px solid #0D3884 !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
-  }
+.deleteButton {
+  background-color: #ff4d4f !important;
+  color: white !important;
+  font-size: 16px !important;
+  border: 2px solid #ff4d4f !important;
+  transition: all 0.4s ease-in-out !important;
+  box-shadow: 0 1px 3px #ff4d4f;
+  font-weight: 600 !important;
+}
+.deleteButton:hover {
+  color: #ff4d4f !important;
+  background-color: white !important;
+  border: 2px solid #ff4d4f !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 8px 0 rgba(255, 0, 0, 0.2),
+    0 6px 20px 0 rgba(255, 2, 2, 0.2);
+}
 
-    .deleteButton{
-    background-color: #ff4d4f !important;
-    color: white !important;
-    font-size: 16px !important;
-    border: 2px solid #ff4d4f !important;
-    transition: all 0.4s ease-in-out !important;
-    box-shadow: 0 1px 3px #ff4d4f;
-    font-weight: 600 !important;
-  }
-   .deleteButton:hover{
-    color: #ff4d4f !important;
-    background-color: white !important;
-    border: 2px solid #ff4d4f !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 4px 8px 0 rgba(255, 0, 0, 0.2), 0 6px 20px 0 rgba(255, 2, 2, 0.2);
-  }
+.loginButton {
+  width: 100% !important;
+  background-color: #0d3884 !important;
+  color: white !important;
+  font-size: 20px !important;
+  border: 2px solid #0d3884 !important;
+  transition: all 0.4s ease-in-out !important;
+  font-weight: 500 !important;
+  box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
+}
+.loginButton:hover {
+  color: #0d3884 !important;
+  background-color: white !important;
+  border: 2px solid #0d3884 !important;
+  font-size: 20px !important;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
+}
 
-  .loginButton{
-    width: 100% !important;
-    background-color: #0D3884 !important;
-    color: white !important;
-    font-size: 20px !important;
-    border: 2px solid #0D3884 !important;
-    transition: all 0.4s ease-in-out !important;
-    font-weight: 500 !important;
-    box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
-  }
-   .loginButton:hover{
-      color: #0D3884 !important;
-    background-color: white !important;
-    border: 2px solid #0D3884 !important;
-    font-size: 20px !important;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
-  }
+/* .logoutButton {
+  width: 100% !important;
+  color: #0d3884 !important;
+  background-color: white !important;
+  font-size: 20px !important;
+  border: 2px solid #0d3884 !important;
+  transition: all 0.3s ease-in-out !important;
+  font-weight: 500 !important;
+  box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
+}
+.logoutButton:hover {
+  background-color: #0d3884 !important;
+  color: white !important;
+  border: 2px solid white !important;
+  font-size: 20px !important;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
+} */
+
+.logoutButton {
+  width: 100% !important;
+  background-color: #ff4d4f !important;
+  color: white !important;
+  border: 2px solid #ff4d4f !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease-in-out !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+.logoutButton:hover {
+  transform: scale(1.03); /* Slight enlarge */
   
+}
 
-  @media screen and (min-width: 320px) {
+
+@media screen and (min-width: 320px) {
   .haitianLogo {
     width: 70% !important;
     text-align: center;
     margin: 0 auto !important;
   }
-  .haitianInventoryText{
+  .haitianInventoryText {
     font-size: 18px !important;
   }
-  .haitianInventoryDescriptionText{
- font-size: 12px !important;
+  .haitianInventoryDescriptionText {
+    font-size: 12px !important;
   }
-    .submitButton{
-      width: 100% !important
-    }
+  .submitButton {
+    width: 100% !important;
+  }
 }
 
 @media screen and (min-width: 375px) {
   .haitianLogo {
     width: 50% !important;
   }
-    .submitButton{
-      width: 100% !important
-    }
+  .submitButton {
+    width: 100% !important;
+  }
 }
 
 @media screen and (min-width: 425px) {
   .haitianLogo {
     width: 50% !important;
   }
-    .submitButton{
-      width: 100% !important
-    }
+  .submitButton {
+    width: 100% !important;
+  }
 }
 
 @media screen and (min-width: 768px) {
   .haitianLogo {
     width: 35% !important;
   }
-    .submitButton{
-      width: 100% !important
-    }
-      .haitianInventoryText{
+  .submitButton {
+    width: 100% !important;
+  }
+  .haitianInventoryText {
     font-size: 30px !important;
   }
-  .haitianInventoryDescriptionText{
- font-size: 16px !important;
+  .haitianInventoryDescriptionText {
+    font-size: 16px !important;
   }
-  
 }
 
 @media screen and (min-width: 1024px) {
   .haitianLogo {
-    width:50% !important;
+    width: 50% !important;
   }
-    .submitButton{
-      width: 50% !important
-    }
-      .haitianInventoryText{
+  .submitButton {
+    width: 50% !important;
+  }
+  .haitianInventoryText {
     font-size: 30px !important;
   }
-  .haitianInventoryDescriptionText{
- font-size: 16px !important;
+  .haitianInventoryDescriptionText {
+    font-size: 16px !important;
   }
 }
 
@@ -203,14 +237,14 @@
   .haitianLogo {
     width: 26% !important;
   }
-    .submitButton{
-      width: 50% !important
-    }
-      .haitianInventoryText{
+  .submitButton {
+    width: 50% !important;
+  }
+  .haitianInventoryText {
     font-size: 30px !important;
   }
-  .haitianInventoryDescriptionText{
- font-size: 16px !important;
+  .haitianInventoryDescriptionText {
+    font-size: 16px !important;
   }
 }
 
@@ -218,13 +252,13 @@
   .haitianLogo {
     width: 26% !important;
   }
-    .submitButton{
-      width: 50% !important
-    }
-      .haitianInventoryText{
+  .submitButton {
+    width: 50% !important;
+  }
+  .haitianInventoryText {
     font-size: 30px !important;
   }
-  .haitianInventoryDescriptionText{
- font-size: 16px !important;
+  .haitianInventoryDescriptionText {
+    font-size: 16px !important;
   }
 }

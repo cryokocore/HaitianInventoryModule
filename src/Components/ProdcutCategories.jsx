@@ -821,7 +821,7 @@ export default function ProductCategories() {
     },
 
     {
-      title: "Stock in Hand",
+      title: "Stock In Hand",
       dataIndex: "stockInHand",
       render: (_, record) =>
         record.isInput ? (
@@ -849,7 +849,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Price (per item)",
+      title: "Price In AED(per item) ",
       dataIndex: "price",
       render: (_, record) =>
         record.isInput ? (
@@ -872,7 +872,7 @@ export default function ProductCategories() {
     },
 
     {
-      title: "Total Price",
+      title: "Total Price In AED",
       dataIndex: "totalPrice",
       render: (_, record) =>
         record.isInput ? (
@@ -1021,7 +1021,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Stock in Hand",
+      title: "Stock In Hand",
       dataIndex: "stockInHand",
       render: (_, record) =>
         record.isInput ? (
@@ -1052,7 +1052,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Price (per item)",
+      title: "Price In AED(per item)",
       dataIndex: "price",
       render: (_, record) =>
         record.isInput ? (
@@ -1075,7 +1075,7 @@ export default function ProductCategories() {
     },
 
     {
-      title: "Total Price",
+      title: "Total Price In AED",
       dataIndex: "totalPrice",
       render: (_, record) =>
         record.isInput ? (
@@ -1212,7 +1212,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Stock in Hand",
+      title: "Stock In Hand",
       dataIndex: "stockInHand",
       render: (_, record) =>
         record.isInput ? (
@@ -1240,7 +1240,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Price (per item)",
+      title: "Price In AED(per item)",
       dataIndex: "price",
       render: (_, record) =>
         record.isInput ? (
@@ -1262,7 +1262,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Total Price",
+      title: "Total Price In AED",
       dataIndex: "totalPrice",
       render: (_, record) =>
         record.isInput ? (
@@ -1395,7 +1395,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Stock in Hand",
+      title: "Stock In Hand",
       dataIndex: "stockInHand",
       render: (_, record) =>
         record.isInput ? (
@@ -1423,7 +1423,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Price (per item)",
+      title: "Price In AED(per item)",
       dataIndex: "price",
       render: (_, record) =>
         record.isInput ? (
@@ -1445,7 +1445,7 @@ export default function ProductCategories() {
         ),
     },
     {
-      title: "Total Price",
+      title: "Total Price In AED",
       dataIndex: "totalPrice",
       render: (_, record) =>
         record.isInput ? (
@@ -1533,7 +1533,7 @@ export default function ProductCategories() {
           <div>
             <h1
               className="text-center m-0 p-0 haitianColor mt-1 "
-              style={{ fontSize: "36px" }}
+              style={{ fontSize: "30px" }}
             >
               Product Categories
             </h1>
