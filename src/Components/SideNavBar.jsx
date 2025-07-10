@@ -290,7 +290,9 @@
 // }
 
 import React from "react";
-import { Menu, Button } from "antd";
+import { Menu, Button, Avatar } from "antd";
+import { UserOutlined } from '@ant-design/icons';
+
 import {
   AppstoreOutlined,
   PieChartOutlined,
@@ -434,6 +436,12 @@ export default function SideNavBar({ onLogout }) {
             Haitian Inventory
             <br />
             Management System
+          </div>
+
+              <div className="m-auto text-center mt-3 " >
+                 <Avatar size={50} icon={<UserOutlined />} style={{backgroundColor:"white", color:"#0d3884"}}/>
+                 <p style={{color:"white"}}>Sample</p>
+
           </div>
           <div className="sidebar-divider mt-3" />
 

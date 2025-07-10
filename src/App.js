@@ -104,7 +104,7 @@ function App() {
     <Router>
       <div className={`fade-container ${isFadingOut ? 'fade-out' : ''}`} style={{ display: "flex" }}>
         {isLoggedIn && <SideNavBar onLogout={handleLogout} />}
-        <div style={{ marginLeft: isLoggedIn ? 260 : 0, width: "100%" }}>
+<div style={{ marginLeft: isLoggedIn ? 260 : 0, flex: 1, overflowX: 'hidden' }} >
           <Routes>
             <Route
               path="/"

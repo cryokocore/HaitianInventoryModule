@@ -8,6 +8,7 @@ import {
   message,
   Table,
   notification,
+  Tooltip
 } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
@@ -66,7 +67,7 @@ export default function ProductCategories() {
     quantity: "",
     stockInHand: "",
     note: "",
-    price:"",
+    price: "",
     totalPrice: "",
   });
   const [selectedMachine, setSelectedMachine] = useState(null);
@@ -552,6 +553,23 @@ export default function ProductCategories() {
   }, [inputRow.partNumber]);
 
   const handleSubmit = async (values) => {
+    if (
+      loading ||
+      (machineDataSource.length === 0 &&
+        auxiliariesDataSource.length === 0 &&
+        assetsDataSource.length === 0 &&
+        dataSource.length === 0 &&
+        !form.getFieldValue("consumables") &&
+        !form.getFieldValue("tools"))
+    ) {
+      console.log("Return");
+      notification.error({
+        message: "Error",
+        description:
+          "Please fill in Part Number, Description, Quantity, Price and click Add before submitting",
+      });
+      return;
+    }
     const {
       productCategory,
       machines,
@@ -766,8 +784,11 @@ export default function ProductCategories() {
     {
       title: "Part Number",
       dataIndex: "partNumber",
+      width: 250,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input
             placeholder="Enter part number"
             value={inputRow.partNumber}
@@ -775,35 +796,47 @@ export default function ProductCategories() {
               setInputRow({ ...inputRow, partNumber: e.target.value })
             }
           />
+          </Tooltip>
         ) : (
-          record.partNumber
+           <Tooltip title={record.partNumber}><span>{record.partNumber}</span></Tooltip>
+
+          
         ),
     },
     {
       title: "Description",
       dataIndex: "description",
+      ellipsis: true,
+      width: 300,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 1 }}
+            // autoSize={{ minRows: 1, maxRows: 1 }}
+            rows={1}
             placeholder="Enter description"
             value={inputRow.description}
             onChange={(e) =>
               setInputRow({ ...inputRow, description: e.target.value })
             }
           />
+          </Tooltip>
         ) : (
-          record.description
+           <Tooltip title={record.description}><span>{record.description}</span></Tooltip>
         ),
     },
-   
+
     {
       title: "Quantity",
       dataIndex: "quantity",
+      ellipsis: true,
+      width: 200,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
+
           <Input
-            placeholder="Qty"
+            placeholder="Enter Quantity"
             type="number"
             value={inputRow.quantity}
             onChange={(e) => {
@@ -815,44 +848,67 @@ export default function ProductCategories() {
               }));
             }}
           />
+          </Tooltip>
+
         ) : (
-          record.quantity
+           <Tooltip title={record.quantity}><span>{record.quantity}</span></Tooltip>
+
+          
         ),
     },
 
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
+       width: 200,
+       ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
-         
+          <Tooltip>
 
           <Input value={inputRow.stockInHand || "0"} disabled />
+          </Tooltip>
+
         ) : (
-          record.stockInHand || "-"
+           <Tooltip title={record.stockInHand}><span>{record.stockInHand || "-"}</span></Tooltip>
+
+          
         ),
     },
 
     {
       title: "Note",
       dataIndex: "note",
+      ellipsis: true,
+      width: 300,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
+
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 1 }}
+            // autoSize={{ minRows: 1, maxRows: 1 }}
+            rows={1}
             placeholder="Enter note"
             value={inputRow.note}
             onChange={(e) => setInputRow({ ...inputRow, note: e.target.value })}
           />
+          </Tooltip>
+
         ) : (
-          record.note
+           <Tooltip title={record.note}  ><span>{record.note}</span></Tooltip>
+
+          
         ),
     },
     {
       title: "Price In AED(per item) ",
       dataIndex: "price",
+      ellipsis: true,
+       width: 250,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
+
           <Input
             placeholder="Price"
             type="number"
@@ -866,31 +922,41 @@ export default function ProductCategories() {
               }));
             }}
           />
+          </Tooltip>
+
         ) : (
-          record.price || "-"
+           <Tooltip title={record.price}><span>{record.price || "-"}</span></Tooltip>
+
+          
         ),
     },
 
     {
       title: "Total Price In AED",
       dataIndex: "totalPrice",
+      width: 200,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
-          <Input value={inputRow.totalPrice || ""} disabled />
+          <Tooltip>
+
+          <Input value={inputRow.totalPrice || ""} disabled /> </Tooltip>
+
         ) : (
-          record.totalPrice || "-"
+           <Tooltip title={record.totalPrice}><span>{record.totalPrice || "-"}</span></Tooltip>
         ),
     },
     {
       title: "Action",
+       width: 120,
+        fixed: "right",
+      align: "center",
       render: (_, record) =>
         record.isInput ? (
           <Button
             className="addButton ps-4 pe-4"
             onClick={handleAdd}
-            disabled={
-              sparePartsFetching
-            }
+            disabled={sparePartsFetching}
           >
             Add
           </Button>
@@ -912,44 +978,42 @@ export default function ProductCategories() {
     ...auxiliariesDataSource,
   ];
 
-  
-
   const handleAuxiliariesAdd = () => {
-  const { partNumber, description, quantity, price, totalPrice } = auxiliariesInputRow;
+    const { partNumber, description, quantity, price, totalPrice } =
+      auxiliariesInputRow;
 
-  if (
-    !partNumber?.trim() ||
-    !description?.trim() ||
-    !quantity?.trim() ||
-    isNaN(parseFloat(price)) ||
-    isNaN(parseFloat(totalPrice))
-  ) {
-    notification.error({
-      message: "Error",
-      description:
-        "Please fill in Part Number, Description, Quantity, Price and ensure Total Price is calculated correctly",
+    if (
+      !partNumber?.trim() ||
+      !description?.trim() ||
+      !quantity?.trim() ||
+      isNaN(parseFloat(price)) ||
+      isNaN(parseFloat(totalPrice))
+    ) {
+      notification.error({
+        message: "Error",
+        description:
+          "Please fill in Part Number, Description, Quantity, Price and ensure Total Price is calculated correctly",
+      });
+      return;
+    }
+
+    const newData = {
+      key: Date.now(),
+      ...auxiliariesInputRow,
+      stockInHand: auxiliariesInputRow.stockInHand || "0",
+    };
+
+    setAuxiliariesDataSource([...auxiliariesDataSource, newData]);
+    setAuxiliariesInputRow({
+      partNumber: "",
+      description: "",
+      quantity: "",
+      stockInHand: "",
+      price: "",
+      totalPrice: "",
+      note: "",
     });
-    return;
-  }
-
-  const newData = {
-    key: Date.now(),
-    ...auxiliariesInputRow,
-    stockInHand: auxiliariesInputRow.stockInHand || "0",
   };
-
-  setAuxiliariesDataSource([...auxiliariesDataSource, newData]);
-  setAuxiliariesInputRow({
-    partNumber: "",
-    description: "",
-    quantity: "",
-    stockInHand: "",
-    price: "",
-    totalPrice: "",
-    note: "",
-  });
-};
-
 
   const handleAuxiliariesDelete = (key) => {
     setAuxiliariesDataSource(
@@ -961,8 +1025,11 @@ export default function ProductCategories() {
     {
       title: "Part Number",
       dataIndex: "partNumber",
+      width: 250,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input
             placeholder="Enter part number"
             value={auxiliariesInputRow.partNumber}
@@ -973,17 +1040,27 @@ export default function ProductCategories() {
               })
             }
           />
+          </Tooltip>
         ) : (
-          record.partNumber
+           <Tooltip title={record.partNumber
+}><span>{ record.partNumber
+}</span></Tooltip>
+
         ),
     },
     {
       title: "Description",
       dataIndex: "description",
+      width: 300,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+                    <Tooltip>
+
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 1 }}
+            // autoSize={{ minRows: 1, maxRows: 1 }}
+                        rows={1}
+
             placeholder="Enter description"
             value={auxiliariesInputRow.description}
             onChange={(e) =>
@@ -993,20 +1070,26 @@ export default function ProductCategories() {
               })
             }
           />
+          </Tooltip>
+
         ) : (
-          record.description
+           <Tooltip title={record.description}><span>{record.description}</span></Tooltip>
+
+          
         ),
     },
     {
       title: "Quantity",
       dataIndex: "quantity",
+      width: 200,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+           <Tooltip>
           <Input
-            placeholder="Qty"
+            placeholder="Quantity"
             type="number"
             value={auxiliariesInputRow.quantity}
-          
             onChange={(e) => {
               const quantity = e.target.value;
               setAuxiliariesInputRow((prev) => ({
@@ -1016,28 +1099,38 @@ export default function ProductCategories() {
               }));
             }}
           />
+          </Tooltip>
         ) : (
-          record.quantity
+           <Tooltip title={record.quantity}><span>{record.quantity}</span></Tooltip>
+
+          
         ),
     },
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
+      width: 200,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
-         
+          <Tooltip>
           <Input value={auxiliariesInputRow.stockInHand || "0"} disabled />
+          </Tooltip>
         ) : (
-          record.stockInHand || "-"
+           <Tooltip title={record.stockInHand}><span>{record.stockInHand || "-"}</span></Tooltip>
         ),
     },
     {
       title: "Note",
       dataIndex: "note",
+      width: 300,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 1 }}
+            // autoSize={{ minRows: 1, maxRows: 1 }}
+            rows={1}
             placeholder="Enter note"
             value={auxiliariesInputRow.note}
             onChange={(e) =>
@@ -1047,15 +1140,21 @@ export default function ProductCategories() {
               })
             }
           />
+          </Tooltip>
         ) : (
-          record.note
+           <Tooltip title={record.note}><span>{record.note}</span></Tooltip>
+
+          
         ),
     },
     {
       title: "Price In AED(per item)",
       dataIndex: "price",
+      width: 250,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input
             placeholder="Price"
             type="number"
@@ -1068,33 +1167,44 @@ export default function ProductCategories() {
                 totalPrice: updateTotalPrice(price, prev.quantity),
               }));
             }}
-          />
+          /></Tooltip>
         ) : (
-          record.price || "-"
+           <Tooltip title={record.price}><span>{ record.price || "-"}</span></Tooltip>
+
+         
         ),
     },
 
     {
       title: "Total Price In AED",
       dataIndex: "totalPrice",
+      width: 200,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+                    <Tooltip>
+
           <Input value={auxiliariesInputRow.totalPrice || ""} disabled />
+                    </Tooltip>
+
         ) : (
-          record.totalPrice || "-"
+           <Tooltip title={record.totalPrice}><span>{record.totalPrice || "-"}</span></Tooltip>
+
+          
         ),
     },
 
     {
       title: "Action",
+      width: 120,
+      fixed: "right",
+      align: "center",
       render: (_, record) =>
         record.isInput ? (
           <Button
-            className="addButton ps-4 pe-4"
+            className="addButton ps-4 pe-4 m-auto"
             onClick={handleAuxiliariesAdd}
-            disabled={
-              auxiliariesFetching
-            }
+            disabled={auxiliariesFetching}
           >
             Add
           </Button>
@@ -1115,8 +1225,8 @@ export default function ProductCategories() {
   ];
 
   const handleAssetsAdd = () => {
-   
-     const { partNumber, description, quantity, price, totalPrice } = assetsInputRow;
+    const { partNumber, description, quantity, price, totalPrice } =
+      assetsInputRow;
 
     if (!partNumber || !description || !quantity || !price || !totalPrice) {
       notification.error({
@@ -1152,8 +1262,13 @@ export default function ProductCategories() {
     {
       title: "Part Number",
       dataIndex: "partNumber",
+      width: 250,
+      ellipsis: true,
+
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
+
           <Input
             placeholder="Enter part number"
             value={assetsInputRow.partNumber}
@@ -1164,17 +1279,26 @@ export default function ProductCategories() {
               })
             }
           />
+          </Tooltip>
+
         ) : (
-          record.partNumber
+
+           <Tooltip title={record.partNumber}><span>{record.partNumber}</span></Tooltip>
+
         ),
     },
     {
       title: "Description",
       dataIndex: "description",
+            width: 300,
+            ellipsis: true,
+
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 1 }}
+            // autoSize={{ minRows: 1, maxRows: 1 }}
+            rows={1}
             placeholder="Enter description"
             value={assetsInputRow.description}
             onChange={(e) =>
@@ -1184,18 +1308,23 @@ export default function ProductCategories() {
               })
             }
           />
+          </Tooltip>
+
         ) : (
-          record.description
+           <Tooltip title={record.description}><span>{record.description}</span></Tooltip>
         ),
     },
-   
+
     {
       title: "Quantity",
       dataIndex: "quantity",
+      width: 200,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input
-            placeholder="Qty"
+            placeholder="Enter Quantity"
             type="number"
             value={assetsInputRow.quantity}
             onChange={(e) => {
@@ -1207,43 +1336,62 @@ export default function ProductCategories() {
               }));
             }}
           />
+          </Tooltip>
         ) : (
-          record.quantity
+           <Tooltip title={record.quantity}><span>{record.quantity}</span></Tooltip>
+
+          
         ),
     },
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
+       width: 200,
+       ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
-     
+          <Tooltip>
           <Input value={assetsInputRow.stockInHand || "0"} disabled />
+          </Tooltip>
         ) : (
-          record.stockInHand || "-"
+           <Tooltip title={record.stockInHand}><span>{record.stockInHand || "-"}</span></Tooltip>
+
+          
         ),
     },
     {
       title: "Note",
       dataIndex: "note",
+      width: 300,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 1 }}
+            // autoSize={{ minRows: 1, maxRows: 1 }}
+                                    rows={1}
+
             placeholder="Enter note"
             value={assetsInputRow.note}
             onChange={(e) =>
               setAssetsInputRow({ ...assetsInputRow, note: e.target.value })
             }
           />
+          </Tooltip>
         ) : (
-          record.note
+           <Tooltip title={record.note}><span>{record.note}</span></Tooltip>
+
+          
         ),
     },
     {
       title: "Price In AED(per item)",
       dataIndex: "price",
+       width: 250,
+       ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input
             placeholder="Price"
             type="number"
@@ -1257,22 +1405,30 @@ export default function ProductCategories() {
               }));
             }}
           />
+          </Tooltip>
         ) : (
-          record.price || "-"
+           <Tooltip title={record.price}><span>{record.price || "-"}</span></Tooltip>
         ),
     },
     {
       title: "Total Price In AED",
       dataIndex: "totalPrice",
+          width: 200,
+          ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip >
           <Input value={assetsInputRow.totalPrice || ""} disabled />
+          </Tooltip>
         ) : (
-          record.totalPrice || "-"
+           <Tooltip title={record.totalPrice}><span>{record.totalPrice || "-"}</span></Tooltip>
         ),
     },
     {
       title: "Action",
+         width: 120,
+      fixed: "right",
+      align: "center",
       render: (_, record) =>
         record.isInput ? (
           <Button
@@ -1299,7 +1455,8 @@ export default function ProductCategories() {
   ];
 
   const handleMachineAdd = () => {
-     const { partNumber, description, quantity, price, totalPrice } = machineinputRow;
+    const { partNumber, description, quantity, price, totalPrice } =
+      machineinputRow;
 
     if (!partNumber || !description || !quantity || !price || !totalPrice) {
       notification.error({
@@ -1309,7 +1466,7 @@ export default function ProductCategories() {
       });
       return;
     }
-  
+
     const newData = {
       key: Date.now(),
       ...machineinputRow,
@@ -1317,7 +1474,7 @@ export default function ProductCategories() {
     };
     setMachineDataSource([...machineDataSource, newData]);
     setMachineInputRow({
-       partNumber: "",
+      partNumber: "",
       description: "",
       quantity: "",
       stockInHand: "",
@@ -1335,29 +1492,54 @@ export default function ProductCategories() {
     {
       title: "Part Number",
       dataIndex: "partNumber",
-      render: (_, record) =>
-        record.isInput ? (
-          <Input
-            placeholder="Enter part number"
-            value={machineinputRow.partNumber}
-            onChange={(e) =>
-              setMachineInputRow({
-                ...machineinputRow,
-                partNumber: e.target.value,
-              })
-            }
-          />
-        ) : (
-          record.partNumber
-        ),
+      width: 250,
+      ellipsis: true,
+      // render: (_, record) =>
+      //   record.isInput ? (
+      //     <Input
+      //       placeholder="Enter part number"
+      //       value={machineinputRow.partNumber}
+      //       onChange={(e) =>
+      //         setMachineInputRow({
+      //           ...machineinputRow,
+      //           partNumber: e.target.value,
+      //         })
+      //       }
+      //     />
+      //   ) : (
+      //     record.partNumber
+      //   ),
+        render: (_, record) =>
+    record.isInput ? (
+      <Tooltip>
+        <Input
+          placeholder="Enter part number"
+          value={machineinputRow.partNumber}
+          onChange={(e) =>
+            setMachineInputRow({
+              ...machineinputRow,
+              partNumber: e.target.value,
+            })
+          }
+        />
+      </Tooltip>
+    ) : (
+      <Tooltip title={record.partNumber}>
+        <span>{record.partNumber}</span>
+      </Tooltip>
+    ),
     },
     {
       title: "Description",
       dataIndex: "description",
+      width: 300,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+            <Tooltip>
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 1 }}
+            // autoSize={{ minRows: 2, maxRows: 2 }}
+            rows={1}
             placeholder="Enter description"
             value={machineinputRow.description}
             onChange={(e) =>
@@ -1367,18 +1549,25 @@ export default function ProductCategories() {
               })
             }
           />
+          </Tooltip>
         ) : (
-          record.description
+                <Tooltip title={record.description}>
+
+       <span>  { record.description}</span>
+           </Tooltip>
         ),
     },
-   
+
     {
       title: "Quantity",
       dataIndex: "quantity",
+      width: 200,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+           <Tooltip>
           <Input
-            placeholder="Qty"
+            placeholder="Enter Quantity"
             type="number"
             value={machineinputRow.quantity}
             onChange={(e) => {
@@ -1390,43 +1579,63 @@ export default function ProductCategories() {
               }));
             }}
           />
-        ) : (
-          record.quantity
+          </Tooltip>
+        ) : (<Tooltip title={record.quantity}>
+          <span>
+          {record.quantity}
+          </span>
+          </Tooltip>
         ),
     },
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
+      ellipsis: true,
+      width: 200,
       render: (_, record) =>
+        
         record.isInput ? (
-         
+          <Tooltip>
           <Input value={machineinputRow.stockInHand || "0"} disabled />
+          </Tooltip>
         ) : (
-          record.stockInHand || "-"
+          <Tooltip title={record.stockInHand}><span>{   record.stockInHand || "-"}</span></Tooltip>
+       
         ),
     },
     {
       title: "Note",
       dataIndex: "note",
+      ellipsis: true,
+      width: 300,
       render: (_, record) =>
         record.isInput ? (
+           <Tooltip>
           <Input.TextArea
-            autoSize={{ minRows: 1, maxRows: 1 }}
+            // autoSize={{ minRows: 2, maxRows: 2}}
+                        rows={1}
+
             placeholder="Enter note"
             value={machineinputRow.note}
             onChange={(e) =>
               setMachineInputRow({ ...machineinputRow, note: e.target.value })
             }
           />
+          </Tooltip>
         ) : (
-          record.note
+          <Tooltip title={record.note}>
+         <span> {record.note}</span>
+         </Tooltip>
         ),
     },
     {
       title: "Price In AED(per item)",
       dataIndex: "price",
+      ellipsis: true,
+      width: 250,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input
             placeholder="Price"
             type="number"
@@ -1440,22 +1649,31 @@ export default function ProductCategories() {
               }));
             }}
           />
-        ) : (
-          record.price || "-"
+          </Tooltip>
+        ) : (<Tooltip title={record.price}><span>{record.price || "-"}</span></Tooltip>
+          
         ),
     },
     {
       title: "Total Price In AED",
       dataIndex: "totalPrice",
+      width: 200,
+      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
+          <Tooltip>
           <Input value={machineinputRow.totalPrice || ""} disabled />
+          </Tooltip>
         ) : (
-          record.totalPrice || "-"
+          <Tooltip title={record.totalPrice}><span>{record.totalPrice || "-"}</span></Tooltip>
+    
         ),
     },
     {
       title: "Action",
+      width: 120,
+      fixed: "right",
+      align: "center",
       render: (_, record) =>
         record.isInput ? (
           <Button
@@ -1546,7 +1764,7 @@ export default function ProductCategories() {
           </div>
 
           <div className="row d-flex flex-row mt-4 ">
-            <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly rounded-4" >
+            <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly rounded-4">
               <div className="col-12 p-3 p-lg-4  ">
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
@@ -1893,8 +2111,13 @@ export default function ProductCategories() {
                             <Table
                               columns={machineColumns}
                               dataSource={displayMachineData}
-                              pagination={false}
+                              pagination={{
+                                pageSize: 10
+                               
+                              }}
                               rowKey="key"
+                                scroll={{ x: "max-content" }}
+                              size="middle"
                               bordered
                             />
                           </div>
@@ -1973,13 +2196,20 @@ export default function ProductCategories() {
                             >
                               Auxiliaries Details
                             </h6>
-                            <Table
-                              bordered
-                              columns={auxiliariesColumns}
-                              dataSource={displayAuxiliariesData}
-                              pagination={false}
-                              rowKey="key"
-                            />
+                            <div>
+                              <Table
+                                bordered
+                                columns={auxiliariesColumns}
+                                dataSource={displayAuxiliariesData}
+                                pagination={{
+                                  pageSize: 10,
+                                  
+                                }}
+                                rowKey="key"
+                                scroll={{ x: "max-content" }}
+                                size="middle"
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -2022,8 +2252,13 @@ export default function ProductCategories() {
                               bordered
                               columns={assetsColumns}
                               dataSource={displayAssetsData}
-                              pagination={false}
+                               pagination={{
+                                pageSize: 10,
+                               
+                              }}
                               rowKey="key"
+                                 scroll={{ x: "max-content" }}
+                                  size="middle"
                             />
                           </div>
                         )}
@@ -2037,8 +2272,10 @@ export default function ProductCategories() {
                           <Table
                             columns={columns}
                             dataSource={displayData}
-                            pagination={false}
+                            pagination={{ageSize: 10}}
                             rowKey="key"
+                       size="middle"
+                         scroll={{ x: "max-content" }}
                             bordered
                           />
                         </div>
@@ -2050,19 +2287,19 @@ export default function ProductCategories() {
                         htmlType="submit"
                         size="large"
                         className="submitButton mt-2"
-                        disabled={
-                          loading ||
-                          (machineDataSource.length === 0 &&
-                            auxiliariesDataSource.length === 0 &&
-                            assetsDataSource.length === 0 &&
-                            dataSource.length === 0 &&
-                            !form.getFieldValue("consumables") &&
-                            !form.getFieldValue("tools"))
-                        }
+                        // disabled={
+                        //   loading ||
+                        //   (machineDataSource.length === 0 &&
+                        //     auxiliariesDataSource.length === 0 &&
+                        //     assetsDataSource.length === 0 &&
+                        //     dataSource.length === 0 &&
+                        //     !form.getFieldValue("consumables") &&
+                        //     !form.getFieldValue("tools"))
+                        // }
                         loading={loading}
                       >
                         {loading
-                          ? "Submitting Categories..."
+                          ? "Submitting Categories"
                           : "Submit Categories"}
                       </Button>
                     </div>

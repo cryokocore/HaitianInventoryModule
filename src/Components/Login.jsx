@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import HaitianLogo from "../Images/Haitian.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser, faLock } from "@fortawesome/free-solid-svg-icons";
-import HaitianBackgroundImage from "../Images/Haitianbackgroundimage.jpg";
+import HaitianBackgroundImage from "../Images/HaitianBanner.png";
 import { Button, Form, Input, notification } from "antd";
 
 notification.config({
@@ -89,12 +89,13 @@ export default function Login({ onLoginSuccess }) {
         }}
       >
         <div
-          className="container-fluid m-auto d-flex justify-content-center align-items-center vh-100"
+          className="container-fluid m-auto  d-flex justify-content-center align-items-center vh-100"
           style={{
             backgroundColor: "rgba(0, 49, 91, 0.1)",
           }}
         >
-          <div className="container rounded-5 p-5 loginContainer bg-white">
+          <div className="w-50 m-auto ">
+          <div className="container rounded-5 p-5 loginContainer bg-white ">
             <div className="row">
               <div className="col-12">
                 <div className="m-auto d-flex justify-content-center m-0 p-0 ">
@@ -177,6 +178,7 @@ export default function Login({ onLoginSuccess }) {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </>
   );
