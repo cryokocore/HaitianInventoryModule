@@ -31,13 +31,15 @@ export default function Login({ onLoginSuccess }) {
 
       const data = await response.json();
       if (data.success) {
+        
         notification.success({
           message: "Success",
-          description: `Login successful !`,
+          // description: `Login successful!`,
+                    description: `Login in successfully ${values.username}`,
+
         });
 
-        // Optionally redirect to dashboard or set user context
-        onLoginSuccess();
+        onLoginSuccess(values.username);
       } else {
         notification.error({
           message: "Error",

@@ -291,7 +291,7 @@
 
 import React from "react";
 import { Menu, Button, Avatar } from "antd";
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined } from "@ant-design/icons";
 
 import {
   AppstoreOutlined,
@@ -305,8 +305,7 @@ import "../App.css";
 import HaitianLogo from "../Images/HaitianLogo.png";
 import { useNavigate, useLocation } from "react-router-dom";
 
-
-export default function SideNavBar({ onLogout }) {
+export default function SideNavBar({ onLogout, username }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -423,25 +422,29 @@ export default function SideNavBar({ onLogout }) {
         <div>
           <div style={{ width: "100%" }} className="m-auto text-center ">
             <div className="d-flex flex-column align-items-center">
-            <img
-              src={HaitianLogo}
-              alt="Haitian Logo"
-              className="haitian-logo mt-3 text-center "
-            />
+              <img
+                src={HaitianLogo}
+                alt="Haitian Logo"
+                className="haitian-logo mt-3 text-center "
+              />
             </div>
-         
-          
-           </div>
-           <div className="haitian-title mt-2  ">
+          </div>
+          <div className="haitian-title mt-2  ">
             Haitian Inventory
             <br />
             Management System
           </div>
 
-              <div className="m-auto text-center mt-3 " >
-                 <Avatar size={50} icon={<UserOutlined />} style={{backgroundColor:"white", color:"#0d3884"}}/>
-                 <p style={{color:"white"}}>Sample</p>
-
+          <div className="m-auto text-center mt-3 ">
+            {/* <Avatar
+              size={50}
+              style={{ backgroundColor: "white", color: "#0d3884" }}
+            /> */}
+            <Avatar  size={50}
+              style={{ backgroundColor: "white", color: "#0d3884" }}>{username.slice(0,2).toUpperCase()}</Avatar>
+            <p style={{ color: "white", marginTop: "8px" }}>
+              {username || "User"}
+            </p>
           </div>
           <div className="sidebar-divider mt-3" />
 
