@@ -291,7 +291,7 @@
 
 import React from "react";
 import { Menu, Button, Avatar } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { UserOutlined, UserAddOutlined } from "@ant-design/icons";
 
 import {
   AppstoreOutlined,
@@ -442,7 +442,7 @@ export default function SideNavBar({ onLogout, username }) {
             /> */}
             <Avatar  size={50}
               style={{ backgroundColor: "white", color: "#0d3884" }}>{username.slice(0,2).toUpperCase()}</Avatar>
-            <p style={{ color: "white", marginTop: "8px" }}>
+            <p style={{ color: "white"}}>
               {username || "User"}
             </p>
           </div>
@@ -461,6 +461,7 @@ export default function SideNavBar({ onLogout, username }) {
             <Menu.Item key="/" icon={<PieChartOutlined />}>
               Dashboard
             </Menu.Item>
+            
             <Menu.Item key="/inventory" icon={<AppstoreOutlined />}>
               Inventory
             </Menu.Item>
@@ -475,6 +476,9 @@ export default function SideNavBar({ onLogout, username }) {
             </Menu.Item>
             <Menu.Item key="/reports" icon={<BarChartOutlined />}>
               Reports
+            </Menu.Item>
+             <Menu.Item key="/addUser" icon={<UserAddOutlined />}>
+              Add New User
             </Menu.Item>
           </Menu>
         </div>

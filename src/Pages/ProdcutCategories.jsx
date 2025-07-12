@@ -87,7 +87,7 @@ export default function ProductCategories() {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbzppCIp8qpKBAVLBf-UssRzM95v-loEzfLSweiOiOigT9GzbYxl5iV53_YSbRTVnieY/exec";
+    "https://script.google.com/macros/s/AKfycbwLnE0vuJ_x6VvKHvYvSTyF4v0S5njE8eQgMLUhxMEipmnrF7y6ybrJ5qF0rIUc_gC2cA/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -1859,9 +1859,7 @@ export default function ProductCategories() {
     transition: background 0.2s ease;
   
 }
-    
-    
-  `;
+    `;
 
   return (
     <>

@@ -75,11 +75,12 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useState } from "react";
-import SideNavBar from "./Components/SideNavBar";
-import Inventory from "./Components/Inventory";
-import ProductCategories from "./Components/ProdcutCategories";
-import Login from "./Components/Login";
+import SideNavBar from "./Pages/SideNavBar";
+import Inventory from "./Pages/Inventory";
+import ProductCategories from "./Pages/ProdcutCategories";
+import Login from "./Pages/Login";
 import { notification } from "antd";
+import AddUser from "./Pages/AddUser";
 notification.config({
   maxCount: 2,
   placement: "bottomRight",
@@ -147,6 +148,12 @@ function App() {
               path="/orders"
               element={
                 isLoggedIn ? <Navigate to="/orders" /> : <Navigate to="/" />
+              }
+            />
+                <Route
+              path="/addUser"
+              element={
+                isLoggedIn ? <AddUser /> : <Navigate to="/" />
               }
             />
             <Route
