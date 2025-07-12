@@ -418,7 +418,7 @@ export default function SideNavBar({ onLogout, username }) {
           top: 0,
         }}
       >
-        {/* Top: Logo + Title + Menu */}
+       {/* Top: Logo + Title + Menu */}
         <div>
           <div style={{ width: "100%" }} className="m-auto text-center ">
             <div className="d-flex flex-column align-items-center">
