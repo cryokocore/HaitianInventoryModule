@@ -330,14 +330,14 @@ export default function SideNavBar({ onLogout, username }) {
 }
 
 .ant-menu-item:hover {
-  background-color:rgb(2, 92, 248) !important;
+  background-color: rgb(2 92 248 / 60%) !important;
   color: #ffffff !important;
   transform: scale(1.03); /* slight enlarge */
 
 }
 
 .ant-menu-item-selected {
-  background-color: rgb(2, 92, 248) !important;
+  background-color: rgb(2 92 248 / 60%) !important;
   color: #ffffff !important;
   font-weight: 600;
   box-sizing: border-box;
@@ -418,7 +418,7 @@ export default function SideNavBar({ onLogout, username }) {
           top: 0,
         }}
       >
-       {/* Top: Logo + Title + Menu */}
+        {/* Top: Logo + Title + Menu */}
         <div>
           <div style={{ width: "100%" }} className="m-auto text-center ">
             <div className="d-flex flex-column align-items-center">
@@ -430,8 +430,7 @@ export default function SideNavBar({ onLogout, username }) {
             </div>
           </div>
           <div className="haitian-title mt-2  ">
-            Haitian Inventory
-            <br />
+            Inventory
             Management System
           </div>
 
@@ -440,11 +439,12 @@ export default function SideNavBar({ onLogout, username }) {
               size={50}
               style={{ backgroundColor: "white", color: "#0d3884" }}
             /> */}
-            <Avatar  size={50}
-              style={{ backgroundColor: "white", color: "#0d3884" }}>{username.slice(0,2).toUpperCase()}</Avatar>
-            <p style={{ color: "white"}}>
-              {username || "User"}
-            </p>
+            <div className="profile-box">
+              <Avatar size={64} className="profile-avatar">
+                {username?.slice(0, 2).toUpperCase() || "N/A"}
+              </Avatar>
+              <div className="profile-username">{username || "N/A"}</div>
+            </div>
           </div>
           <div className="sidebar-divider mt-3" />
 
@@ -461,7 +461,7 @@ export default function SideNavBar({ onLogout, username }) {
             <Menu.Item key="/" icon={<PieChartOutlined />}>
               Dashboard
             </Menu.Item>
-            
+
             <Menu.Item key="/inventory" icon={<AppstoreOutlined />}>
               Inventory
             </Menu.Item>
@@ -477,7 +477,7 @@ export default function SideNavBar({ onLogout, username }) {
             <Menu.Item key="/reports" icon={<BarChartOutlined />}>
               Reports
             </Menu.Item>
-             <Menu.Item key="/addUser" icon={<UserAddOutlined />}>
+            <Menu.Item key="/addUser" icon={<UserAddOutlined />}>
               Add New User
             </Menu.Item>
           </Menu>

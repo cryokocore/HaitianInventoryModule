@@ -102,7 +102,7 @@ function App() {
       setIsFadingOut(false); 
       notification.success({
         message: "Succes",
-        description: `${username} loged out successfully`,
+        description: `Logged out successfully.`,
       });
     }, 500); 
   };

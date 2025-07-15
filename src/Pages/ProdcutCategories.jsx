@@ -9,10 +9,16 @@ import {
   Table,
   notification,
   Tooltip,
+  DatePicker,
 } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
 import "../App.css";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 notification.config({
   maxCount: 2,
@@ -87,7 +93,7 @@ export default function ProductCategories() {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbwLnE0vuJ_x6VvKHvYvSTyF4v0S5njE8eQgMLUhxMEipmnrF7y6ybrJ5qF0rIUc_gC2cA/exec";
+    "https://script.google.com/macros/s/AKfycbwLVBiccL67UyLKRSdypbM0rz_oK3JQNdhQaknxOt9sAMfZB7KqURZ2iqETKJJhwNyCDw/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -634,6 +640,7 @@ export default function ProductCategories() {
           machineNote: machine.note || "-",
           machinePrice: machine.price || "-",
           machineTotalPrice: machine.totalPrice || "-",
+          machineDate: machine.date || "",
 
           consumables: i === 0 ? consumables || "" : "",
           tools: i === 0 ? tools || "" : "",
@@ -649,6 +656,8 @@ export default function ProductCategories() {
           auxNote: auxiliary.note || "-",
           auxPrice: auxiliary.price || "-",
           auxTotalPrice: auxiliary.totalPrice || "-",
+          auxDate: auxiliary.date || "-",
+
 
           // assets: i === 0 ? assets || "-" : "",
           assets: assets || "-",
@@ -659,6 +668,8 @@ export default function ProductCategories() {
           assetNote: asset.note || "-",
           assetPrice: asset.price || "-",
           assetTotalPrice: asset.totalPrice || "-",
+          assetDate: asset.date || "",
+
           sparePartNumber: spare.partNumber || "-",
           spareDescription: spare.description || "-",
           spareQuantity: spare.quantity || "-",
@@ -666,6 +677,7 @@ export default function ProductCategories() {
           spareNote: spare.note || "-",
           sparePrice: spare.price || "-",
           spareTotalPrice: spare.totalPrice || "-",
+          spareDate: spare.date || "",
         });
 
         console.log(
@@ -704,7 +716,7 @@ export default function ProductCategories() {
         });
 
         console.log(
-          `📤 Submitting (consumables/tools only) row ${currentRow}:`,
+          `Submitting (consumables/tools only) row ${currentRow}:`,
           Object.fromEntries(formData.entries())
         );
 
@@ -782,6 +794,47 @@ export default function ProductCategories() {
 
   const columns = [
     {
+      title: "Date",
+      dataIndex: "date",
+      width: 220,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <DatePicker
+              format="DD-MM-YYYY"
+              style={{ width: "100%" }}
+              value={
+                inputRow.date
+                  ? dayjs.tz(inputRow.date, "DD-MM-YYYY", "Asia/Dubai")
+                  : null
+              }
+              onChange={(date) => {
+                const dubaiDate = dayjs(date).tz("Asia/Dubai");
+                const formattedDate = dubaiDate.format("DD-MM-YYYY");
+                const formattedTime = dubaiDate.format("HH:mm:ss");
+
+                setInputRow({
+                  ...inputRow,
+                  date: formattedDate,
+                });
+
+                // ✅ Log time in Dubai
+                console.log("Selected Dubai Date:", formattedDate);
+                console.log("Selected Dubai Time:", formattedTime);
+                console.log(
+                  "Full Dubai Date-Time:",
+                  dubaiDate.format("DD-MM-YYYY HH:mm:ss")
+                );
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.date}>
+            <span>{record.date || "-"}</span>
+          </Tooltip>
+        ),
+    },
+    {
       title: "Part Number",
       dataIndex: "partNumber",
       width: 250,
@@ -833,9 +886,7 @@ export default function ProductCategories() {
                 wordWrap: "break-word",
                 whiteSpace: "normal",
               },
-              
             }}
-            
           >
             <span className="truncate-text">
               {record.description?.length > 150
@@ -957,15 +1008,18 @@ export default function ProductCategories() {
           // <Tooltip title={record.note}>
           //   <span>{record.note}</span>
           // </Tooltip>
-           <Tooltip title={record.note}  styles={{
+          <Tooltip
+            title={record.note}
+            styles={{
               root: {
                 maxWidth: 1000,
                 wordWrap: "break-word",
                 whiteSpace: "normal",
               },
-            }} >
+            }}
+          >
             {/* <span> {record.note}</span> */}
-             <span className="truncate-text">
+            <span className="truncate-text">
               {record.note?.length > 150
                 ? `${record.note.slice(0, 150)}...`
                 : record.note}
@@ -973,8 +1027,7 @@ export default function ProductCategories() {
           </Tooltip>
         ),
     },
-    
-    
+
     {
       title: "Action",
       width: 120,
@@ -1052,6 +1105,50 @@ export default function ProductCategories() {
 
   const auxiliariesColumns = [
     {
+      title: "Date",
+      dataIndex: "date",
+      width: 220,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <DatePicker
+              format="DD-MM-YYYY"
+              style={{ width: "100%" }}
+              value={
+                auxiliariesInputRow.date
+                  ? dayjs.tz(
+                      auxiliariesInputRow.date,
+                      "DD-MM-YYYY",
+                      "Asia/Dubai"
+                    )
+                  : null
+              }
+              onChange={(date) => {
+                const dubaiDate = dayjs(date).tz("Asia/Dubai");
+                const formattedDate = dubaiDate.format("DD-MM-YYYY");
+                const formattedTime = dubaiDate.format("HH:mm:ss");
+
+                setAuxiliariesInputRow({
+                  ...auxiliariesInputRow,
+                  date: formattedDate,
+                });
+
+                console.log("Selected Dubai Date:", formattedDate);
+                console.log("Selected Dubai Time:", formattedTime);
+                console.log(
+                  "Full Dubai Date-Time:",
+                  dubaiDate.format("DD-MM-YYYY HH:mm:ss")
+                );
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.date}>
+            <span>{record.date || "-"}</span>
+          </Tooltip>
+        ),
+    },
+    {
       title: "Part Number",
       dataIndex: "partNumber",
       width: 250,
@@ -1098,15 +1195,18 @@ export default function ProductCategories() {
             />
           </Tooltip>
         ) : (
-          <Tooltip title={record.description} styles={{
+          <Tooltip
+            title={record.description}
+            styles={{
               root: {
                 maxWidth: 1000,
                 wordWrap: "break-word",
                 whiteSpace: "normal",
               },
-            }}>
+            }}
+          >
             {/* <span>{record.description}</span> */}
-          
+
             <span className="truncate-text">
               {record.description?.length > 150
                 ? `${record.description.slice(0, 150)}...`
@@ -1115,7 +1215,7 @@ export default function ProductCategories() {
           </Tooltip>
         ),
     },
-     {
+    {
       title: "Price In AED(per item)",
       dataIndex: "price",
       width: 250,
@@ -1126,7 +1226,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Price"
               type="number"
-              value={auxiliariesInputRow.price} // Or machineinputRow / assetsInputRow
+              value={auxiliariesInputRow.price}
               onChange={(e) => {
                 const price = e.target.value;
                 setAuxiliariesInputRow((prev) => ({
@@ -1188,8 +1288,7 @@ export default function ProductCategories() {
           </Tooltip>
         ),
     },
-   
-   
+
     {
       title: "Total Price In AED",
       dataIndex: "totalPrice",
@@ -1206,7 +1305,7 @@ export default function ProductCategories() {
           </Tooltip>
         ),
     },
-     {
+    {
       title: "Note",
       dataIndex: "note",
       width: 500,
@@ -1231,15 +1330,18 @@ export default function ProductCategories() {
           // <Tooltip title={record.note}>
           //   <span>{record.note}</span>
           // </Tooltip>
-          <Tooltip title={record.note}  styles={{
+          <Tooltip
+            title={record.note}
+            styles={{
               root: {
                 maxWidth: 1000,
                 wordWrap: "break-word",
                 whiteSpace: "normal",
               },
-            }} >
+            }}
+          >
             {/* <span> {record.note}</span> */}
-             <span className="truncate-text">
+            <span className="truncate-text">
               {record.note?.length > 150
                 ? `${record.note.slice(0, 150)}...`
                 : record.note}
@@ -1314,6 +1416,48 @@ export default function ProductCategories() {
 
   const assetsColumns = [
     {
+      title: "Date",
+      dataIndex: "date",
+      width: 220,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <DatePicker
+              format="DD-MM-YYYY"
+              style={{ width: "100%" }}
+              value={
+                assetsInputRow.date
+                  ? dayjs.tz(assetsInputRow.date, "DD-MM-YYYY", "Asia/Dubai")
+                  : null
+              }
+              onChange={(date) => {
+                const dubaiDate = dayjs(date).tz("Asia/Dubai");
+                const formattedDate = dubaiDate.format("DD-MM-YYYY");
+                const formattedTime = dubaiDate.format("HH:mm:ss");
+
+                setAssetsInputRow({
+                  ...assetsInputRow,
+                  date: formattedDate,
+                });
+
+                // ✅ Log time in Dubai
+                console.log("Selected Dubai Date:", formattedDate);
+                console.log("Selected Dubai Time:", formattedTime);
+                console.log(
+                  "Full Dubai Date-Time:",
+                  dubaiDate.format("DD-MM-YYYY HH:mm:ss")
+                );
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.date}>
+            <span>{record.date || "-"}</span>
+          </Tooltip>
+        ),
+    },
+
+    {
       title: "Part Number",
       dataIndex: "partNumber",
       width: 250,
@@ -1362,21 +1506,22 @@ export default function ProductCategories() {
             />
           </Tooltip>
         ) : (
-          <Tooltip title={record.description} 
+          <Tooltip
+            title={record.description}
             styles={{
               root: {
                 maxWidth: 1000,
                 wordWrap: "break-word",
                 whiteSpace: "normal",
-              },}}
+              },
+            }}
           >
-  <span className="truncate-text">
+            <span className="truncate-text">
               {record.description?.length > 150
                 ? `${record.description.slice(0, 150)}...`
                 : record.description}
-            </span>          </Tooltip>
-
-          
+            </span>{" "}
+          </Tooltip>
         ),
     },
     {
@@ -1452,8 +1597,7 @@ export default function ProductCategories() {
           </Tooltip>
         ),
     },
-    
-    
+
     {
       title: "Total Price In AED",
       dataIndex: "totalPrice",
@@ -1492,15 +1636,18 @@ export default function ProductCategories() {
           // <Tooltip title={record.note}>
           //   <span>{record.note}</span>
           // </Tooltip>
-               <Tooltip title={record.note}  styles={{
+          <Tooltip
+            title={record.note}
+            styles={{
               root: {
                 maxWidth: 1000,
                 wordWrap: "break-word",
                 whiteSpace: "normal",
               },
-            }} >
+            }}
+          >
             {/* <span> {record.note}</span> */}
-             <span className="truncate-text">
+            <span className="truncate-text">
               {record.note?.length > 150
                 ? `${record.note.slice(0, 150)}...`
                 : record.note}
@@ -1573,6 +1720,48 @@ export default function ProductCategories() {
   };
 
   const machineColumns = [
+    {
+      title: "Date",
+      dataIndex: "date",
+      width: 220,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <DatePicker
+              format="DD-MM-YYYY"
+              style={{ width: "100%" }}
+              value={
+                machineinputRow.date
+                  ? dayjs.tz(machineinputRow.date, "DD-MM-YYYY", "Asia/Dubai")
+                  : null
+              }
+              onChange={(date) => {
+                const dubaiDate = dayjs(date).tz("Asia/Dubai");
+                const formattedDate = dubaiDate.format("DD-MM-YYYY");
+                const formattedTime = dubaiDate.format("HH:mm:ss");
+
+                setMachineInputRow({
+                  ...machineinputRow,
+                  date: formattedDate,
+                });
+
+                // ✅ Log time in Dubai
+                console.log("Selected Dubai Date:", formattedDate);
+                console.log("Selected Dubai Time:", formattedTime);
+                console.log(
+                  "Full Dubai Date-Time:",
+                  dubaiDate.format("DD-MM-YYYY HH:mm:ss")
+                );
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.date}>
+            <span>{record.date || "-"}</span>
+          </Tooltip>
+        ),
+    },
+
     {
       title: "Part Number",
       dataIndex: "partNumber",
@@ -1710,7 +1899,7 @@ export default function ProductCategories() {
           </Tooltip>
         ),
     },
-    
+
     {
       title: "Total Price In AED",
       dataIndex: "totalPrice",
@@ -1746,15 +1935,18 @@ export default function ProductCategories() {
             />
           </Tooltip>
         ) : (
-          <Tooltip title={record.note}  styles={{
+          <Tooltip
+            title={record.note}
+            styles={{
               root: {
                 maxWidth: 1000,
                 wordWrap: "break-word",
                 whiteSpace: "normal",
               },
-            }} >
+            }}
+          >
             {/* <span> {record.note}</span> */}
-             <span className="truncate-text">
+            <span className="truncate-text">
               {record.note?.length > 150
                 ? `${record.note.slice(0, 150)}...`
                 : record.note}
