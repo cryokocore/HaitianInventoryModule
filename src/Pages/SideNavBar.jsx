@@ -317,7 +317,7 @@ export default function SideNavBar({ onLogout, username }) {
    }
 
     .ant-menu-item {
-  font-size: 17px;
+  font-size: 16px;
   padding: 12px 16px !important;
   margin: 6px 10px !important;
   border-radius: 8px !important;
@@ -369,7 +369,7 @@ export default function SideNavBar({ onLogout, username }) {
 
     .haitian-title {
       color: #f3f4f6;
-      font-size: 20px;
+      font-size: 17px;
       text-align: center;
       font-weight: 600;
     }
@@ -386,7 +386,7 @@ export default function SideNavBar({ onLogout, username }) {
 
     .logout-button {
       color: #fff;
-      font-weight: 500;
+      font-size: 18px !important;
       padding: 10px 16px;
       border-radius: 8px;
       display: flex;

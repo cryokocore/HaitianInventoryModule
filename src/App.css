@@ -181,7 +181,6 @@ body {
   color: white !important;
   border: 2px solid #ff4d4f !important;
   font-size: 18px !important;
-  font-weight: 500 !important;
   transition: all 0.3s ease-in-out !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.08);
   border-radius: 8px;

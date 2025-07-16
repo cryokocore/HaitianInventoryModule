@@ -93,7 +93,7 @@ export default function ProductCategories() {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbwLVBiccL67UyLKRSdypbM0rz_oK3JQNdhQaknxOt9sAMfZB7KqURZ2iqETKJJhwNyCDw/exec";
+    "https://script.google.com/macros/s/AKfycbz5h0wByxQ_oSkpkh6bXXq62P9hC1O5aMNwqzX45Rnq_fSfcMvAqod_BVccnLMRZGKgew/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -936,6 +936,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Enter Quantity"
               type="number"
+              min={1}
               value={inputRow.quantity}
               onChange={(e) => {
                 const quantity = e.target.value;
@@ -1255,6 +1256,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Quantity"
               type="number"
+              min={1}
               value={auxiliariesInputRow.quantity}
               onChange={(e) => {
                 const quantity = e.target.value;
@@ -1564,6 +1566,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Enter Quantity"
               type="number"
+              min={1}
               value={assetsInputRow.quantity}
               onChange={(e) => {
                 const quantity = e.target.value;
@@ -1866,6 +1869,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Enter Quantity"
               type="number"
+              min={1}
               value={machineinputRow.quantity}
               onChange={(e) => {
                 const quantity = e.target.value;
