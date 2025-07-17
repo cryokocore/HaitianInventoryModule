@@ -93,7 +93,7 @@ export default function ProductCategories() {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbz5h0wByxQ_oSkpkh6bXXq62P9hC1O5aMNwqzX45Rnq_fSfcMvAqod_BVccnLMRZGKgew/exec";
+    "https://script.google.com/macros/s/AKfycbytyy091Bha5vW_9Uiamogta9kLjiNiKjJtAsBro1DXENHplKVQj4mWCEVXXHLt1RblTg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -572,7 +572,7 @@ export default function ProductCategories() {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Part Number, Description, Quantity, Price and click Add before submitting",
+          "Please fill in Date, Part Number, Description, Quantity, Price and click Add before submitting",
       });
       return;
     }
@@ -657,7 +657,6 @@ export default function ProductCategories() {
           auxPrice: auxiliary.price || "-",
           auxTotalPrice: auxiliary.totalPrice || "-",
           auxDate: auxiliary.date || "-",
-
 
           // assets: i === 0 ? assets || "-" : "",
           assets: assets || "-",
@@ -761,11 +760,11 @@ export default function ProductCategories() {
   const handleAdd = () => {
     const { partNumber, description, quantity, price, totalPrice } = inputRow;
 
-    if (!partNumber || !description || !quantity || !price || !totalPrice) {
+    if (!partNumber || !description || !quantity || !price || !totalPrice || !inputRow.date )  {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Part Number, Description, Quantity, Price and ensure Total Price is calculated",
+          "Please fill in Date, Part Number, Description, Quantity, Price and ensure Total Price is calculated",
       });
       return;
     }
@@ -803,28 +802,44 @@ export default function ProductCategories() {
             <DatePicker
               format="DD-MM-YYYY"
               style={{ width: "100%" }}
+              // value={
+              //   inputRow.date
+              //     ? dayjs.tz(inputRow.date, "DD-MM-YYYY", "Asia/Dubai")
+              //     : null
+              // }
+              // onChange={(date) => {
+              //   const dubaiDate = dayjs(date).tz("Asia/Dubai");
+              //   const formattedDate = dubaiDate.format("DD-MM-YYYY");
+              //   const formattedTime = dubaiDate.format("HH:mm:ss");
+
+              //   setInputRow({
+              //     ...inputRow,
+              //     date: formattedDate,
+              //   });
+
+              //   // ✅ Log time in Dubai
+              //   console.log("Selected Dubai Date:", formattedDate);
+              //   console.log("Selected Dubai Time:", formattedTime);
+              //   console.log(
+              //     "Full Dubai Date-Time:",
+              //     dubaiDate.format("DD-MM-YYYY HH:mm:ss")
+              //   );
+              // }}
+
               value={
-                inputRow.date
+                inputRow.date && dayjs(inputRow.date, "DD-MM-YYYY").isValid()
                   ? dayjs.tz(inputRow.date, "DD-MM-YYYY", "Asia/Dubai")
                   : null
               }
-              onChange={(date) => {
-                const dubaiDate = dayjs(date).tz("Asia/Dubai");
-                const formattedDate = dubaiDate.format("DD-MM-YYYY");
-                const formattedTime = dubaiDate.format("HH:mm:ss");
-
-                setInputRow({
-                  ...inputRow,
-                  date: formattedDate,
-                });
-
-                // ✅ Log time in Dubai
-                console.log("Selected Dubai Date:", formattedDate);
-                console.log("Selected Dubai Time:", formattedTime);
-                console.log(
-                  "Full Dubai Date-Time:",
-                  dubaiDate.format("DD-MM-YYYY HH:mm:ss")
-                );
+              onChange={(dateObj) => {
+                if (!dateObj) {
+                  setInputRow({ ...inputRow, date: "" });
+                  return;
+                }
+                const formatted = dayjs(dateObj)
+                  .tz("Asia/Dubai")
+                  .format("DD-MM-YYYY");
+                setInputRow({ ...inputRow, date: formatted });
               }}
             />
           </Tooltip>
@@ -1070,12 +1085,13 @@ export default function ProductCategories() {
       !description?.trim() ||
       !quantity?.trim() ||
       isNaN(parseFloat(price)) ||
-      isNaN(parseFloat(totalPrice))
+      isNaN(parseFloat(totalPrice)) ||
+        !auxiliariesInputRow.date
     ) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Part Number, Description, Quantity, Price and ensure Total Price is calculated correctly",
+          "Please fill in Date, Part Number, Description, Quantity, Price and ensure Total Price is calculated correctly",
       });
       return;
     }
@@ -1115,31 +1131,47 @@ export default function ProductCategories() {
             <DatePicker
               format="DD-MM-YYYY"
               style={{ width: "100%" }}
+              // value={
+              //   auxiliariesInputRow.date
+              //     ? dayjs.tz(
+              //         auxiliariesInputRow.date,
+              //         "DD-MM-YYYY",
+              //         "Asia/Dubai"
+              //       )
+              //     : null
+              // }
+              // onChange={(date) => {
+              //   const dubaiDate = dayjs(date).tz("Asia/Dubai");
+              //   const formattedDate = dubaiDate.format("DD-MM-YYYY");
+              //   const formattedTime = dubaiDate.format("HH:mm:ss");
+
+              //   setAuxiliariesInputRow({
+              //     ...auxiliariesInputRow,
+              //     date: formattedDate,
+              //   });
+
+              //   console.log("Selected Dubai Date:", formattedDate);
+              //   console.log("Selected Dubai Time:", formattedTime);
+              //   console.log(
+              //     "Full Dubai Date-Time:",
+              //     dubaiDate.format("DD-MM-YYYY HH:mm:ss")
+              //   );
+              // }}
+
               value={
-                auxiliariesInputRow.date
-                  ? dayjs.tz(
-                      auxiliariesInputRow.date,
-                      "DD-MM-YYYY",
-                      "Asia/Dubai"
-                    )
+                auxiliariesInputRow.date && dayjs(auxiliariesInputRow.date, "DD-MM-YYYY").isValid()
+                  ? dayjs.tz(auxiliariesInputRow.date, "DD-MM-YYYY", "Asia/Dubai")
                   : null
               }
-              onChange={(date) => {
-                const dubaiDate = dayjs(date).tz("Asia/Dubai");
-                const formattedDate = dubaiDate.format("DD-MM-YYYY");
-                const formattedTime = dubaiDate.format("HH:mm:ss");
-
-                setAuxiliariesInputRow({
-                  ...auxiliariesInputRow,
-                  date: formattedDate,
-                });
-
-                console.log("Selected Dubai Date:", formattedDate);
-                console.log("Selected Dubai Time:", formattedTime);
-                console.log(
-                  "Full Dubai Date-Time:",
-                  dubaiDate.format("DD-MM-YYYY HH:mm:ss")
-                );
+              onChange={(dateObj) => {
+                if (!dateObj) {
+                  setAuxiliariesInputRow({ ...auxiliariesInputRow, date: "" });
+                  return;
+                }
+                const formatted = dayjs(dateObj)
+                  .tz("Asia/Dubai")
+                  .format("DD-MM-YYYY");
+                setAuxiliariesInputRow({ ...auxiliariesInputRow, date: formatted });
               }}
             />
           </Tooltip>
@@ -1386,11 +1418,11 @@ export default function ProductCategories() {
     const { partNumber, description, quantity, price, totalPrice } =
       assetsInputRow;
 
-    if (!partNumber || !description || !quantity || !price || !totalPrice) {
+    if (!partNumber || !description || !quantity || !price || !totalPrice || !assetsInputRow.date) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Part Number, Description, Quantity, Price and ensure Total Price is calculated",
+          "Please fill in Date, Part Number, Description, Quantity, Price and ensure Total Price is calculated",
       });
       return;
     }
@@ -1427,28 +1459,46 @@ export default function ProductCategories() {
             <DatePicker
               format="DD-MM-YYYY"
               style={{ width: "100%" }}
+              // value={
+              //   assetsInputRow.date
+              //     ? dayjs.tz(assetsInputRow.date, "DD-MM-YYYY", "Asia/Dubai")
+              //     : null
+              // }
+              // onChange={(date) => {
+              //   const dubaiDate = dayjs(date).tz("Asia/Dubai");
+              //   const formattedDate = dubaiDate.format("DD-MM-YYYY");
+              //   const formattedTime = dubaiDate.format("HH:mm:ss");
+
+              //   setAssetsInputRow({
+              //     ...assetsInputRow,
+              //     date: formattedDate,
+              //   });
+
+              //   // ✅ Log time in Dubai
+              //   console.log("Selected Dubai Date:", formattedDate);
+              //   console.log("Selected Dubai Time:", formattedTime);
+              //   console.log(
+              //     "Full Dubai Date-Time:",
+              //     dubaiDate.format("DD-MM-YYYY HH:mm:ss")
+              //   );
+              // }}
+
               value={
-                assetsInputRow.date
+                assetsInputRow.date &&
+                dayjs(assetsInputRow.date, "DD-MM-YYYY").isValid()
                   ? dayjs.tz(assetsInputRow.date, "DD-MM-YYYY", "Asia/Dubai")
                   : null
               }
-              onChange={(date) => {
-                const dubaiDate = dayjs(date).tz("Asia/Dubai");
-                const formattedDate = dubaiDate.format("DD-MM-YYYY");
-                const formattedTime = dubaiDate.format("HH:mm:ss");
-
-                setAssetsInputRow({
-                  ...assetsInputRow,
-                  date: formattedDate,
-                });
-
-                // ✅ Log time in Dubai
-                console.log("Selected Dubai Date:", formattedDate);
-                console.log("Selected Dubai Time:", formattedTime);
-                console.log(
-                  "Full Dubai Date-Time:",
-                  dubaiDate.format("DD-MM-YYYY HH:mm:ss")
-                );
+              onChange={(dateObj) => {
+                if (!dateObj) {
+                  setAssetsInputRow({ ...assetsInputRow, date: "" });
+                  return;
+                }
+                const formatted = dayjs(dateObj)
+                  .tz("Asia/Dubai")
+                  .format("DD-MM-YYYY");
+                setAssetsInputRow({ ...assetsInputRow, date: formatted });
+                console.log("Selected Dubai Date:", formatted);
               }}
             />
           </Tooltip>
@@ -1692,11 +1742,11 @@ export default function ProductCategories() {
     const { partNumber, description, quantity, price, totalPrice } =
       machineinputRow;
 
-    if (!partNumber || !description || !quantity || !price || !totalPrice) {
+    if (!partNumber || !description || !quantity || !price || !totalPrice || !machineinputRow.date ) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Part Number, Description, Quantity, Price and ensure Total Price is calculated",
+          "Please fill in Date, Part Number, Description, Quantity, Price and ensure Total Price is calculated",
       });
       return;
     }
@@ -1733,28 +1783,45 @@ export default function ProductCategories() {
             <DatePicker
               format="DD-MM-YYYY"
               style={{ width: "100%" }}
+              // value={
+              //   machineinputRow.date
+              //     ? dayjs.tz(machineinputRow.date, "DD-MM-YYYY", "Asia/Dubai")
+              //     : null
+              // }
+              // onChange={(date) => {
+              //   const dubaiDate = dayjs(date).tz("Asia/Dubai");
+              //   const formattedDate = dubaiDate.format("DD-MM-YYYY");
+              //   const formattedTime = dubaiDate.format("HH:mm:ss");
+
+              //   setMachineInputRow({
+              //     ...machineinputRow,
+              //     date: formattedDate,
+              //   });
+
+              //   // ✅ Log time in Dubai
+              //   console.log("Selected Dubai Date:", formattedDate);
+              //   console.log("Selected Dubai Time:", formattedTime);
+              //   console.log(
+              //     "Full Dubai Date-Time:",
+              //     dubaiDate.format("DD-MM-YYYY HH:mm:ss")
+              //   );
+              // }}
+
               value={
-                machineinputRow.date
+                machineinputRow.date &&
+                dayjs(machineinputRow.date, "DD-MM-YYYY").isValid()
                   ? dayjs.tz(machineinputRow.date, "DD-MM-YYYY", "Asia/Dubai")
                   : null
               }
-              onChange={(date) => {
-                const dubaiDate = dayjs(date).tz("Asia/Dubai");
-                const formattedDate = dubaiDate.format("DD-MM-YYYY");
-                const formattedTime = dubaiDate.format("HH:mm:ss");
-
-                setMachineInputRow({
-                  ...machineinputRow,
-                  date: formattedDate,
-                });
-
-                // ✅ Log time in Dubai
-                console.log("Selected Dubai Date:", formattedDate);
-                console.log("Selected Dubai Time:", formattedTime);
-                console.log(
-                  "Full Dubai Date-Time:",
-                  dubaiDate.format("DD-MM-YYYY HH:mm:ss")
-                );
+              onChange={(dateObj) => {
+                if (!dateObj) {
+                  setMachineInputRow({ ...machineinputRow, date: "" });
+                  return;
+                }
+                const formatted = dayjs(dateObj)
+                  .tz("Asia/Dubai")
+                  .format("DD-MM-YYYY");
+                setMachineInputRow({ ...machineinputRow, date: formatted });
               }}
             />
           </Tooltip>
