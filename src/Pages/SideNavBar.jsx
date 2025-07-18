@@ -430,8 +430,7 @@ export default function SideNavBar({ onLogout, username }) {
             </div>
           </div>
           <div className="haitian-title mt-2  ">
-            Inventory
-            Management System
+            Inventory Management System
           </div>
 
           <div className="m-auto text-center mt-3 ">
@@ -477,9 +476,10 @@ export default function SideNavBar({ onLogout, username }) {
             <Menu.Item key="/reports" icon={<BarChartOutlined />}>
               Reports
             </Menu.Item>
-            <Menu.Item key="/addUser" icon={<UserAddOutlined />}>
+            { username === "Admin" ? 
+            (<Menu.Item key="/addUser" icon={<UserAddOutlined />}>
               Add New User
-            </Menu.Item>
+            </Menu.Item>):""}
           </Menu>
         </div>
 

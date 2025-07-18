@@ -64,7 +64,7 @@ export default function AddUser() {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbytyy091Bha5vW_9Uiamogta9kLjiNiKjJtAsBro1DXENHplKVQj4mWCEVXXHLt1RblTg/exec",
+        "https://script.google.com/macros/s/AKfycbyRZUlsVE5L_trqumzzvxS7pd2Llkds4wT4h5W8LQfGa6KnmjSwg-4lZ4nBzsCbCLM5Dg/exec",
         {
           method: "POST",
           body: new URLSearchParams({

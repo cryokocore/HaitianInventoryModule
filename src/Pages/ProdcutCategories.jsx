@@ -93,7 +93,7 @@ export default function ProductCategories() {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbytyy091Bha5vW_9Uiamogta9kLjiNiKjJtAsBro1DXENHplKVQj4mWCEVXXHLt1RblTg/exec";
+    "https://script.google.com/macros/s/AKfycbyRZUlsVE5L_trqumzzvxS7pd2Llkds4wT4h5W8LQfGa6KnmjSwg-4lZ4nBzsCbCLM5Dg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -922,6 +922,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Price"
               type="number"
+              min={0}
               value={inputRow.price}
               onChange={(e) => {
                 const price = e.target.value;
@@ -1259,6 +1260,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Price"
               type="number"
+              min={0}
               value={auxiliariesInputRow.price}
               onChange={(e) => {
                 const price = e.target.value;
@@ -1520,6 +1522,7 @@ export default function ProductCategories() {
           <Tooltip>
             <Input
               placeholder="Enter part number"
+              
               value={assetsInputRow.partNumber}
               onChange={(e) =>
                 setAssetsInputRow({
@@ -1587,6 +1590,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Price"
               type="number"
+              min={0}
               value={assetsInputRow.price}
               onChange={(e) => {
                 const price = e.target.value;
@@ -1908,6 +1912,7 @@ export default function ProductCategories() {
             <Input
               placeholder="Price"
               type="number"
+              min={0}
               value={machineinputRow.price}
               onChange={(e) => {
                 const price = e.target.value;
