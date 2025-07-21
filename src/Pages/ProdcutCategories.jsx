@@ -26,7 +26,7 @@ notification.config({
   duration: 3,
 });
 
-export default function ProductCategories() {
+export default function ProductCategories({username}) {
   const [form] = Form.useForm();
   const [partNumber, setPartNumber] = useState("");
   const [description, setDescription] = useState("");
@@ -93,7 +93,7 @@ export default function ProductCategories() {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbyRZUlsVE5L_trqumzzvxS7pd2Llkds4wT4h5W8LQfGa6KnmjSwg-4lZ4nBzsCbCLM5Dg/exec";
+    "https://script.google.com/macros/s/AKfycbwqv_totnbUBmZ4r8xaPGD3zwc5jbt4pFR7kskXe8Ea1PrwQefUKofu7KxO-h30Zh8yvg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -407,6 +407,8 @@ export default function ProductCategories() {
     },
   ];
 
+  useEffect(()=>{console.log("UserName", username)},[])
+
   useEffect(() => {
     const fetchStockInHand = async () => {
       if (!machineinputRow.partNumber.trim()) return;
@@ -641,9 +643,11 @@ export default function ProductCategories() {
           machinePrice: machine.price || "-",
           machineTotalPrice: machine.totalPrice || "-",
           machineDate: machine.date || "",
+          userName: username || "",
 
           consumables: i === 0 ? consumables || "" : "",
           tools: i === 0 ? tools || "" : "",
+          
 
           auxiliaries: Array.isArray(auxiliaries)
             ? auxiliaries.join(" / ")
@@ -712,6 +716,8 @@ export default function ProductCategories() {
           assets: assets || "-",
           consumables: consumables || "-",
           tools: tools || "-",
+                    userName: username || "",
+
         });
 
         console.log(
@@ -2073,8 +2079,7 @@ export default function ProductCategories() {
 }
     .ant-form-item .ant-form-item-label >label {
     position: relative;
-    display: inline-flex
-;
+    display: inline-flex;
     align-items: center;
     max-width: 100%;
     height: 32px;

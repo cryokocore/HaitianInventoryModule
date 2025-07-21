@@ -1,71 +1,3 @@
-// import './App.css';
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import SideNavBar from './Components/SideNavBar';
-// import Inventory from './Components/Inventory';
-// import ProductCategories from './Components/ProdcutCategories';
-// import  Login from "./Components/Login";
-
-// function App() {
-//   return (
-//     // <Router>
-//     //   <div style={{ display: "flex" }}>
-//     //     <SideNavBar />
-//     //     <div style={{ marginLeft: 260, width: "100%", padding: '20px' }}>
-//     //       <Routes>
-//     //         <Route path="/" element={<Inventory />} />
-//     //         <Route path="/inventory" element={<Inventory />} />
-//     //         <Route path="/productCategories" element={<ProductCategories />} />
-
-//     //       </Routes>
-//     //     </div>
-//     //   </div>
-//     // </Router>
-//     <>
-//     <Login />
-//     </>
-//   );
-// }
-
-// export default App;
-
-// import './App.css';
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import { useState } from 'react';
-// import SideNavBar from './Components/SideNavBar';
-// import Inventory from './Components/Inventory';
-// import ProductCategories from './Components/ProdcutCategories';
-// import Login from "./Components/Login";
-
-// function App() {
-//   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-//   const handleLoginSuccess = () => setIsLoggedIn(true);
-//   const handleLogout = () => setIsLoggedIn(false);
-
-//   return (
-//     <Router >
-//       {!isLoggedIn ? (
-//         <Login onLoginSuccess={handleLoginSuccess} />
-//       ) : (
-//         <div style={{ display: "flex" }} >
-//           <SideNavBar onLogout={handleLogout} />
-//           <div style={{ marginLeft: 260, width: "100%", padding: '20px'}}>
-//             <Routes>
-//               <Route path="/" element={<Inventory />} />
-//               <Route path="/inventory" element={<Inventory />} />
-//               <Route path="/productCategories" element={<ProductCategories />} />
-//             </Routes>
-//           </div>
-//         </div>
-//       )}
-//     </Router>
-//   );
-// }
-
-// export default App;
-
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
@@ -81,6 +13,7 @@ import ProductCategories from "./Pages/ProdcutCategories";
 import Login from "./Pages/Login";
 import { notification } from "antd";
 import AddUser from "./Pages/AddUser";
+import CustomerDetails from "./Pages/CustomerDetails";
 notification.config({
   maxCount: 2,
   placement: "bottomRight",
@@ -113,7 +46,6 @@ function App() {
         className={`fade-container ${isFadingOut ? "fade-out" : ""}`}
         style={{ display: "flex" }}
       >
-        {/* {isLoggedIn && <SideNavBar onLogout={handleLogout} />} */}
         {isLoggedIn && (
           <SideNavBar onLogout={handleLogout} username={username} />
         )}
@@ -142,12 +74,12 @@ function App() {
             />
             <Route
               path="/productCategories"
-              element={isLoggedIn ? <ProductCategories /> : <Navigate to="/" />}
+              element={isLoggedIn ? <ProductCategories username={username} /> : <Navigate to="/" />}
             />
             <Route
-              path="/orders"
+              path="/customerDetails"
               element={
-                isLoggedIn ? <Navigate to="/orders" /> : <Navigate to="/" />
+                isLoggedIn ? <CustomerDetails /> : <Navigate to="/" />
               }
             />
                 <Route

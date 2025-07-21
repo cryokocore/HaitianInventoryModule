@@ -45,8 +45,10 @@ export default function AddUser() {
 }
     .ant-form-item .ant-form-item-label >label {
     position: relative;
-    display: inline-flex
-;
+    display: inline-flex;
+    color: #0D3884;
+    font-size: 14px;
+
     align-items: center;
     max-width: 100%;
     height: 32px;
@@ -64,7 +66,7 @@ export default function AddUser() {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbyRZUlsVE5L_trqumzzvxS7pd2Llkds4wT4h5W8LQfGa6KnmjSwg-4lZ4nBzsCbCLM5Dg/exec",
+        "https://script.google.com/macros/s/AKfycbwqv_totnbUBmZ4r8xaPGD3zwc5jbt4pFR7kskXe8Ea1PrwQefUKofu7KxO-h30Zh8yvg/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -168,39 +170,23 @@ export default function AddUser() {
                 >
                   <div className="row mt-3">
                     <Form.Item
-                      label={
-                        <>
-                          <FontAwesomeIcon
-                            icon={faCircleUser}
-                            className="me-1"
-                            size="lg"
-                          />
-                          Username
-                        </>
-                      }
+                      label= "User Name"
                       name="username"
+                      className="fw-bold"
                       rules={[
                         {
                           required: true,
                           message: "Please input your username!",
                         },
                       ]}
-                    >
-                      <Input size="large" />
+                    > 
+                      <Input  placeholder="Enter user name" />
                     </Form.Item>
 
                     <Form.Item
-                      label={
-                        <>
-                          <FontAwesomeIcon
-                            icon={faLock}
-                            className="me-1"
-                            size="lg"
-                          />
-                          Password
-                        </>
-                      }
+                      label="Password"
                       name="password"
+                      className="fw-bold"
                       hasFeedback
                       rules={[
                         {
@@ -226,21 +212,13 @@ export default function AddUser() {
                         }),
                       ]}
                     >
-                      <Input.Password size="large" />
+                      <Input.Password placeholder="Enter Password" />
                     </Form.Item>
 
                     <Form.Item
-                      label={
-                        <>
-                          <FontAwesomeIcon
-                            icon={faLock}
-                            className="me-1"
-                            size="lg"
-                          />
-                          Confirm Password
-                        </>
-                      }
+                      label= "Confirm Password"
                       name="confirmpassword"
+                      className="fw-bold"
                       dependencies={["password"]}
                       hasFeedback
                       rules={[
@@ -260,7 +238,7 @@ export default function AddUser() {
                         }),
                       ]}
                     >
-                      <Input.Password size="large" />
+                      <Input.Password  placeholder="Enter Conform Password" />
                     </Form.Item>
 
                     <div className="col-12 text-center mt-4 mb-3">

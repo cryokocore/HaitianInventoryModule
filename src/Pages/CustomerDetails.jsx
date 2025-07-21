@@ -1,0 +1,358 @@
+import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faListCheck } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCircleUser,
+  faLock,
+  faUserPlus,
+  faUsers,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  Button,
+  Form,
+  Input,
+  Select,
+  Cascader,
+  message,
+  Table,
+  notification,
+  Tooltip,
+} from "antd";
+import "../App.css";
+
+export default function CustomerDetails() {
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const styl = `.ant-form-item .ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-weight: normal;
+  }
+  .ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+    transition: none;
+    pointer-events: none;
+    font-weight: normal;
+  }
+  
+ .ant-cascader-dropdown.ant-select-dropdown {
+    padding: 0;
+    width: 60% !important;
+    height: auto !important;
+}
+    .ant-form-item .ant-form-item-label >label {
+    position: relative;
+    display: inline-flex;
+    color: #0D3884;
+    font-size: 14px;
+
+    align-items: center;
+    max-width: 100%;
+    height: 32px;
+    color: #0D3884;
+    font-size: 14px;
+}
+.ant-form-item .ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-weight: normal !important;
+}    
+  
+  `;
+  return (
+    <>
+      <style>{styl}</style>
+
+      <div className="container-fluid">
+        <div className="container">
+          <div>
+            <h1
+              className="text-center m-0 p-0 haitianColor mt-1 "
+              style={{ fontSize: "30px" }}
+            >
+              Customer Details
+            </h1>
+            <p
+              className="text-center m-0 p-0 haitianInventoryDescriptionText"
+              style={{ color: "#0D3884" }}
+            >
+              (Provide customer information)
+            </p>
+          </div>
+          <div className="row d-flex flex-row mt-4 ">
+            <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly rounded-4">
+              <div className="col-12 p-3 p-lg-4  ">
+                <div className="d-flex align-items-center gap-2 mb-1">
+                  <div
+                    className="d-flex align-items-center justify-content-center"
+                    style={{
+                      backgroundColor: "#e8f0fe",
+                      borderRadius: "12px",
+                      width: "40px",
+                      height: "40px",
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      icon={faUsers}
+                      size="lg"
+                      style={{ color: "#0D3884" }}
+                    />
+                  </div>
+                  <div>
+                    <div
+                      className="fw-bold m-0 p-0"
+                      style={{ fontSize: "20px", color: "#0D3884" }}
+                    >
+                      Customer information
+                    </div>
+                    <div
+                      className="m-0 p-0"
+                      style={{ fontSize: "14px", color: "#0D3884" }}
+                    >
+                      Fill in the details to create a new customer
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border border-1"></div>
+
+                <Form
+                  form={form}
+                  layout="vertical"
+                  //   onFinish={handleSubmit}
+                  className="mt-3 mt-lg-3"
+                  disabled={loading}
+                >
+                  <div className="row mt-3">
+                    <Form.Item
+                      label="Company Name"
+                      name="companyname"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input company name!",
+                        },
+                        {
+                           pattern: /^[A-Za-z\s.]+$/,
+                          message: "Company name should not contain numbers or special characters!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter Company Name" />
+                    </Form.Item>
+                    <Form.Item
+                      label="Primary Contact"
+                      name="primarycontact"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "",
+                        },
+                      ]}
+                    >
+                      <div className="row">
+                        <div className="col-2">
+                          <Form.Item
+                            name="salutation"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select a salutation!",
+                              },
+                            ]}
+                          >
+                            <Select placeholder="Salutation">
+                              <Select.Option value="Mr.">Mr.</Select.Option>
+                              <Select.Option value="Mrs.">Mrs.</Select.Option>
+                            </Select>
+                          </Form.Item>
+                        </div>
+
+                        <div className="col-5">
+                          <Form.Item
+                            name="firstname"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter first name!",
+                              },
+                              {
+                                 pattern: /^[A-Za-z\s.]+$/,
+                                message:
+                                  "First name should not contain numbers or special characters!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter First Name" />
+                          </Form.Item>
+                        </div>
+
+                        <div className="col-5">
+                          <Form.Item
+                            name="lastname"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter last name!",
+                              },
+                              {
+                                 pattern: /^[A-Za-z\s.]+$/,
+                                message:
+                                  "Last name should not contain numbers or special characters!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Last Name" />
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Customer Email"
+                      name="customerEmail"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input customer email!",
+                        },
+                        {
+                          validator: (_, value) => {
+                            if (!value) return Promise.resolve();
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            return emailRegex.test(value)
+                              ? Promise.resolve()
+                              : Promise.reject(
+                                  "Please enter a valid email address"
+                                );
+                          },
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter Customer Email" />
+                    </Form.Item>
+                      <Form.Item
+                      label="Customer Phone"
+                      name="customerPhone"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "",
+                        },
+                      ]}
+                    >
+                      <div className="row">
+                      
+
+                        <div className="col-6">
+                          <Form.Item
+                            name="workPhoneNumber"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter cutomer work phone number!",
+                              },
+                              {
+                                 pattern: /^[0-9\s-]+$/,
+                                message:
+                                  "Work phone number should not contain special characters!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Work Phone Number" />
+                          </Form.Item>
+                        </div>
+
+                        <div className="col-6">
+                          <Form.Item
+                            name="mobileNumber"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter cutomer mobile number!",
+                              },
+                              {
+                                 pattern: /^[0-9\s-]+$/,
+                                message:
+                                  "Mobile number should not contain special characters!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Mobile Number" />
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </Form.Item>
+                    <Form.Item  
+                    label="Address"
+                      name="address"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the address!",
+                        },
+                      ]} >
+                    <Input.TextArea placeholder="Enter Address" rows={3}/>
+                    </Form.Item>
+                     <Form.Item  
+                    label="TRN"
+                      name="trn"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter transaction reference number!",
+                        },
+                      ]} >
+                    <Input placeholder="Enter Transaction Reference Number (TRN)"/>
+                    </Form.Item>
+                       <Form.Item  
+                    label="Currency"
+                      name="currency"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select the currency type!",
+                        },
+                      ]} >
+                      <Select>
+                        <option value="AED">United Arab Emirates - AED</option>
+                        <option value="USD">United States Of America - USD</option>
+                        
+                        </Select>  
+                    </Form.Item>
+                        <Form.Item  
+                    label="Payment Terms"
+                      name="paymentTerms"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter payment terms!",
+                        },
+                      ]} >
+                    <Input placeholder="Enter Payment Terms" />
+                    </Form.Item>
+                    <div className="col-12 text-center mt-4 mb-3">
+                      <Button
+                        htmlType="submit"
+                        size="large"
+                        className="submitButton mt-2"
+                        loading={loading}
+                      >
+                        {loading ? "Adding Customer" : "Add Customer"}
+                      </Button>
+                    </div>
+                  </div>
+                </Form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

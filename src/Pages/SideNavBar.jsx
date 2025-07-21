@@ -300,6 +300,7 @@ import {
   BarChartOutlined,
   UnorderedListOutlined,
   LogoutOutlined,
+  IdcardOutlined
 } from "@ant-design/icons";
 import "../App.css";
 import HaitianLogo from "../Images/HaitianLogo.png";
@@ -317,7 +318,7 @@ export default function SideNavBar({ onLogout, username }) {
    }
 
     .ant-menu-item {
-  font-size: 16px;
+  font-size: 15px;
   padding: 12px 16px !important;
   margin: 6px 10px !important;
   border-radius: 8px !important;
@@ -326,6 +327,7 @@ export default function SideNavBar({ onLogout, username }) {
   overflow: hidden;
   position: relative;
   box-sizing: border-box; 
+  font-weight: 400;
   transform: scale(1); /* base scale */
 }
 
@@ -369,24 +371,26 @@ export default function SideNavBar({ onLogout, username }) {
 
     .haitian-title {
       color: #f3f4f6;
-      font-size: 17px;
+      font-size: 16px;
       text-align: center;
-      font-weight: 600;
+      font-weight: 300;
     }
 
     .sidebar-divider {
-      border: 1px solid  #fcf8f8b0;
+      border-top: 1px solid  #fcf8f8b0;
+      width:90%;
+      margin: 0 auto;
   
     }
 
     .logout-container {
-      padding: 20px;
-      border-top: 2px solid #fcf8f8b0;
+      padding: 10px;
+      border-top: 1px solid #fcf8f8b0;
     }
 
     .logout-button {
       color: #fff;
-      font-size: 18px !important;
+      font-size: 16px !important;
       padding: 10px 16px;
       border-radius: 8px;
       display: flex;
@@ -407,7 +411,7 @@ export default function SideNavBar({ onLogout, username }) {
       <div
         className="shadow"
         style={{
-          width: 260,
+          width: 270,
           height: "100vh",
           backgroundColor: "#0D3884",
           display: "flex",
@@ -439,7 +443,7 @@ export default function SideNavBar({ onLogout, username }) {
               style={{ backgroundColor: "white", color: "#0d3884" }}
             /> */}
             <div className="profile-box">
-              <Avatar size={64} className="profile-avatar">
+              <Avatar size={55} className="profile-avatar">
                 {username?.slice(0, 2).toUpperCase() || "N/A"}
               </Avatar>
               <div className="profile-username">{username || "N/A"}</div>
@@ -470,8 +474,8 @@ export default function SideNavBar({ onLogout, username }) {
             >
               Product Categories
             </Menu.Item>
-            <Menu.Item key="/orders" icon={<OrderedListOutlined />}>
-              Orders
+            <Menu.Item key="/customerDetails" icon={<IdcardOutlined style={{ fontSize: '18px' }} />}>
+              Customer Details
             </Menu.Item>
             <Menu.Item key="/reports" icon={<BarChartOutlined />}>
               Reports
@@ -484,7 +488,7 @@ export default function SideNavBar({ onLogout, username }) {
         </div>
 
         {/* Bottom: Logout */}
-        <div className="logout-container">
+        <div className="logout-container sidebar-divider">
           <Button
             className="logoutButton"
             onClick={onLogout}

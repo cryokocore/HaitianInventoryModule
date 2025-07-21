@@ -18,7 +18,7 @@ export default function Login({ onLoginSuccess }) {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbyRZUlsVE5L_trqumzzvxS7pd2Llkds4wT4h5W8LQfGa6KnmjSwg-4lZ4nBzsCbCLM5Dg/exec",
+        "https://script.google.com/macros/s/AKfycbwqv_totnbUBmZ4r8xaPGD3zwc5jbt4pFR7kskXe8Ea1PrwQefUKofu7KxO-h30Zh8yvg/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -107,12 +107,12 @@ export default function Login({ onLoginSuccess }) {
                   />
                 </div>
                 <div>
-                  <h3
+                  <h4
                     className="text-center haitianColor m-0 p-0"
-                    style={{ fontWeight: "500" }}
+                    style={{ fontWeight: "600" }}
                   >
                     Inventory Management System
-                  </h3>
+                  </h4>
                   <p className="text-center text-muted">
                     Please log in to your account
                   </p>
