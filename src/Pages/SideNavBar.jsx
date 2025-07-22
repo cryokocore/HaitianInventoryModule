@@ -429,7 +429,7 @@ export default function SideNavBar({ onLogout, username }) {
               <img
                 src={HaitianLogo}
                 alt="Haitian Logo"
-                className="haitian-logo mt-3 text-center "
+                className="haitian-logo mt-2 text-center "
               />
             </div>
           </div>
@@ -490,7 +490,7 @@ export default function SideNavBar({ onLogout, username }) {
         {/* Bottom: Logout */}
         <div className="logout-container sidebar-divider">
           <Button
-            className="logoutButton"
+            className="logoutButton mb-1"
             onClick={onLogout}
             style={{ cursor: "pointer" }}
             title="Logout"

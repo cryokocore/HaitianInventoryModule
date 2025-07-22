@@ -26,7 +26,7 @@ notification.config({
   duration: 3,
 });
 
-export default function ProductCategories({username}) {
+export default function ProductCategories({ username }) {
   const [form] = Form.useForm();
   const [partNumber, setPartNumber] = useState("");
   const [description, setDescription] = useState("");
@@ -93,7 +93,7 @@ export default function ProductCategories({username}) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbwqv_totnbUBmZ4r8xaPGD3zwc5jbt4pFR7kskXe8Ea1PrwQefUKofu7KxO-h30Zh8yvg/exec";
+    "https://script.google.com/macros/s/AKfycbxgU26ToozFQ4UI9Lvk07t7ewH7FChnZNEDuoT1l9ScMLaPd1EqIx1chVsO_kl-McNFOQ/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -407,7 +407,9 @@ export default function ProductCategories({username}) {
     },
   ];
 
-  useEffect(()=>{console.log("UserName", username)},[])
+  useEffect(() => {
+    console.log("UserName", username);
+  }, []);
 
   useEffect(() => {
     const fetchStockInHand = async () => {
@@ -647,7 +649,6 @@ export default function ProductCategories({username}) {
 
           consumables: i === 0 ? consumables || "" : "",
           tools: i === 0 ? tools || "" : "",
-          
 
           auxiliaries: Array.isArray(auxiliaries)
             ? auxiliaries.join(" / ")
@@ -716,8 +717,7 @@ export default function ProductCategories({username}) {
           assets: assets || "-",
           consumables: consumables || "-",
           tools: tools || "-",
-                    userName: username || "",
-
+          userName: username || "",
         });
 
         console.log(
@@ -766,7 +766,14 @@ export default function ProductCategories({username}) {
   const handleAdd = () => {
     const { partNumber, description, quantity, price, totalPrice } = inputRow;
 
-    if (!partNumber || !description || !quantity || !price || !totalPrice || !inputRow.date )  {
+    if (
+      !partNumber ||
+      !description ||
+      !quantity ||
+      !price ||
+      !totalPrice ||
+      !inputRow.date
+    ) {
       notification.error({
         message: "Error",
         description:
@@ -1093,7 +1100,7 @@ export default function ProductCategories({username}) {
       !quantity?.trim() ||
       isNaN(parseFloat(price)) ||
       isNaN(parseFloat(totalPrice)) ||
-        !auxiliariesInputRow.date
+      !auxiliariesInputRow.date
     ) {
       notification.error({
         message: "Error",
@@ -1166,8 +1173,13 @@ export default function ProductCategories({username}) {
               // }}
 
               value={
-                auxiliariesInputRow.date && dayjs(auxiliariesInputRow.date, "DD-MM-YYYY").isValid()
-                  ? dayjs.tz(auxiliariesInputRow.date, "DD-MM-YYYY", "Asia/Dubai")
+                auxiliariesInputRow.date &&
+                dayjs(auxiliariesInputRow.date, "DD-MM-YYYY").isValid()
+                  ? dayjs.tz(
+                      auxiliariesInputRow.date,
+                      "DD-MM-YYYY",
+                      "Asia/Dubai"
+                    )
                   : null
               }
               onChange={(dateObj) => {
@@ -1178,7 +1190,10 @@ export default function ProductCategories({username}) {
                 const formatted = dayjs(dateObj)
                   .tz("Asia/Dubai")
                   .format("DD-MM-YYYY");
-                setAuxiliariesInputRow({ ...auxiliariesInputRow, date: formatted });
+                setAuxiliariesInputRow({
+                  ...auxiliariesInputRow,
+                  date: formatted,
+                });
               }}
             />
           </Tooltip>
@@ -1426,7 +1441,14 @@ export default function ProductCategories({username}) {
     const { partNumber, description, quantity, price, totalPrice } =
       assetsInputRow;
 
-    if (!partNumber || !description || !quantity || !price || !totalPrice || !assetsInputRow.date) {
+    if (
+      !partNumber ||
+      !description ||
+      !quantity ||
+      !price ||
+      !totalPrice ||
+      !assetsInputRow.date
+    ) {
       notification.error({
         message: "Error",
         description:
@@ -1528,7 +1550,6 @@ export default function ProductCategories({username}) {
           <Tooltip>
             <Input
               placeholder="Enter part number"
-              
               value={assetsInputRow.partNumber}
               onChange={(e) =>
                 setAssetsInputRow({
@@ -1752,7 +1773,14 @@ export default function ProductCategories({username}) {
     const { partNumber, description, quantity, price, totalPrice } =
       machineinputRow;
 
-    if (!partNumber || !description || !quantity || !price || !totalPrice || !machineinputRow.date ) {
+    if (
+      !partNumber ||
+      !description ||
+      !quantity ||
+      !price ||
+      !totalPrice ||
+      !machineinputRow.date
+    ) {
       notification.error({
         message: "Error",
         description:
@@ -2690,6 +2718,103 @@ export default function ProductCategories({username}) {
                           ? "Submitting Categories"
                           : "Submit Categories"}
                       </Button>
+
+                      {selectedCategory && (
+                        <Button
+                          size="large"
+                          className="clearButton mt-2 ms-3"
+                          onClick={() => {
+                            // Helper function to check if all fields in an object are empty
+                            const isObjectEmpty = (obj) =>
+                              Object.values(obj).every(
+                                (value) =>
+                                  value === "" ||
+                                  value === null ||
+                                  value === undefined
+                              );
+
+                            const formValues = form.getFieldsValue(true);
+
+                            const isEverythingEmpty =
+                              (!formValues ||
+                                Object.values(formValues).every(
+                                  (val) => !val
+                                )) &&
+                              machineDataSource.length === 0 &&
+                              auxiliariesDataSource.length === 0 &&
+                              assetsDataSource.length === 0 &&
+                              dataSource.length === 0 &&
+                              isObjectEmpty(inputRow) &&
+                              isObjectEmpty(machineinputRow) &&
+                              isObjectEmpty(auxiliariesInputRow) &&
+                              isObjectEmpty(assetsInputRow);
+
+                            if (isEverythingEmpty) {
+                              notification.info({
+                                message: "Nothing to Clear",
+                                description:
+                                  "There are no fields or rows to clear.",
+                              });
+                              return;
+                            }
+
+                            // Reset everything
+                            form.resetFields();
+
+                            setInputRow({
+                              partNumber: "",
+                              description: "",
+                              quantity: "",
+                              stockInHand: "",
+                              note: "",
+                              price: "",
+                              totalPrice: "",
+                            });
+
+                            setMachineInputRow({
+                              partNumber: "",
+                              description: "",
+                              quantity: "",
+                              stockInHand: "",
+                              note: "",
+                              price: "",
+                              totalPrice: "",
+                            });
+
+                            setAuxiliariesInputRow({
+                              partNumber: "",
+                              description: "",
+                              quantity: "",
+                              stockInHand: "",
+                              note: "",
+                              price: "",
+                              totalPrice: "",
+                            });
+
+                            setAssetsInputRow({
+                              partNumber: "",
+                              description: "",
+                              quantity: "",
+                              stockInHand: "",
+                              note: "",
+                              price: "",
+                              totalPrice: "",
+                            });
+
+                            setMachineDataSource([]);
+                            setAuxiliariesDataSource([]);
+                            setAssetsDataSource([]);
+                            setDataSource([]);
+
+                            notification.success({
+                              message: "Success",
+                              description: "Form cleared successfully!",
+                            });
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Form>

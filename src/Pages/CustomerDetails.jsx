@@ -20,9 +20,58 @@ import {
 } from "antd";
 import "../App.css";
 
-export default function CustomerDetails() {
+export default function CustomerDetails({ username }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (values) => {
+    console.log(values);
+   
+
+    try {
+      setLoading(true);
+      const response = await fetch("https://script.google.com/macros/s/AKfycbxgU26ToozFQ4UI9Lvk07t7ewH7FChnZNEDuoT1l9ScMLaPd1EqIx1chVsO_kl-McNFOQ/exec", {
+        method: "POST",
+        body: new URLSearchParams({
+          action: "addCustomer",
+          companyname: values.companyname || "-",
+          salutation: values.salutation || "-",
+          firstname: values.firstname || "-",
+          lastname: values.lastname || "-",
+          customerEmail: values.customerEmail || "-",
+          workPhoneNumber: values.workPhoneNumber || "-",
+          mobileNumber: values.mobileNumber || "-",
+          address: values.address || "-",
+          trn: values.trn || "-",
+          currency: values.currency || "-",
+          paymentTerms: values.paymentTerms || "-",
+          deliveryTerms: values.deliveryTerms || "-",
+          userName: username || "-",
+        }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        notification.success({
+          message: "Success",
+          description: result.message,
+        });
+        form.resetFields();
+      } else {
+        notification.error({
+          message: "Error",
+          description: result.message || "Failed to add customer",
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Something went wrong",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const styl = `.ant-form-item .ant-form-item-explain-error {
     color: #ff4d4f;
     font-weight: normal;
@@ -116,7 +165,7 @@ export default function CustomerDetails() {
                 <Form
                   form={form}
                   layout="vertical"
-                  //   onFinish={handleSubmit}
+                  onFinish={handleSubmit}
                   className="mt-3 mt-lg-3"
                   disabled={loading}
                 >
@@ -131,8 +180,9 @@ export default function CustomerDetails() {
                           message: "Please input company name!",
                         },
                         {
-                           pattern: /^[A-Za-z\s.]+$/,
-                          message: "Company name should not contain numbers or special characters!",
+                          pattern: /^[A-Za-z\s.]+$/,
+                          message:
+                            "Company name should not contain numbers or special characters!",
                         },
                       ]}
                     >
@@ -176,7 +226,7 @@ export default function CustomerDetails() {
                                 message: "Please enter first name!",
                               },
                               {
-                                 pattern: /^[A-Za-z\s.]+$/,
+                                pattern: /^[A-Za-z\s.]+$/,
                                 message:
                                   "First name should not contain numbers or special characters!",
                               },
@@ -195,7 +245,7 @@ export default function CustomerDetails() {
                                 message: "Please enter last name!",
                               },
                               {
-                                 pattern: /^[A-Za-z\s.]+$/,
+                                pattern: /^[A-Za-z\s.]+$/,
                                 message:
                                   "Last name should not contain numbers or special characters!",
                               },
@@ -231,7 +281,7 @@ export default function CustomerDetails() {
                     >
                       <Input placeholder="Enter Customer Email" />
                     </Form.Item>
-                      <Form.Item
+                    <Form.Item
                       label="Customer Phone"
                       name="customerPhone"
                       className="fw-bold"
@@ -243,18 +293,17 @@ export default function CustomerDetails() {
                       ]}
                     >
                       <div className="row">
-                      
-
                         <div className="col-6">
                           <Form.Item
                             name="workPhoneNumber"
                             rules={[
                               {
                                 required: true,
-                                message: "Please enter cutomer work phone number!",
+                                message:
+                                  "Please enter cutomer work phone number!",
                               },
                               {
-                                 pattern: /^[0-9\s-]+$/,
+                                pattern: /^[0-9\s-]+$/,
                                 message:
                                   "Work phone number should not contain special characters!",
                               },
@@ -273,7 +322,7 @@ export default function CustomerDetails() {
                                 message: "Please enter cutomer mobile number!",
                               },
                               {
-                                 pattern: /^[0-9\s-]+$/,
+                                pattern: /^[0-9\s-]+$/,
                                 message:
                                   "Mobile number should not contain special characters!",
                               },
@@ -284,8 +333,8 @@ export default function CustomerDetails() {
                         </div>
                       </div>
                     </Form.Item>
-                    <Form.Item  
-                    label="Address"
+                    <Form.Item
+                      label="Address"
                       name="address"
                       className="fw-bold"
                       rules={[
@@ -293,11 +342,12 @@ export default function CustomerDetails() {
                           required: true,
                           message: "Please enter the address!",
                         },
-                      ]} >
-                    <Input.TextArea placeholder="Enter Address" rows={3}/>
+                      ]}
+                    >
+                      <Input.TextArea placeholder="Enter Address"  autoSize={{ minRows:3, maxRows: 3 }} />
                     </Form.Item>
-                     <Form.Item  
-                    label="TRN"
+                    <Form.Item
+                      label="TRN"
                       name="trn"
                       className="fw-bold"
                       rules={[
@@ -305,11 +355,12 @@ export default function CustomerDetails() {
                           required: true,
                           message: "Please enter transaction reference number!",
                         },
-                      ]} >
-                    <Input placeholder="Enter Transaction Reference Number (TRN)"/>
+                      ]}
+                    >
+                      <Input placeholder="Enter Transaction Reference Number (TRN)" />
                     </Form.Item>
-                       <Form.Item  
-                    label="Currency"
+                    <Form.Item
+                      label="Currency"
                       name="currency"
                       className="fw-bold"
                       rules={[
@@ -317,15 +368,17 @@ export default function CustomerDetails() {
                           required: true,
                           message: "Please select the currency type!",
                         },
-                      ]} >
+                      ]}
+                    >
                       <Select>
                         <option value="AED">United Arab Emirates - AED</option>
-                        <option value="USD">United States Of America - USD</option>
-                        
-                        </Select>  
+                        <option value="USD">
+                          United States Of America - USD
+                        </option>
+                      </Select>
                     </Form.Item>
-                        <Form.Item  
-                    label="Payment Terms"
+                    <Form.Item
+                      label="Payment Terms"
                       name="paymentTerms"
                       className="fw-bold"
                       rules={[
@@ -333,8 +386,28 @@ export default function CustomerDetails() {
                           required: true,
                           message: "Please enter payment terms!",
                         },
-                      ]} >
-                    <Input placeholder="Enter Payment Terms" />
+                      ]}
+                    >
+                      <Input.TextArea
+                        rows={3}
+                        placeholder="Enter Payment Terms"
+                      />
+                    </Form.Item>
+                        <Form.Item
+                      label="Delivery Terms"
+                      name="deliveryTerms"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter delivery terms!",
+                        },
+                      ]}
+                    >
+                      <Input.TextArea
+                        rows={3}
+                        placeholder="Enter Payment Terms"
+                      />
                     </Form.Item>
                     <div className="col-12 text-center mt-4 mb-3">
                       <Button

@@ -73,6 +73,7 @@ body {
   will-change: transform; 
   box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
 }
+
 .submitButton:hover {
   /* color: #0d3884 !important;
   background-color: white !important;
@@ -82,6 +83,28 @@ body {
     transform: scale(1.02); /* Subtle, clean zoom */
   
 }
+
+.clearButton {
+  width: 20% !important;
+  background-color: #ff4d4f !important;
+  color: white !important;
+  font-size: 20px !important;
+  border: 2px solid #ff4d4f !important;
+  transition: all 0.4s ease-in-out !important;
+  font-weight: 500 !important;
+  will-change: transform; 
+  box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
+}
+.clearButton:hover {
+  /* color: #0d3884 !important;
+  background-color: white !important;
+  border: 2px solid #0d3884 !important;
+  font-size: 20px !important;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082); */
+    transform: scale(1.02); /* Subtle, clean zoom */
+  
+}
+
 
 .addButton {
   background-color: #0d3884 !important;
@@ -299,8 +322,8 @@ body {
 }
 
 .profile-box {
-  background-color: rgba(255, 255, 255, 0.09);
-  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
   padding: 15px;
   margin: 10px auto 0;
   width:90%;
@@ -314,7 +337,7 @@ body {
   color: #0D3884 !important;
   font-weight: 500;
   margin-bottom: 10px;
-  box-shadow: 0 0 7px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.2);
   transition: box-shadow 0.4s ease;
 }
 
@@ -324,3 +347,35 @@ body {
   font-weight: 300;
   color: #f9fafb;
 }
+
+
+
+.page-enter {
+  animation: dimSlideIn 0.5s ease-out forwards;
+}
+.page-exit {
+  animation: dimSlideOut 0.3s ease-in forwards;
+}
+
+@keyframes dimSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes dimSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+}
+
