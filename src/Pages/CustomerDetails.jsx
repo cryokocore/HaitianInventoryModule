@@ -26,29 +26,31 @@ export default function CustomerDetails({ username }) {
 
   const handleSubmit = async (values) => {
     console.log(values);
-   
 
     try {
       setLoading(true);
-      const response = await fetch("https://script.google.com/macros/s/AKfycbxgU26ToozFQ4UI9Lvk07t7ewH7FChnZNEDuoT1l9ScMLaPd1EqIx1chVsO_kl-McNFOQ/exec", {
-        method: "POST",
-        body: new URLSearchParams({
-          action: "addCustomer",
-          companyname: values.companyname || "-",
-          salutation: values.salutation || "-",
-          firstname: values.firstname || "-",
-          lastname: values.lastname || "-",
-          customerEmail: values.customerEmail || "-",
-          workPhoneNumber: values.workPhoneNumber || "-",
-          mobileNumber: values.mobileNumber || "-",
-          address: values.address || "-",
-          trn: values.trn || "-",
-          currency: values.currency || "-",
-          paymentTerms: values.paymentTerms || "-",
-          deliveryTerms: values.deliveryTerms || "-",
-          userName: username || "-",
-        }),
-      });
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbxgU26ToozFQ4UI9Lvk07t7ewH7FChnZNEDuoT1l9ScMLaPd1EqIx1chVsO_kl-McNFOQ/exec",
+        {
+          method: "POST",
+          body: new URLSearchParams({
+            action: "addCustomer",
+            companyname: values.companyname || "-",
+            salutation: values.salutation || "-",
+            firstname: values.firstname || "-",
+            lastname: values.lastname || "-",
+            customerEmail: values.customerEmail || "-",
+            workPhoneNumber: values.workPhoneNumber || "-",
+            mobileNumber: values.mobileNumber || "-",
+            address: values.address || "-",
+            trn: values.trn || "-",
+            currency: values.currency || "-",
+            paymentTerms: values.paymentTerms || "-",
+            deliveryTerms: values.deliveryTerms || "-",
+            userName: username || "-",
+          }),
+        }
+      );
       const result = await response.json();
       if (result.success) {
         notification.success({
@@ -344,7 +346,10 @@ export default function CustomerDetails({ username }) {
                         },
                       ]}
                     >
-                      <Input.TextArea placeholder="Enter Address"  autoSize={{ minRows:3, maxRows: 3 }} />
+                      <Input.TextArea
+                        placeholder="Enter Address"
+                        autoSize={{ minRows: 4, maxRows: 4 }}
+                      />
                     </Form.Item>
                     <Form.Item
                       label="TRN"
@@ -357,7 +362,11 @@ export default function CustomerDetails({ username }) {
                         },
                       ]}
                     >
-                      <Input placeholder="Enter Transaction Reference Number (TRN)" />
+                      <Input
+                        showCount
+                        maxLength={18}
+                        placeholder="Enter Transaction Reference Number (TRN)"
+                      />
                     </Form.Item>
                     <Form.Item
                       label="Currency"
@@ -393,7 +402,7 @@ export default function CustomerDetails({ username }) {
                         placeholder="Enter Payment Terms"
                       />
                     </Form.Item>
-                        <Form.Item
+                    <Form.Item
                       label="Delivery Terms"
                       name="deliveryTerms"
                       className="fw-bold"
@@ -417,6 +426,36 @@ export default function CustomerDetails({ username }) {
                         loading={loading}
                       >
                         {loading ? "Adding Customer" : "Add Customer"}
+                      </Button>
+                      <Button
+                        htmlType="button"
+                        size="large"
+                        className="clearButton mt-2 ms-3"
+                        onClick={() => {
+                          const values = form.getFieldsValue();
+                          const isEmpty = Object.values(values).every(
+                            (value) =>
+                              value === undefined ||
+                              value === null ||
+                              value === "" ||
+                              (Array.isArray(value) && value.length === 0)
+                          );
+
+                          if (isEmpty) {
+                            notification.info({
+                              message: "Nothing to clear",
+                              description: "All fields are already empty.",
+                            });
+                          } else {
+                            form.resetFields();
+                            notification.success({
+                              message: "Success",
+                              description: "Form cleared successfully!",
+                            });
+                          }
+                        }}
+                      >
+                        Clear
                       </Button>
                     </div>
                   </div>

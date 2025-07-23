@@ -301,6 +301,7 @@ import ProductCategories from "./Pages/ProdcutCategories";
 import Login from "./Pages/Login";
 import AddUser from "./Pages/AddUser";
 import CustomerDetails from "./Pages/CustomerDetails";
+import DeliveryNote from "./Pages/DeliveryNote";
 import { notification } from "antd";
 
 notification.config({
@@ -313,12 +314,14 @@ function AppRoutes({ isLoggedIn, handleLoginSuccess, username }) {
   const location = useLocation();
   const [displayLocation, setDisplayLocation] = useState(location);
   const [currentPathname, setCurrentPathname] = useState(location.pathname);
-  const [animationClass, setAnimationClass] = useState("page-enter");
-
+const [animationClass, setAnimationClass] = useState(() =>
+  location.pathname === "/" ? "page-enter login-animation" : "page-enter"
+);
   useEffect(() => {
     const nextPath = location.pathname;
     const prevPath = currentPathname;
-    const shouldSkipAnimation = nextPath === "/" || prevPath === "/";
+    // const shouldSkipAnimation = nextPath === "/" || prevPath === "/";
+    const shouldSkipAnimation = false;
 
     if (nextPath !== prevPath) {
       if (shouldSkipAnimation) {
@@ -330,7 +333,11 @@ function AppRoutes({ isLoggedIn, handleLoginSuccess, username }) {
         const timeout = setTimeout(() => {
           setDisplayLocation(location);
           setCurrentPathname(nextPath);
+           if (nextPath === "/") {
+          setAnimationClass("page-enter login-animation");
+        } else {
           setAnimationClass("page-enter");
+        }
         }, 400);
         return () => clearTimeout(timeout);
       }
@@ -353,6 +360,10 @@ function AppRoutes({ isLoggedIn, handleLoginSuccess, username }) {
           }
         />
         <Route
+          path="/dashboard"
+          element={isLoggedIn ? <Inventory /> : <Navigate to="/" />}
+        />
+        <Route
           path="/inventory"
           element={isLoggedIn ? <Inventory /> : <Navigate to="/" />}
         />
@@ -371,6 +382,16 @@ function AppRoutes({ isLoggedIn, handleLoginSuccess, username }) {
           element={
             isLoggedIn ? (
               <CustomerDetails username={username} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+           <Route
+          path="/deliveryNote"
+          element={
+            isLoggedIn ? (
+              <DeliveryNote username={username} />
             ) : (
               <Navigate to="/" />
             )

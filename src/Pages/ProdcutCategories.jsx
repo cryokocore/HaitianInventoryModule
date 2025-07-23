@@ -412,42 +412,51 @@ export default function ProductCategories({ username }) {
   }, []);
 
   useEffect(() => {
-    const fetchStockInHand = async () => {
-      if (!machineinputRow.partNumber.trim()) return;
-      setMachineFetching(true);
-      try {
-        const res = await fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "getStockForPartNumber",
-            partNumber: machineinputRow.partNumber.trim(),
-            category: "Machine",
-          }),
-        });
+    const controller = new AbortController();
+    const debounceTimer = setTimeout(() => {
+      const fetchStockInHand = async () => {
+        if (!machineinputRow.partNumber.trim()) return;
+        setMachineFetching(true);
+        try {
+          const res = await fetch(GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "getStockForPartNumber",
+              partNumber: machineinputRow.partNumber.trim(),
+              category: "Machine",
+            }),
+            signal: controller.signal,
+          });
 
-        const result = await res.json();
-        console.log("✅ Stock fetch response:", result);
+          const result = await res.json();
+          console.log("✅ Stock fetch response:", result);
 
-        if (result.success) {
-          setMachineInputRow((prev) => ({
-            ...prev,
-            stockInHand: result.stockInHand.toString(),
-          }));
-        } else {
-          setMachineInputRow((prev) => ({
-            ...prev,
-            stockInHand: "0",
-          }));
+          if (result.success) {
+            setMachineInputRow((prev) => ({
+              ...prev,
+              stockInHand: result.stockInHand.toString(),
+            }));
+          } else {
+            setMachineInputRow((prev) => ({
+              ...prev,
+              stockInHand: "0",
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching stock:", err);
+        } finally {
+          setMachineFetching(false);
         }
-      } catch (err) {
-        console.error("Error fetching stock:", err);
-      } finally {
-        setMachineFetching(false);
-      }
-    };
+      };
 
-    fetchStockInHand();
+      fetchStockInHand();
+    }, 400); // Wait 400ms after last change
+
+    return () => {
+      clearTimeout(debounceTimer); // Clear timer on partNumber change
+      controller.abort(); // Cancel previous fetch
+    };
   }, [machineinputRow.partNumber]);
 
   useEffect(() => {
@@ -992,7 +1001,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={inputRow.stockInHand || "0"} disabled />
+            <Input value={inputRow.stockInHand || "0"} readOnly />
           </Tooltip>
         ) : (
           <Tooltip title={record.stockInHand}>
@@ -1008,7 +1017,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={inputRow.totalPrice || ""} disabled />{" "}
+            <Input value={inputRow.totalPrice || ""} readOnly />{" "}
           </Tooltip>
         ) : (
           <Tooltip title={record.totalPrice}>
@@ -1337,7 +1346,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={auxiliariesInputRow.stockInHand || "0"} disabled />
+            <Input value={auxiliariesInputRow.stockInHand || "0"} readOnly />
           </Tooltip>
         ) : (
           <Tooltip title={record.stockInHand}>
@@ -1354,7 +1363,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={auxiliariesInputRow.totalPrice || ""} disabled />
+            <Input value={auxiliariesInputRow.totalPrice || ""} readOnly />
           </Tooltip>
         ) : (
           <Tooltip title={record.totalPrice}>
@@ -1673,7 +1682,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={assetsInputRow.stockInHand || "0"} disabled />
+            <Input value={assetsInputRow.stockInHand || "0"} readOnly />
           </Tooltip>
         ) : (
           <Tooltip title={record.stockInHand}>
@@ -1690,7 +1699,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={assetsInputRow.totalPrice || ""} disabled />
+            <Input value={assetsInputRow.totalPrice || ""} readOnly />
           </Tooltip>
         ) : (
           <Tooltip title={record.totalPrice}>
@@ -2001,7 +2010,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={machineinputRow.stockInHand || "0"} disabled />
+            <Input value={machineinputRow.stockInHand || "0"} readOnly />
           </Tooltip>
         ) : (
           <Tooltip title={record.stockInHand}>
@@ -2018,7 +2027,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={machineinputRow.totalPrice || ""} disabled />
+            <Input value={machineinputRow.totalPrice || ""} readOnly />
           </Tooltip>
         ) : (
           <Tooltip title={record.totalPrice}>
@@ -2077,7 +2086,7 @@ export default function ProductCategories({ username }) {
             onClick={handleMachineAdd}
             disabled={machineFetching}
           >
-            Add
+            {machineFetching ? "Loading..." : "Add"}
           </Button>
         ) : (
           <Button

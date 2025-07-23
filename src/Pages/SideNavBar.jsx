@@ -291,7 +291,7 @@
 
 import React from "react";
 import { Menu, Button, Avatar } from "antd";
-import { UserOutlined, UserAddOutlined } from "@ant-design/icons";
+import { UserOutlined, UserAddOutlined, FileDoneOutlined } from "@ant-design/icons";
 
 import {
   AppstoreOutlined,
@@ -461,7 +461,7 @@ export default function SideNavBar({ onLogout, username }) {
             }}
             className="mt-2"
           >
-            <Menu.Item key="/" icon={<PieChartOutlined />}>
+            <Menu.Item key="/dashboard" icon={<PieChartOutlined />}>
               Dashboard
             </Menu.Item>
 
@@ -474,8 +474,11 @@ export default function SideNavBar({ onLogout, username }) {
             >
               Product Categories
             </Menu.Item>
-            <Menu.Item key="/customerDetails" icon={<IdcardOutlined style={{ fontSize: '18px' }} />}>
+            <Menu.Item key="/customerDetails" icon={<IdcardOutlined style={{ fontSize: '17px' }} />}>
               Customer Details
+            </Menu.Item>
+               <Menu.Item key="/deliveryNote" icon={<FileDoneOutlined style={{ fontSize: '17px' }} />}>
+              Delivery Note
             </Menu.Item>
             <Menu.Item key="/reports" icon={<BarChartOutlined />}>
               Reports

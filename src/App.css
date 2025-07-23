@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
 .App {
   text-align: center;
@@ -16,7 +16,7 @@
 
 body {
   background-color: #f0f0f033 !important;
-    font-family: 'Poppins', sans-serif !important;
+  font-family: "Poppins", sans-serif !important;
   /* background-color: #6e6e6e0e !important; */
 }
 
@@ -63,15 +63,15 @@ body {
 }
 
 .submitButton {
-  width: 50% !important;
+  width: 45% !important;
   background-color: #0d3884 !important;
   color: white !important;
   font-size: 20px !important;
   border: 2px solid #0d3884 !important;
   transition: all 0.4s ease-in-out !important;
   font-weight: 500 !important;
-  will-change: transform; 
-  box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
+  will-change: transform;
+  /* box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3); */
 }
 
 .submitButton:hover {
@@ -80,8 +80,7 @@ body {
   border: 2px solid #0d3884 !important;
   font-size: 20px !important;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082); */
-    transform: scale(1.02); /* Subtle, clean zoom */
-  
+  transform: scale(1.02); /* Subtle, clean zoom */
 }
 
 .clearButton {
@@ -92,8 +91,8 @@ body {
   border: 2px solid #ff4d4f !important;
   transition: all 0.4s ease-in-out !important;
   font-weight: 500 !important;
-  will-change: transform; 
-  box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3);
+  will-change: transform;
+  /* box-shadow: 0 6px 10px rgba(255, 25, 25, 0.322); */
 }
 .clearButton:hover {
   /* color: #0d3884 !important;
@@ -101,10 +100,8 @@ body {
   border: 2px solid #0d3884 !important;
   font-size: 20px !important;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082); */
-    transform: scale(1.02); /* Subtle, clean zoom */
-  
+  transform: scale(1.02); /* Subtle, clean zoom */
 }
-
 
 .addButton {
   background-color: #0d3884 !important;
@@ -180,8 +177,6 @@ body {
   transform: scale(1.02); /* Subtle, clean zoom */
 }
 
-
-
 /* .logoutButton {
   width: 100% !important;
   color: #0d3884 !important;
@@ -209,14 +204,12 @@ body {
   transition: all 0.3s ease-in-out !important;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.08);
   border-radius: 8px;
-   will-change: transform;
+  will-change: transform;
 }
 
 .logoutButton:hover {
   transform: scale(1.02); /* Slight enlarge */
-
 }
-
 
 @media screen and (min-width: 320px) {
   .haitianLogo {
@@ -326,29 +319,27 @@ body {
   border-radius: 6px;
   padding: 15px;
   margin: 10px auto 0;
-  width:90%;
+  width: 90%;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.20);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
 .profile-avatar {
   background-color: #fffffff6 !important;
-  color: #0D3884 !important;
+  color: #0d3884 !important;
   font-weight: 500;
   margin-bottom: 10px;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6),
+    0 0 20px rgba(255, 255, 255, 0.2);
   transition: box-shadow 0.4s ease;
 }
-
 
 .profile-username {
   font-size: 15px;
   font-weight: 300;
   color: #f9fafb;
 }
-
-
 
 .page-enter {
   animation: dimSlideIn 0.5s ease-out forwards;
@@ -379,3 +370,17 @@ body {
   }
 }
 
+.login-animation.page-enter {
+  animation-name: fadeInDiagonal;
+}
+
+@keyframes fadeInDiagonal {
+  from {
+    opacity: 0;
+    transform: translate(-50px, -50px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
