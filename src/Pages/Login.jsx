@@ -14,6 +14,16 @@ notification.config({
 export default function Login({ onLoginSuccess }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
+  useEffect(() => {
+  if (shake) {
+    const timer = setTimeout(() => {
+      setShake(false);
+    }, 400); // match animation duration
+    return () => clearTimeout(timer);
+  }
+}, [shake]);
+
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
@@ -40,6 +50,7 @@ export default function Login({ onLoginSuccess }) {
 
         onLoginSuccess(values.username);
       } else {
+        setShake(true);
         notification.error({
           message: "Error",
           description: "Login failed: " + data.message,
@@ -75,6 +86,18 @@ export default function Login({ onLoginSuccess }) {
     pointer-events: none;
     font-weight: normal;
 }
+    @keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-15px); }
+    40% { transform: translateX(15px); }
+    60% { transform: translateX(-10px); }
+    80% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+  }
+
+  .shake {
+    animation: shake 0.4s ease-in-out;
+  }
 `;
 
   return (
@@ -96,7 +119,7 @@ export default function Login({ onLoginSuccess }) {
           }}
         >
           <div className="w-50 m-auto ">
-          <div className="container rounded-5 p-5 loginContainer bg-white ">
+<div className={`container rounded-5 p-5 loginContainer bg-white ${shake ? "shake" : ""}`}>
             <div className="row">
               <div className="col-12">
                 <div className="m-auto d-flex justify-content-center m-0 p-0 ">

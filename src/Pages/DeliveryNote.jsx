@@ -225,8 +225,9 @@ export default function DeliveryNote({ username }) {
             className="addButton ps-4 pe-4"
             onClick={handleAdd}
             disabled={fetchingData}
+            loading={fetchingData}
           >
-  {fetchingData ? "Loading..." : "Add"}
+  {fetchingData ? "Fetching" : "Add"}
           </Button>
         ) : (
           <Button

@@ -170,7 +170,7 @@ export default function AddUser() {
                 >
                   <div className="row mt-3">
                     <Form.Item
-                      label= "User Name"
+                      label="User Name"
                       name="username"
                       className="fw-bold"
                       rules={[
@@ -179,8 +179,8 @@ export default function AddUser() {
                           message: "Please input your username!",
                         },
                       ]}
-                    > 
-                      <Input  placeholder="Enter user name" />
+                    >
+                      <Input placeholder="Enter user name" />
                     </Form.Item>
 
                     <Form.Item
@@ -216,7 +216,7 @@ export default function AddUser() {
                     </Form.Item>
 
                     <Form.Item
-                      label= "Confirm Password"
+                      label="Confirm Password"
                       name="confirmpassword"
                       className="fw-bold"
                       dependencies={["password"]}
@@ -238,7 +238,7 @@ export default function AddUser() {
                         }),
                       ]}
                     >
-                      <Input.Password  placeholder="Enter Conform Password" />
+                      <Input.Password placeholder="Enter Conform Password" />
                     </Form.Item>
 
                     <div className="col-12 text-center mt-4 mb-3">
@@ -249,6 +249,36 @@ export default function AddUser() {
                         loading={loading}
                       >
                         {loading ? "Registring User" : "Register User"}
+                      </Button>
+                      <Button
+                        htmlType="button"
+                        size="large"
+                        className="clearButton mt-2 ms-3"
+                        onClick={() => {
+                          const values = form.getFieldsValue();
+                          const isEmpty = Object.values(values).every(
+                            (value) =>
+                              value === undefined ||
+                              value === null ||
+                              value === "" ||
+                              (Array.isArray(value) && value.length === 0)
+                          );
+
+                          if (isEmpty) {
+                            notification.info({
+                              message: "Nothing to clear",
+                              description: "All fields are already empty.",
+                            });
+                          } else {
+                            form.resetFields();
+                            notification.success({
+                              message: "Success",
+                              description: "Form cleared successfully!",
+                            });
+                          }
+                        }}
+                      >
+                        Clear
                       </Button>
                     </div>
                   </div>

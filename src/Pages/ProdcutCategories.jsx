@@ -408,10 +408,6 @@ export default function ProductCategories({ username }) {
   ];
 
   useEffect(() => {
-    console.log("UserName", username);
-  }, []);
-
-  useEffect(() => {
     const controller = new AbortController();
     const debounceTimer = setTimeout(() => {
       const fetchStockInHand = async () => {
@@ -460,115 +456,139 @@ export default function ProductCategories({ username }) {
   }, [machineinputRow.partNumber]);
 
   useEffect(() => {
-    const fetchStockInHand = async () => {
-      if (!auxiliariesInputRow.partNumber.trim()) return;
-      setAuxiliariesFetching(true);
-      try {
-        const res = await fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "getStockForPartNumber",
-            partNumber: auxiliariesInputRow.partNumber.trim(),
-            category: "Auxiliaries",
-          }),
-        });
+    const controller = new AbortController();
+    const debounceTimer = setTimeout(() => {
+      const fetchStockInHand = async () => {
+        if (!auxiliariesInputRow.partNumber.trim()) return;
+        setAuxiliariesFetching(true);
+        try {
+          const res = await fetch(GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "getStockForPartNumber",
+              partNumber: auxiliariesInputRow.partNumber.trim(),
+              category: "Auxiliaries",
+            }),
+            signal: controller.signal,
+          });
 
-        const result = await res.json();
-        if (result.success) {
-          setAuxiliariesInputRow((prev) => ({
-            ...prev,
-            stockInHand: result.stockInHand.toString(),
-          }));
-        } else {
-          setAuxiliariesInputRow((prev) => ({
-            ...prev,
-            stockInHand: "0",
-          }));
+          const result = await res.json();
+          if (result.success) {
+            setAuxiliariesInputRow((prev) => ({
+              ...prev,
+              stockInHand: result.stockInHand.toString(),
+            }));
+          } else {
+            setAuxiliariesInputRow((prev) => ({
+              ...prev,
+              stockInHand: "0",
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching stock (Auxiliaries):", err);
+        } finally {
+          setAuxiliariesFetching(false);
         }
-      } catch (err) {
-        console.error("Error fetching stock (Auxiliaries):", err);
-      } finally {
-        setAuxiliariesFetching(false);
-      }
-    };
+      };
 
-    fetchStockInHand();
+      fetchStockInHand();
+    }, 400);
+    return () => {
+      clearTimeout(debounceTimer); // Clear timer on partNumber change
+      controller.abort(); // Cancel previous fetch
+    };
   }, [auxiliariesInputRow.partNumber]);
 
   useEffect(() => {
-    const fetchStockInHand = async () => {
-      if (!assetsInputRow.partNumber.trim()) return;
-      setAssetsFetching(true);
-      try {
-        const res = await fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "getStockForPartNumber",
-            partNumber: assetsInputRow.partNumber.trim(),
-            category: "Assets",
-          }),
-        });
+    const controller = new AbortController();
+    const debounceTimer = setTimeout(() => {
+      const fetchStockInHand = async () => {
+        if (!assetsInputRow.partNumber.trim()) return;
+        setAssetsFetching(true);
+        try {
+          const res = await fetch(GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "getStockForPartNumber",
+              partNumber: assetsInputRow.partNumber.trim(),
+              category: "Assets",
+            }),
+            signal: controller.signal,
+          });
 
-        const result = await res.json();
-        console.log("✅ Stock fetch response:", result);
-        if (result.success) {
-          setAssetsInputRow((prev) => ({
-            ...prev,
-            stockInHand: result.stockInHand.toString(),
-          }));
-        } else {
-          setAssetsInputRow((prev) => ({
-            ...prev,
-            stockInHand: "0",
-          }));
+          const result = await res.json();
+          console.log("✅ Stock fetch response:", result);
+          if (result.success) {
+            setAssetsInputRow((prev) => ({
+              ...prev,
+              stockInHand: result.stockInHand.toString(),
+            }));
+          } else {
+            setAssetsInputRow((prev) => ({
+              ...prev,
+              stockInHand: "0",
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching stock (Assets):", err);
+        } finally {
+          setAssetsFetching(false);
         }
-      } catch (err) {
-        console.error("Error fetching stock (Assets):", err);
-      } finally {
-        setAssetsFetching(false);
-      }
-    };
+      };
 
-    fetchStockInHand();
+      fetchStockInHand();
+    }, 400);
+    return () => {
+      clearTimeout(debounceTimer); // Clear timer on partNumber change
+      controller.abort(); // Cancel previous fetch
+    };
   }, [assetsInputRow.partNumber]);
 
   useEffect(() => {
-    const fetchStockInHand = async () => {
-      if (!inputRow.partNumber.trim()) return;
-      setSparePartsFetching(true);
-      try {
-        const res = await fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "getStockForPartNumber",
-            partNumber: inputRow.partNumber.trim(),
-            category: "Spare Parts",
-          }),
-        });
+    const controller = new AbortController();
+    const debounceTimer = setTimeout(() => {
+      const fetchStockInHand = async () => {
+        if (!inputRow.partNumber.trim()) return;
+        setSparePartsFetching(true);
+        try {
+          const res = await fetch(GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "getStockForPartNumber",
+              partNumber: inputRow.partNumber.trim(),
+              category: "Spare Parts",
+            }),
+            signal: controller.signal,
+          });
 
-        const result = await res.json();
-        if (result.success) {
-          setInputRow((prev) => ({
-            ...prev,
-            stockInHand: result.stockInHand.toString(),
-          }));
-        } else {
-          setInputRow((prev) => ({
-            ...prev,
-            stockInHand: "0",
-          }));
+          const result = await res.json();
+          if (result.success) {
+            setInputRow((prev) => ({
+              ...prev,
+              stockInHand: result.stockInHand.toString(),
+            }));
+          } else {
+            setInputRow((prev) => ({
+              ...prev,
+              stockInHand: "0",
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching stock (Spare Parts):", err);
+        } finally {
+          setSparePartsFetching(false);
         }
-      } catch (err) {
-        console.error("Error fetching stock (Spare Parts):", err);
-      } finally {
-        setSparePartsFetching(false);
-      }
-    };
+      };
 
-    fetchStockInHand();
+      fetchStockInHand();
+    }, 400);
+    return () => {
+      clearTimeout(debounceTimer); // Clear timer on partNumber change
+      controller.abort(); // Cancel previous fetch
+    };
   }, [inputRow.partNumber]);
 
   const handleSubmit = async (values) => {
@@ -1078,8 +1098,9 @@ export default function ProductCategories({ username }) {
             className="addButton ps-4 pe-4"
             onClick={handleAdd}
             disabled={sparePartsFetching}
+            loading={sparePartsFetching}
           >
-            Add
+            {sparePartsFetching ? "Fetching" : "Add"}
           </Button>
         ) : (
           <Button
@@ -1427,8 +1448,9 @@ export default function ProductCategories({ username }) {
             className="addButton ps-4 pe-4 m-auto"
             onClick={handleAuxiliariesAdd}
             disabled={auxiliariesFetching}
+            loading={auxiliariesFetching}
           >
-            Add
+            {auxiliariesFetching ? "Fetching" : "Add"}
           </Button>
         ) : (
           <Button
@@ -1759,8 +1781,9 @@ export default function ProductCategories({ username }) {
             className="addButton ps-4 pe-4"
             onClick={handleAssetsAdd}
             disabled={assetsFetching}
+            loading={assetsFetching}
           >
-            Add
+            {assetsFetching ? "Fetching" : "Add"}
           </Button>
         ) : (
           <Button
@@ -2085,8 +2108,9 @@ export default function ProductCategories({ username }) {
             className="addButton ps-4 pe-4"
             onClick={handleMachineAdd}
             disabled={machineFetching}
+            loading={machineFetching}
           >
-            {machineFetching ? "Loading..." : "Add"}
+            {machineFetching ? "Fetching" : "Add"}
           </Button>
         ) : (
           <Button
@@ -2728,102 +2752,99 @@ export default function ProductCategories({ username }) {
                           : "Submit Categories"}
                       </Button>
 
-                      {selectedCategory && (
-                        <Button
-                          size="large"
-                          className="clearButton mt-2 ms-3"
-                          onClick={() => {
-                            // Helper function to check if all fields in an object are empty
-                            const isObjectEmpty = (obj) =>
-                              Object.values(obj).every(
-                                (value) =>
-                                  value === "" ||
-                                  value === null ||
-                                  value === undefined
-                              );
+                      <Button
+                        size="large"
+                        className="clearButton mt-2 ms-3"
+                        onClick={() => {
+                          // Helper function to check if all fields in an object are empty
+                          const isObjectEmpty = (obj) =>
+                            Object.values(obj).every(
+                              (value) =>
+                                value === "" ||
+                                value === null ||
+                                value === undefined
+                            );
 
-                            const formValues = form.getFieldsValue(true);
+                          const formValues = form.getFieldsValue(true);
 
-                            const isEverythingEmpty =
-                              (!formValues ||
-                                Object.values(formValues).every(
-                                  (val) => !val
-                                )) &&
-                              machineDataSource.length === 0 &&
-                              auxiliariesDataSource.length === 0 &&
-                              assetsDataSource.length === 0 &&
-                              dataSource.length === 0 &&
-                              isObjectEmpty(inputRow) &&
-                              isObjectEmpty(machineinputRow) &&
-                              isObjectEmpty(auxiliariesInputRow) &&
-                              isObjectEmpty(assetsInputRow);
+                          const isEverythingEmpty =
+                            (!formValues ||
+                              Object.values(formValues).every((val) => !val)) &&
+                            machineDataSource.length === 0 &&
+                            auxiliariesDataSource.length === 0 &&
+                            assetsDataSource.length === 0 &&
+                            dataSource.length === 0 &&
+                            isObjectEmpty(inputRow) &&
+                            isObjectEmpty(machineinputRow) &&
+                            isObjectEmpty(auxiliariesInputRow) &&
+                            isObjectEmpty(assetsInputRow);
 
-                            if (isEverythingEmpty) {
-                              notification.info({
-                                message: "Nothing to Clear",
-                                description:
-                                  "There are no fields or rows to clear.",
-                              });
-                              return;
-                            }
-
-                            // Reset everything
-                            form.resetFields();
-
-                            setInputRow({
-                              partNumber: "",
-                              description: "",
-                              quantity: "",
-                              stockInHand: "",
-                              note: "",
-                              price: "",
-                              totalPrice: "",
+                          if (isEverythingEmpty) {
+                            notification.info({
+                              message: "Nothing to Clear",
+                              description:
+                                "There are no fields or rows to clear.",
                             });
+                            return;
+                          }
 
-                            setMachineInputRow({
-                              partNumber: "",
-                              description: "",
-                              quantity: "",
-                              stockInHand: "",
-                              note: "",
-                              price: "",
-                              totalPrice: "",
-                            });
+                          // Reset everything
+                          form.resetFields();
 
-                            setAuxiliariesInputRow({
-                              partNumber: "",
-                              description: "",
-                              quantity: "",
-                              stockInHand: "",
-                              note: "",
-                              price: "",
-                              totalPrice: "",
-                            });
+                          setInputRow({
+                            partNumber: "",
+                            description: "",
+                            quantity: "",
+                            stockInHand: "",
+                            note: "",
+                            price: "",
+                            totalPrice: "",
+                          });
 
-                            setAssetsInputRow({
-                              partNumber: "",
-                              description: "",
-                              quantity: "",
-                              stockInHand: "",
-                              note: "",
-                              price: "",
-                              totalPrice: "",
-                            });
+                          setMachineInputRow({
+                            partNumber: "",
+                            description: "",
+                            quantity: "",
+                            stockInHand: "",
+                            note: "",
+                            price: "",
+                            totalPrice: "",
+                          });
 
-                            setMachineDataSource([]);
-                            setAuxiliariesDataSource([]);
-                            setAssetsDataSource([]);
-                            setDataSource([]);
+                          setAuxiliariesInputRow({
+                            partNumber: "",
+                            description: "",
+                            quantity: "",
+                            stockInHand: "",
+                            note: "",
+                            price: "",
+                            totalPrice: "",
+                          });
 
-                            notification.success({
-                              message: "Success",
-                              description: "Form cleared successfully!",
-                            });
-                          }}
-                        >
-                          Clear
-                        </Button>
-                      )}
+                          setAssetsInputRow({
+                            partNumber: "",
+                            description: "",
+                            quantity: "",
+                            stockInHand: "",
+                            note: "",
+                            price: "",
+                            totalPrice: "",
+                          });
+
+                          setSelectedCategory(null);
+                          setMachineDataSource([]);
+                          setAuxiliariesDataSource([]);
+                          setAssetsDataSource([]);
+                          setDataSource([]);
+
+                          notification.success({
+                            message: "Success",
+                            description: "Form cleared successfully!",
+                          });
+                        }}
+                      >
+                        Clear
+                      </Button>
                     </div>
                   </div>
                 </Form>

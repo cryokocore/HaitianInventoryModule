@@ -81,6 +81,7 @@ body {
   font-size: 20px !important;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082); */
   transform: scale(1.02); /* Subtle, clean zoom */
+
 }
 
 .clearButton {
@@ -315,13 +316,13 @@ body {
 }
 
 .profile-box {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.04);
   border-radius: 6px;
   padding: 15px;
   margin: 10px auto 0;
   width: 90%;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.0);
   transition: all 0.3s ease;
 }
 
@@ -375,12 +376,12 @@ body {
 }
 
 @keyframes fadeInDiagonal {
-  from {
+  0% {
     opacity: 0;
-    transform: translate(-50px, -50px);
+    transform: translateY(-100px);
   }
-  to {
+  100% {
     opacity: 1;
-    transform: translate(0, 0);
+    transform: translateY(0);
   }
 }
