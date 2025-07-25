@@ -27,7 +27,8 @@ export default function DeliveryNote({ username }) {
   const [loading, setLoading] = useState(false);
   const [dataSource, setDataSource] = useState([]);
   const [deliveryDate, setDeliveryDate] = useState("");
-  const [fetchingData, setFetchingData] = useState(false); 
+  const [fetchingData, setFetchingData] = useState(false);
+  const [descriptionList, setDescriptionList] = useState([]);
   const [inputRow, setInputRow] = useState({
     serialNumber: "",
     partNumber: "",
@@ -36,61 +37,111 @@ export default function DeliveryNote({ username }) {
     stockInHand: "",
   });
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
+  const [customerList, setCustomerList] = useState([]);
 
   useEffect(() => {
-  const controller = new AbortController(); // to abort outdated requests
-  const debounceTimer = setTimeout(() => {
-    const fetchStockInHand = async () => {
-      const partNumber = inputRow.partNumber.trim();
-      if (!partNumber) return;
-
-      setFetchingData(true);
+    const fetchCustomers = async () => {
       try {
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbxgU26ToozFQ4UI9Lvk07t7ewH7FChnZNEDuoT1l9ScMLaPd1EqIx1chVsO_kl-McNFOQ/exec",
+          "https://script.google.com/macros/s/AKfycbzkK0-FwNNqd_nTiDNsNLscVZvlIg-s2E0knP6R2W4p79_d78qjL07DmDONtCW80OnM1A/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "getStockForPartNumber",
-              partNumber,
-              category: "", // or null if required
-            }),
-            signal: controller.signal, // Attach abort signal
+            body: new URLSearchParams({ action: "getCustomerDetails" }),
           }
         );
 
         const result = await res.json();
-
         if (result.success) {
-          setInputRow((prev) => ({
-            ...prev,
-            stockInHand: result.stockInHand.toString(),
-          }));
-        } else {
-          setInputRow((prev) => ({
-            ...prev,
-            stockInHand: "0",
-          }));
+          setCustomerList(result.customers);
         }
       } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Fetch stock error:", err);
-        }
-      } finally {
-        setFetchingData(false);
+        console.error("Failed to fetch customer details:", err);
       }
     };
 
-    fetchStockInHand();
-  }, 400); // Wait 400ms after last change
+    fetchCustomers();
+  }, []);
 
-  return () => {
-    clearTimeout(debounceTimer); // Clear timer on partNumber change
-    controller.abort(); // Cancel previous fetch
-  };
-}, [inputRow.partNumber]);
+  useEffect(() => {
+    const fetchDescriptions = async () => {
+      try {
+        const res = await fetch(
+          "https://script.google.com/macros/s/AKfycbzkK0-FwNNqd_nTiDNsNLscVZvlIg-s2E0knP6R2W4p79_d78qjL07DmDONtCW80OnM1A/exec",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "getAllDescriptionsWithPartNumbers",
+            }),
+          }
+        );
 
+        const result = await res.json();
+        if (result.success) {
+          setDescriptionList(result.items);
+        }
+      } catch (err) {
+        console.error("Failed to fetch descriptions:", err);
+      }
+    };
+
+    fetchDescriptions();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController(); // to abort outdated requests
+    const debounceTimer = setTimeout(() => {
+      const fetchStockInHand = async () => {
+        const partNumber = inputRow.partNumber.trim();
+        if (!partNumber) return;
+
+        setFetchingData(true);
+        try {
+          const res = await fetch(
+            "https://script.google.com/macros/s/AKfycbzkK0-FwNNqd_nTiDNsNLscVZvlIg-s2E0knP6R2W4p79_d78qjL07DmDONtCW80OnM1A/exec",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                action: "getStockForPartNumber",
+                partNumber,
+                category: "", // or null if required
+              }),
+              signal: controller.signal, // Attach abort signal
+            }
+          );
+
+          const result = await res.json();
+
+          if (result.success) {
+            setInputRow((prev) => ({
+              ...prev,
+              stockInHand: result.stockInHand.toString(),
+            }));
+          } else {
+            setInputRow((prev) => ({
+              ...prev,
+              stockInHand: "0",
+            }));
+          }
+        } catch (err) {
+          if (err.name !== "AbortError") {
+            console.error("Fetch stock error:", err);
+          }
+        } finally {
+          setFetchingData(false);
+        }
+      };
+
+      fetchStockInHand();
+    }, 400); // Wait 400ms after last change
+
+    return () => {
+      clearTimeout(debounceTimer); // Clear timer on partNumber change
+      controller.abort(); // Cancel previous fetch
+    };
+  }, [inputRow.partNumber]);
 
   const columns = [
     {
@@ -117,13 +168,40 @@ export default function DeliveryNote({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input
+            <Select
+              showSearch
               placeholder="Enter part number"
               value={inputRow.partNumber}
-              onChange={(e) =>
-                setInputRow({ ...inputRow, partNumber: e.target.value })
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
               }
-            />
+              onChange={(value) => {
+                const selected = descriptionList.find(
+                  (item) => item.partNumber === value
+                );
+                setInputRow((prev) => ({
+                  ...prev,
+                  partNumber: value,
+                  itemDescription:
+                    selected?.description || prev.itemDescription,
+                }));
+              }}
+              onSearch={(value) => {
+                setInputRow((prev) => ({
+                  ...prev,
+                  partNumber: value,
+                }));
+              }}
+              style={{ width: "100%" }}
+            >
+              {[...new Set(descriptionList.map((item) => item.partNumber))]
+                .filter((p) => p) // remove empty
+                .map((part, idx) => (
+                  <Select.Option key={`pn-${idx}`} value={part}>
+                    {part}
+                  </Select.Option>
+                ))}
+            </Select>
           </Tooltip>
         ) : (
           <Tooltip title={record.partNumber}>
@@ -139,30 +217,36 @@ export default function DeliveryNote({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input.TextArea
-              // autoSize={{ minRows: 1, maxRows: 1 }}
-              rows={1}
-              placeholder="Enter description"
+            <Select
+              showSearch
               value={inputRow.itemDescription}
-              onChange={(e) =>
-                setInputRow({ ...inputRow, itemDescription: e.target.value })
+              placeholder="Select or type description"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
               }
-            />
+              onChange={(value) => {
+                const selected = descriptionList.find(
+                  (item) => item.description === value
+                );
+                setInputRow((prev) => ({
+                  ...prev,
+                  itemDescription: value,
+                  partNumber: selected?.partNumber || prev.partNumber,
+                }));
+              }}
+              style={{ width: "100%" }}
+            >
+              {[...new Set(descriptionList.map((item) => item.description))]
+                .filter((d) => d)
+                .map((desc, idx) => (
+                  <Select.Option key={`desc-${idx}`} value={desc}>
+                    {desc}
+                  </Select.Option>
+                ))}
+            </Select>
           </Tooltip>
         ) : (
-          // <Tooltip title={record.description}>
-          //   <span>{record.description}</span>
-          // </Tooltip>
-          <Tooltip
-            title={record.itemDescription}
-            styles={{
-              root: {
-                maxWidth: 1000,
-                wordWrap: "break-word",
-                whiteSpace: "normal",
-              },
-            }}
-          >
+          <Tooltip title={record.itemDescription}>
             <span className="truncate-text">
               {record.itemDescription?.length > 150
                 ? `${record.itemDescription.slice(0, 150)}...`
@@ -171,7 +255,6 @@ export default function DeliveryNote({ username }) {
           </Tooltip>
         ),
     },
-
     {
       title: "Quantity",
       dataIndex: "quantity",
@@ -227,7 +310,7 @@ export default function DeliveryNote({ username }) {
             disabled={fetchingData}
             loading={fetchingData}
           >
-  {fetchingData ? "Fetching" : "Add"}
+            {fetchingData ? "Fetching" : "Add"}
           </Button>
         ) : (
           <Button
@@ -241,19 +324,26 @@ export default function DeliveryNote({ username }) {
   ];
 
   useEffect(() => {
-  const nowUTC = new Date();
-  const dubaiOffset = 4 * 60; // UTC+4 in minutes
-  const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+    const nowUTC = new Date();
+    const dubaiOffset = 4 * 60; // UTC+4 in minutes
+    const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
 
-  const formatted = dayjs(dubaiTime).format("DD-MM-YYYY");
-  setDeliveryDate(formatted);
+    const formatted = dayjs(dubaiTime).format("DD-MM-YYYY");
+    setDeliveryDate(formatted);
 
-  // Also set it in the form:
-  form.setFieldsValue({ date: formatted });
-}, []);
-
+    // Also set it in the form:
+    form.setFieldsValue({ date: formatted });
+  }, []);
 
   const handleAdd = () => {
+    if (dataSource.length >= 50) {
+      notification.warning({
+        message: "Limit Reached",
+        description: "You can only add a maximum of 50 items.",
+      });
+      return;
+    }
+
     const { partNumber, itemDescription, quantity } = inputRow;
 
     if (!partNumber || !itemDescription || !quantity) {
@@ -473,6 +563,39 @@ export default function DeliveryNote({ username }) {
                   disabled={loading}
                 >
                   <div className="row mt-3">
+                    <div className="row m-0 p-0">
+                      <div className="col-6">
+                        <Form.Item
+                          label="Delivery Number"
+                          name="deliveryNumber"
+                          className="fw-bold"
+                          rules={[
+                            {
+                              required: true,
+                              message: "",
+                            },
+                          ]}
+                        >
+                          <Input placeholder="Delivery Number" />
+                        </Form.Item>
+                      </div>
+                      <div className="col-6">
+                        <Form.Item
+                          label="Date"
+                          name="date"
+                          className="fw-bold"
+                          rules={[
+                            {
+                              required: true,
+                              message: "",
+                            },
+                          ]}
+                          disabled
+                        >
+                          <Input value={deliveryDate} readOnly />
+                        </Form.Item>
+                      </div>
+                    </div>
                     <Form.Item
                       label="Company Name"
                       name="companyname"
@@ -482,14 +605,34 @@ export default function DeliveryNote({ username }) {
                           required: true,
                           message: "Please input company name!",
                         },
-                        {
-                          pattern: /^[A-Za-z\s.]+$/,
-                          message:
-                            "Company name should not contain numbers or special characters!",
-                        },
                       ]}
                     >
-                      <Input placeholder="Enter Company Name" />
+                      <Select
+                        showSearch
+                        placeholder="Search company name"
+                        filterOption={(input, option) =>
+                          option.children
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        onChange={(value) => {
+                          const customer = customerList.find(
+                            (c) => c.companyname === value
+                          );
+                          if (customer) {
+                            form.setFieldsValue({ address: customer.address });
+                          }
+                        }}
+                      >
+                        {customerList.map((customer) => (
+                          <Select.Option
+                            key={customer.companyname}
+                            value={customer.companyname}
+                          >
+                            {customer.companyname}
+                          </Select.Option>
+                        ))}
+                      </Select>
                     </Form.Item>
 
                     <Form.Item
@@ -509,24 +652,7 @@ export default function DeliveryNote({ username }) {
                       />
                     </Form.Item>
                     <div className="row m-0 p-0">
-                      <div className="col-2">
-                        {" "}
-                        <Form.Item
-                          label="Date"
-                          name="date"
-                          className="fw-bold"
-                          rules={[
-                            {
-                              required: true,
-                              message: "",
-                            },
-                          ]}
-                          disabled
-                        >
-                          <Input value={deliveryDate} readOnly />
-                        </Form.Item>
-                      </div>
-                      <div className="col-5">
+                      <div className="col-6">
                         <Form.Item
                           label="Mode of delivery"
                           name="modeOfDelivery"
@@ -541,15 +667,15 @@ export default function DeliveryNote({ username }) {
                           <Input />
                         </Form.Item>
                       </div>
-                      <div className="col-5">
+                      <div className="col-6">
                         <Form.Item
-                          label="Reference Number"
-                          name="referenceNumber"
+                          label="Reference "
+                          name="reference"
                           className="fw-bold"
                           rules={[
                             {
                               required: true,
-                              message: "Please enter the reference number!",
+                              message: "Please enter the reference!",
                             },
                           ]}
                         >
@@ -578,7 +704,45 @@ export default function DeliveryNote({ username }) {
                         className="submitButton mt-2"
                         loading={loading}
                       >
-                        {loading ? "Submitting Delivery Note" : "Submit Delivery Note"}
+                        {loading
+                          ? "Submitting Delivery Note"
+                          : "Submit Delivery Note"}
+                      </Button>
+                      <Button
+                        htmlType="button"
+                        size="large"
+                        className="clearButton mt-2 ms-3"
+                        onClick={() => {
+                          const values = form.getFieldsValue();
+                          const isEmpty = Object.values(values).every(
+                            (value) =>
+                              value === undefined ||
+                              value === null ||
+                              value === "" ||
+                              (Array.isArray(value) && value.length === 0)
+                          );
+
+                          if (isEmpty) {
+                            notification.info({
+                              message: "Nothing to clear",
+                              description: "All fields are already empty.",
+                            });
+                          } else {
+                            // Preserve deliveryNumber and date
+                            const preservedFields = {
+                              deliveryNumber: values.deliveryNumber,
+                              date: values.date,
+                            };
+                            form.resetFields();
+                            form.setFieldsValue(preservedFields);
+                            notification.success({
+                              message: "Success",
+                              description: "Form cleared successfully!",
+                            });
+                          }
+                        }}
+                      >
+                        Clear
                       </Button>
                     </div>
                   </div>

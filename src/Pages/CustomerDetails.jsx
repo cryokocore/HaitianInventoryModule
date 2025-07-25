@@ -30,7 +30,7 @@ export default function CustomerDetails({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxgU26ToozFQ4UI9Lvk07t7ewH7FChnZNEDuoT1l9ScMLaPd1EqIx1chVsO_kl-McNFOQ/exec",
+        "https://script.google.com/macros/s/AKfycbzkK0-FwNNqd_nTiDNsNLscVZvlIg-s2E0knP6R2W4p79_d78qjL07DmDONtCW80OnM1A/exec",
         {
           method: "POST",
           body: new URLSearchParams({
