@@ -40,10 +40,33 @@ export default function DeliveryNote({ username }) {
   const [customerList, setCustomerList] = useState([]);
 
   useEffect(() => {
+    const fetchDeliveryNumber = async () => {
+      try {
+        const response = await fetch(
+          "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+          }
+        );
+        const result = await response.json();
+        if (result.success) {
+          form.setFieldsValue({ deliveryNumber: result.deliveryNumber });
+        }
+      } catch (err) {
+        console.error("Error fetching delivery number:", err);
+      }
+    };
+
+    fetchDeliveryNumber();
+  }, []);
+
+  useEffect(() => {
     const fetchCustomers = async () => {
       try {
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbzkK0-FwNNqd_nTiDNsNLscVZvlIg-s2E0knP6R2W4p79_d78qjL07DmDONtCW80OnM1A/exec",
+          "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -67,7 +90,7 @@ export default function DeliveryNote({ username }) {
     const fetchDescriptions = async () => {
       try {
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbzkK0-FwNNqd_nTiDNsNLscVZvlIg-s2E0knP6R2W4p79_d78qjL07DmDONtCW80OnM1A/exec",
+          "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -99,7 +122,7 @@ export default function DeliveryNote({ username }) {
         setFetchingData(true);
         try {
           const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbzkK0-FwNNqd_nTiDNsNLscVZvlIg-s2E0knP6R2W4p79_d78qjL07DmDONtCW80OnM1A/exec",
+            "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
             {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -335,49 +358,62 @@ export default function DeliveryNote({ username }) {
     form.setFieldsValue({ date: formatted });
   }, []);
 
-  const handleAdd = () => {
-    if (dataSource.length >= 50) {
-      notification.warning({
-        message: "Limit Reached",
-        description: "You can only add a maximum of 50 items.",
-      });
-      return;
-    }
-
-    const { partNumber, itemDescription, quantity } = inputRow;
-
-    if (!partNumber || !itemDescription || !quantity) {
-      notification.error({
-        message: "Error",
-        description:
-          "Please fill in Part Number, Item Description and Quantity",
-      });
-      return;
-    }
-
-    const newData = {
-      key: Date.now(),
-      serialNumber: dataSource.length + 1,
-      partNumber,
-      itemDescription,
-      quantity,
-      stockInHand: inputRow.stockInHand || "0",
-    };
-
-    const updatedData = [...dataSource, newData].map((item, index) => ({
-      ...item,
-      serialNumber: index + 1,
-    }));
-
-    setDataSource(updatedData);
-
-    setInputRow({
-      partNumber: "",
-      itemDescription: "",
-      quantity: "",
-      stockInHand: "",
+ const handleAdd = () => {
+  if (dataSource.length >= 50) {
+    notification.warning({
+      message: "Limit Reached",
+      description: "You can only add a maximum of 50 items.",
     });
+    return;
+  }
+
+  const { partNumber, itemDescription, quantity } = inputRow;
+
+  if (!partNumber || !itemDescription || !quantity) {
+    notification.error({
+      message: "Error",
+      description:
+        "Please fill in Part Number, Item Description and Quantity",
+    });
+    return;
+  }
+
+  const stock = parseInt(inputRow.stockInHand) || 0;
+  const qty = parseInt(quantity) || 0;
+
+  if (qty > stock) {
+    notification.error({
+      message: "Quantity Exceeds Stock",
+      description: `You only have ${stock} in stock.`,
+    });
+    return;
+  }
+
+  // ✅ Define newData here
+  const newData = {
+    key: Date.now(),
+    serialNumber: dataSource.length + 1,
+    partNumber,
+    itemDescription,
+    quantity,
+    stockInHand: inputRow.stockInHand || "0",
   };
+
+  const updatedData = [...dataSource, newData].map((item, index) => ({
+    ...item,
+    serialNumber: index + 1,
+  }));
+
+  setDataSource(updatedData);
+
+  setInputRow({
+    partNumber: "",
+    itemDescription: "",
+    quantity: "",
+    stockInHand: "",
+  });
+};
+
 
   const handleDelete = (key) => {
     const updatedData = dataSource
@@ -390,50 +426,81 @@ export default function DeliveryNote({ username }) {
   };
 
   const handleSubmit = async (values) => {
-    console.log(values);
+    if (dataSource.length === 0) {
+      notification.error({
+        message: "No Items",
+        description: "Please add at least one item to submit.",
+      });
+      return;
+    }
 
-    // try {
-    //   setLoading(true);
-    //   const response = await fetch("https://script.google.com/macros/s/AKfycbxgU26ToozFQ4UI9Lvk07t7ewH7FChnZNEDuoT1l9ScMLaPd1EqIx1chVsO_kl-McNFOQ/exec", {
-    //     method: "POST",
-    //     body: new URLSearchParams({
-    //       action: "addCustomer",
-    //       companyname: values.companyname || "-",
-    //       salutation: values.salutation || "-",
-    //       firstname: values.firstname || "-",
-    //       lastname: values.lastname || "-",
-    //       customerEmail: values.customerEmail || "-",
-    //       workPhoneNumber: values.workPhoneNumber || "-",
-    //       mobileNumber: values.mobileNumber || "-",
-    //       address: values.address || "-",
-    //       trn: values.trn || "-",
-    //       currency: values.currency || "-",
-    //       paymentTerms: values.paymentTerms || "-",
-    //       deliveryTerms: values.deliveryTerms || "-",
-    //       userName: username || "-",
-    //     }),
-    //   });
-    //   const result = await response.json();
-    //   if (result.success) {
-    //     notification.success({
-    //       message: "Success",
-    //       description: result.message,
-    //     });
-    //     form.resetFields();
-    //   } else {
-    //     notification.error({
-    //       message: "Error",
-    //       description: result.message || "Failed to add customer",
-    //     });
-    //   }
-    // } catch (error) {
-    //   notification.error({
-    //     message: "Error",
-    //     description: "Something went wrong",
-    //   });
-    // } finally {
-    //   setLoading(false);
-    // }
+    try {
+      setLoading(true);
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "addDeliveryNote",
+            deliveryNumber: values.deliveryNumber,
+            date: values.date,
+            customername: values.customername,
+            address: values.address,
+            modeOfDelivery: values.modeOfDelivery,
+            reference: values.reference,
+            items: JSON.stringify(dataSource),
+          }),
+        }
+      );
+      const result = await response.json();
+      if (result.success) {
+        notification.success({
+          message: "Success",
+          description: result.message,
+        });
+        form.resetFields();
+        setDataSource([]);
+        setInputRow({
+          partNumber: "",
+          itemDescription: "",
+          quantity: "",
+          stockInHand: "",
+        });
+        // Fetch new delivery number
+        const nextRes = await fetch(
+          "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+          }
+        );
+
+        const nextResult = await nextRes.json();
+        if (nextResult.success) {
+          form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
+        }
+        const nowUTC = new Date();
+        const dubaiOffset = 4 * 60;
+        const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+        const formattedDate = dayjs(dubaiTime).format("DD-MM-YYYY");
+        form.setFieldsValue({ date: formattedDate });
+      } else {
+        notification.error({
+          message: "Error",
+          description: result.message || "Failed to add delivery note",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      notification.error({
+        message: "Error",
+        description: "Something went wrong",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const styl = `.ant-form-item .ant-form-item-explain-error {
@@ -576,7 +643,7 @@ export default function DeliveryNote({ username }) {
                             },
                           ]}
                         >
-                          <Input placeholder="Delivery Number" />
+                          <Input placeholder="Delivery Number" readOnly />
                         </Form.Item>
                       </div>
                       <div className="col-6">
@@ -597,8 +664,8 @@ export default function DeliveryNote({ username }) {
                       </div>
                     </div>
                     <Form.Item
-                      label="Company Name"
-                      name="companyname"
+                      label="Customer Name"
+                      name="customername"
                       className="fw-bold"
                       rules={[
                         {
@@ -617,7 +684,7 @@ export default function DeliveryNote({ username }) {
                         }
                         onChange={(value) => {
                           const customer = customerList.find(
-                            (c) => c.companyname === value
+                            (c) => c.customername === value
                           );
                           if (customer) {
                             form.setFieldsValue({ address: customer.address });
@@ -626,10 +693,10 @@ export default function DeliveryNote({ username }) {
                       >
                         {customerList.map((customer) => (
                           <Select.Option
-                            key={customer.companyname}
-                            value={customer.companyname}
+                            key={customer.customername}
+                            value={customer.customername}
                           >
-                            {customer.companyname}
+                            {customer.customername}
                           </Select.Option>
                         ))}
                       </Select>
@@ -728,7 +795,6 @@ export default function DeliveryNote({ username }) {
                               description: "All fields are already empty.",
                             });
                           } else {
-                            // Preserve deliveryNumber and date
                             const preservedFields = {
                               deliveryNumber: values.deliveryNumber,
                               date: values.date,

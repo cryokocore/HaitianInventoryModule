@@ -30,12 +30,12 @@ export default function CustomerDetails({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzkK0-FwNNqd_nTiDNsNLscVZvlIg-s2E0knP6R2W4p79_d78qjL07DmDONtCW80OnM1A/exec",
+        "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
         {
           method: "POST",
           body: new URLSearchParams({
             action: "addCustomer",
-            companyname: values.companyname || "-",
+            customername: values.customername || "-",
             salutation: values.salutation || "-",
             firstname: values.firstname || "-",
             lastname: values.lastname || "-",
@@ -173,22 +173,22 @@ export default function CustomerDetails({ username }) {
                 >
                   <div className="row mt-3">
                     <Form.Item
-                      label="Company Name"
-                      name="companyname"
+                      label="Customer Name"
+                      name="customername"
                       className="fw-bold"
                       rules={[
                         {
                           required: true,
-                          message: "Please input company name!",
+                          message: "Please input customer name!",
                         },
                         {
                           pattern: /^[A-Za-z\s.]+$/,
                           message:
-                            "Company name should not contain numbers or special characters!",
+                            "Customer name should not contain numbers or special characters!",
                         },
                       ]}
                     >
-                      <Input placeholder="Enter Company Name" />
+                      <Input placeholder="Enter Customer Name" />
                     </Form.Item>
                     <Form.Item
                       label="Primary Contact"
