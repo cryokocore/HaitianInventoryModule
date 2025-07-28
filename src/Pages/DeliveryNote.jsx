@@ -27,6 +27,7 @@ export default function DeliveryNote({ username }) {
   const [loading, setLoading] = useState(false);
   const [dataSource, setDataSource] = useState([]);
   const [deliveryDate, setDeliveryDate] = useState("");
+  const [loadingDeliveryNumber, setLoadingDeliveryNumber] = useState(true);
   const [fetchingData, setFetchingData] = useState(false);
   const [descriptionList, setDescriptionList] = useState([]);
   const [inputRow, setInputRow] = useState({
@@ -42,8 +43,9 @@ export default function DeliveryNote({ username }) {
   useEffect(() => {
     const fetchDeliveryNumber = async () => {
       try {
+        setLoadingDeliveryNumber(true);
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+          "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -56,6 +58,8 @@ export default function DeliveryNote({ username }) {
         }
       } catch (err) {
         console.error("Error fetching delivery number:", err);
+      } finally {
+        setLoadingDeliveryNumber(false); // Done loading
       }
     };
 
@@ -66,7 +70,7 @@ export default function DeliveryNote({ username }) {
     const fetchCustomers = async () => {
       try {
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+          "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -90,7 +94,7 @@ export default function DeliveryNote({ username }) {
     const fetchDescriptions = async () => {
       try {
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+          "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -122,7 +126,7 @@ export default function DeliveryNote({ username }) {
         setFetchingData(true);
         try {
           const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+            "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
             {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -358,62 +362,61 @@ export default function DeliveryNote({ username }) {
     form.setFieldsValue({ date: formatted });
   }, []);
 
- const handleAdd = () => {
-  if (dataSource.length >= 50) {
-    notification.warning({
-      message: "Limit Reached",
-      description: "You can only add a maximum of 50 items.",
+  const handleAdd = () => {
+    if (dataSource.length >= 50) {
+      notification.warning({
+        message: "Limit Reached",
+        description: "You can only add a maximum of 50 items.",
+      });
+      return;
+    }
+
+    const { partNumber, itemDescription, quantity } = inputRow;
+
+    if (!partNumber || !itemDescription || !quantity) {
+      notification.error({
+        message: "Error",
+        description:
+          "Please fill in Part Number, Item Description and Quantity",
+      });
+      return;
+    }
+
+    const stock = parseInt(inputRow.stockInHand) || 0;
+    const qty = parseInt(quantity) || 0;
+
+    if (qty > stock) {
+      notification.error({
+        message: "Quantity Exceeds Stock",
+        description: `You only have ${stock} in stock.`,
+      });
+      return;
+    }
+
+    // ✅ Define newData here
+    const newData = {
+      key: Date.now(),
+      serialNumber: dataSource.length + 1,
+      partNumber,
+      itemDescription,
+      quantity,
+      stockInHand: inputRow.stockInHand || "0",
+    };
+
+    const updatedData = [...dataSource, newData].map((item, index) => ({
+      ...item,
+      serialNumber: index + 1,
+    }));
+
+    setDataSource(updatedData);
+
+    setInputRow({
+      partNumber: "",
+      itemDescription: "",
+      quantity: "",
+      stockInHand: "",
     });
-    return;
-  }
-
-  const { partNumber, itemDescription, quantity } = inputRow;
-
-  if (!partNumber || !itemDescription || !quantity) {
-    notification.error({
-      message: "Error",
-      description:
-        "Please fill in Part Number, Item Description and Quantity",
-    });
-    return;
-  }
-
-  const stock = parseInt(inputRow.stockInHand) || 0;
-  const qty = parseInt(quantity) || 0;
-
-  if (qty > stock) {
-    notification.error({
-      message: "Quantity Exceeds Stock",
-      description: `You only have ${stock} in stock.`,
-    });
-    return;
-  }
-
-  // ✅ Define newData here
-  const newData = {
-    key: Date.now(),
-    serialNumber: dataSource.length + 1,
-    partNumber,
-    itemDescription,
-    quantity,
-    stockInHand: inputRow.stockInHand || "0",
   };
-
-  const updatedData = [...dataSource, newData].map((item, index) => ({
-    ...item,
-    serialNumber: index + 1,
-  }));
-
-  setDataSource(updatedData);
-
-  setInputRow({
-    partNumber: "",
-    itemDescription: "",
-    quantity: "",
-    stockInHand: "",
-  });
-};
-
 
   const handleDelete = (key) => {
     const updatedData = dataSource
@@ -426,6 +429,13 @@ export default function DeliveryNote({ username }) {
   };
 
   const handleSubmit = async (values) => {
+    if (!navigator.onLine) {
+      notification.error({
+        message: "No Internet Connection",
+        description: "Please check your internet and try again.",
+      });
+      return;
+    }
     if (dataSource.length === 0) {
       notification.error({
         message: "No Items",
@@ -437,7 +447,7 @@ export default function DeliveryNote({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+        "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -450,6 +460,7 @@ export default function DeliveryNote({ username }) {
             modeOfDelivery: values.modeOfDelivery,
             reference: values.reference,
             items: JSON.stringify(dataSource),
+            userName: username || "-",
           }),
         }
       );
@@ -469,7 +480,7 @@ export default function DeliveryNote({ username }) {
         });
         // Fetch new delivery number
         const nextRes = await fetch(
-          "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+          "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -642,8 +653,17 @@ export default function DeliveryNote({ username }) {
                               message: "",
                             },
                           ]}
+                          loading={loadingDeliveryNumber}
                         >
-                          <Input placeholder="Delivery Number" readOnly />
+                          <Input
+                            placeholder="Delivery Number"
+                            readOnly
+                            value={
+                              loadingDeliveryNumber
+                                ? "Fetching..."
+                                : form.getFieldValue("deliveryNumber")
+                            }
+                          />
                         </Form.Item>
                       </div>
                       <div className="col-6">

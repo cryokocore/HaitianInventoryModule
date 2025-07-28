@@ -93,7 +93,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec";
+    "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -592,6 +592,13 @@ export default function ProductCategories({ username }) {
   }, [inputRow.partNumber]);
 
   const handleSubmit = async (values) => {
+             if (!navigator.onLine) {
+              notification.error({
+                message: "No Internet Connection",
+                description: "Please check your internet and try again.",
+              });
+              return;
+            }
     if (
       loading ||
       (machineDataSource.length === 0 &&

@@ -16,19 +16,26 @@ export default function Login({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
   useEffect(() => {
-  if (shake) {
-    const timer = setTimeout(() => {
-      setShake(false);
-    }, 400); // match animation duration
-    return () => clearTimeout(timer);
-  }
-}, [shake]);
+    if (shake) {
+      const timer = setTimeout(() => {
+        setShake(false);
+      }, 400); // match animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [shake]);
 
   const handleSubmit = async (values) => {
+        if (!navigator.onLine) {
+      notification.error({
+        message: "No Internet Connection",
+        description: "Please check your internet and try again.",
+      });
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxWk3DxCu00QyaYDcZ1qCN0timAN31qeVrcoE0l-TWJ4qHwuI1A7RiBAWPgKWu7R02CZQ/exec",
+        "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -41,7 +48,6 @@ export default function Login({ onLoginSuccess }) {
 
       const data = await response.json();
       if (data.success) {
-        
         notification.success({
           message: "Success",
           // description: `Login successful!`,
@@ -119,90 +125,94 @@ export default function Login({ onLoginSuccess }) {
           }}
         >
           <div className="w-50 m-auto ">
-<div className={`container rounded-5 p-5 loginContainer bg-white ${shake ? "shake" : ""}`}>
-            <div className="row">
-              <div className="col-12">
-                <div className="m-auto d-flex justify-content-center m-0 p-0 ">
-                  <img
-                    src={HaitianLogo}
-                    className="w-50 m-0 p-0"
-                    alt="Haitian Logo"
-                  />
-                </div>
-                <div>
-                  <h4
-                    className="text-center haitianColor m-0 p-0"
-                    style={{ fontWeight: "600" }}
-                  >
-                    Inventory Management System
-                  </h4>
-                  <p className="text-center text-muted">
-                    Please log in to your account
-                  </p>
-                  <Form
-                    form={form}
-                    layout="vertical"
-                    className="mt-4"
-                    onFinish={handleSubmit}
-                  >
-                    <Form.Item
-                      label={
-                        <>
-                          <FontAwesomeIcon
-                            icon={faCircleUser}
-                            className="me-1"
-                            size="lg"
-                          />
-                          Username
-                        </>
-                      }
-                      name="username"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input your username!",
-                        },
-                      ]}
+            <div
+              className={`container rounded-5 p-5 loginContainer bg-white ${
+                shake ? "shake" : ""
+              }`}
+            >
+              <div className="row">
+                <div className="col-12">
+                  <div className="m-auto d-flex justify-content-center m-0 p-0 ">
+                    <img
+                      src={HaitianLogo}
+                      className="w-50 m-0 p-0"
+                      alt="Haitian Logo"
+                    />
+                  </div>
+                  <div>
+                    <h4
+                      className="text-center haitianColor m-0 p-0"
+                      style={{ fontWeight: "600" }}
                     >
-                      <Input size="large" />
-                    </Form.Item>
+                      Inventory Management System
+                    </h4>
+                    <p className="text-center text-muted">
+                      Please log in to your account
+                    </p>
+                    <Form
+                      form={form}
+                      layout="vertical"
+                      className="mt-4"
+                      onFinish={handleSubmit}
+                    >
+                      <Form.Item
+                        label={
+                          <>
+                            <FontAwesomeIcon
+                              icon={faCircleUser}
+                              className="me-1"
+                              size="lg"
+                            />
+                            Username
+                          </>
+                        }
+                        name="username"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input your username!",
+                          },
+                        ]}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
 
-                    <Form.Item
-                      label={
-                        <>
-                          <FontAwesomeIcon
-                            icon={faLock}
-                            className="me-1"
-                            size="lg"
-                          />
-                          Password
-                        </>
-                      }
-                      name="password"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input your password!",
-                        },
-                      ]}
-                    >
-                      <Input.Password size="large" />
-                    </Form.Item>
-                    <Button
-                      className="loginButton mt-3 mb-4"
-                      size="large"
-                      htmlType="submit"
-                      loading={loading}
-                    >
-                      {loading ? "Logging In" : "Login"}
-                    </Button>
-                  </Form>
+                      <Form.Item
+                        label={
+                          <>
+                            <FontAwesomeIcon
+                              icon={faLock}
+                              className="me-1"
+                              size="lg"
+                            />
+                            Password
+                          </>
+                        }
+                        name="password"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please input your password!",
+                          },
+                        ]}
+                      >
+                        <Input.Password size="large" />
+                      </Form.Item>
+                      <Button
+                        className="loginButton mt-3 mb-4"
+                        size="large"
+                        htmlType="submit"
+                        loading={loading}
+                      >
+                        {loading ? "Logging In" : "Login"}
+                      </Button>
+                    </Form>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
       </div>
     </>
   );
