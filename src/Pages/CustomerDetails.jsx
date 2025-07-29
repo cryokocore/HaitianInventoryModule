@@ -30,7 +30,7 @@ export default function CustomerDetails({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
+        "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -348,7 +348,7 @@ export default function CustomerDetails({ username }) {
                     >
                       <Input.TextArea
                         placeholder="Enter Address"
-                        autoSize={{ minRows: 4, maxRows: 4 }}
+                        rows={6}
                       />
                     </Form.Item>
                     <Form.Item

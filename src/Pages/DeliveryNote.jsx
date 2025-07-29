@@ -19,6 +19,7 @@ import {
   Table,
   notification,
   Tooltip,
+  DatePicker,
 } from "antd";
 import "../App.css";
 
@@ -45,7 +46,7 @@ export default function DeliveryNote({ username }) {
       try {
         setLoadingDeliveryNumber(true);
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
+          "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -70,7 +71,7 @@ export default function DeliveryNote({ username }) {
     const fetchCustomers = async () => {
       try {
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
+          "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -94,7 +95,7 @@ export default function DeliveryNote({ username }) {
     const fetchDescriptions = async () => {
       try {
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
+          "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -126,7 +127,7 @@ export default function DeliveryNote({ username }) {
         setFetchingData(true);
         try {
           const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
+            "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
             {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -296,7 +297,10 @@ export default function DeliveryNote({ username }) {
               min={1}
               value={inputRow.quantity}
               onChange={(e) => {
-                setInputRow({ ...inputRow, quantity: e.target.value });
+                const value = parseInt(e.target.value);
+                if (value >= 1 || e.target.value === "") {
+                  setInputRow({ ...inputRow, quantity: e.target.value });
+                }
               }}
             />
           </Tooltip>
@@ -352,14 +356,21 @@ export default function DeliveryNote({ username }) {
 
   useEffect(() => {
     const nowUTC = new Date();
-    const dubaiOffset = 4 * 60; // UTC+4 in minutes
+    const dubaiOffset = 4 * 60;
     const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
 
-    const formatted = dayjs(dubaiTime).format("DD-MM-YYYY");
+    const dubaiDayjs = dayjs(dubaiTime);
+    const formatted = dubaiDayjs.format("DD-MM-YYYY");
+
     setDeliveryDate(formatted);
 
-    // Also set it in the form:
-    form.setFieldsValue({ date: formatted });
+    if (username === "Admin") {
+      // Only set for form field if admin (since it binds to form)
+      form.setFieldsValue({ date: dubaiDayjs });
+    } else {
+      form.setFieldsValue({ date: dayjs(dubaiTime).format("DD-MM-YYYY") });
+      console.log(form.date);
+    }
   }, []);
 
   const handleAdd = () => {
@@ -381,14 +392,21 @@ export default function DeliveryNote({ username }) {
       });
       return;
     }
-
     const stock = parseInt(inputRow.stockInHand) || 0;
     const qty = parseInt(quantity) || 0;
 
-    if (qty > stock) {
+    // Calculate existing quantity of this part number already in the table
+    const existingQtyForPart = dataSource
+      .filter((item) => item.partNumber === partNumber)
+      .reduce((sum, item) => sum + parseInt(item.quantity || 0), 0);
+
+    // Total requested quantity (existing + new)
+    const totalRequestedQty = existingQtyForPart + qty;
+
+    if (totalRequestedQty > stock) {
       notification.error({
         message: "Quantity Exceeds Stock",
-        description: `You only have ${stock} in stock.`,
+        description: `Total quantity (${totalRequestedQty}) exceeds stock in hand (${stock}).`,
       });
       return;
     }
@@ -447,14 +465,21 @@ export default function DeliveryNote({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
+        "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({
             action: "addDeliveryNote",
             deliveryNumber: values.deliveryNumber,
-            date: values.date,
+            // date: values.date,
+            // date: values.date ? dayjs(values.date).format("DD-MM-YYYY") : "",
+            date: values.date
+              ? typeof values.date === "string"
+                ? values.date
+                : dayjs(values.date).format("DD-MM-YYYY")
+              : "",
+
             customername: values.customername,
             address: values.address,
             modeOfDelivery: values.modeOfDelivery,
@@ -480,7 +505,7 @@ export default function DeliveryNote({ username }) {
         });
         // Fetch new delivery number
         const nextRes = await fetch(
-          "https://script.google.com/macros/s/AKfycbwAKN7tZiZWp_vDvT7aIrt1clInz7C4HGiziTmjjF1-xzBDbVK4ddF2TN9X9GfpGMn2CA/exec",
+          "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -495,7 +520,8 @@ export default function DeliveryNote({ username }) {
         const nowUTC = new Date();
         const dubaiOffset = 4 * 60;
         const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-        const formattedDate = dayjs(dubaiTime).format("DD-MM-YYYY");
+        // const formattedDate = dayjs(dubaiTime).format("DD-MM-YYYY");
+        const formattedDate = dayjs(dubaiTime);
         form.setFieldsValue({ date: formattedDate });
       } else {
         notification.error({
@@ -642,7 +668,7 @@ export default function DeliveryNote({ username }) {
                 >
                   <div className="row mt-3">
                     <div className="row m-0 p-0">
-                      <div className="col-6">
+                      {/* <div className="col-6">
                         <Form.Item
                           label="Delivery Number"
                           name="deliveryNumber"
@@ -665,11 +691,11 @@ export default function DeliveryNote({ username }) {
                             }
                           />
                         </Form.Item>
-                      </div>
+                      </div> */}
                       <div className="col-6">
                         <Form.Item
-                          label="Date"
-                          name="date"
+                          label="Delivery Number"
+                          name="deliveryNumber"
                           className="fw-bold"
                           rules={[
                             {
@@ -677,10 +703,60 @@ export default function DeliveryNote({ username }) {
                               message: "",
                             },
                           ]}
-                          disabled
                         >
-                          <Input value={deliveryDate} readOnly />
+                          <div>
+                            <Input
+                              placeholder="Delivery Number"
+                              readOnly
+                              value={
+                                loadingDeliveryNumber
+                                  ? "Fetching..."
+                                  : form.getFieldValue("deliveryNumber")
+                              }
+                            />
+                          </div>
                         </Form.Item>
+                      </div>
+
+                      <div className="col-6">
+                        {username === "Admin" ? (
+                          <Form.Item
+                            label="Date"
+                            name="date"
+                            className="fw-bold"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select the delivery date",
+                              },
+                            ]}
+                          >
+                            <DatePicker
+                              format="DD-MM-YYYY"
+                              value={dayjs(deliveryDate, "DD-MM-YYYY")}
+                              onChange={(date) => {
+                                if (!date || !dayjs.isDayjs(date)) {
+                                  setDeliveryDate("");
+                                  form.setFieldsValue({ date: null }); // clear date
+                                } else {
+                                  const formatted = date.format("DD-MM-YYYY");
+                                  setDeliveryDate(formatted);
+                                  form.setFieldsValue({ date });
+                                }
+                                console.log(date);
+                              }}
+                              className="w-100"
+                            />
+                          </Form.Item>
+                        ) : (
+                          <Form.Item label="Date" className="fw-bold">
+                            <Input
+                              placeholder="Delivery Date"
+                              value={deliveryDate}
+                              readOnly
+                            />
+                          </Form.Item>
+                        )}
                       </div>
                     </div>
                     <Form.Item
@@ -733,10 +809,7 @@ export default function DeliveryNote({ username }) {
                         },
                       ]}
                     >
-                      <Input.TextArea
-                        placeholder="Enter Address"
-                        autoSize={{ minRows: 4, maxRows: 4 }}
-                      />
+                      <Input.TextArea placeholder="Enter Address" rows={6} />
                     </Form.Item>
                     <div className="row m-0 p-0">
                       <div className="col-6">
