@@ -314,14 +314,18 @@ function AppRoutes({ isLoggedIn, handleLoginSuccess, username }) {
   const location = useLocation();
   const [displayLocation, setDisplayLocation] = useState(location);
   const [currentPathname, setCurrentPathname] = useState(location.pathname);
-const [animationClass, setAnimationClass] = useState(() =>
-  location.pathname === "/" ? "page-enter login-animation" : "page-enter"
-);
+// const [animationClass, setAnimationClass] = useState(() =>
+//   location.pathname === "/" ? "page-enter login-animation" : "page-enter"
+// );
+const [animationClass, setAnimationClass] = useState("page-enter");
+
   useEffect(() => {
     const nextPath = location.pathname;
     const prevPath = currentPathname;
     // const shouldSkipAnimation = nextPath === "/" || prevPath === "/";
-    const shouldSkipAnimation = false;
+    // const shouldSkipAnimation = false;
+    const shouldSkipAnimation = location.pathname === "/";
+
 
     if (nextPath !== prevPath) {
       if (shouldSkipAnimation) {
@@ -333,11 +337,12 @@ const [animationClass, setAnimationClass] = useState(() =>
         const timeout = setTimeout(() => {
           setDisplayLocation(location);
           setCurrentPathname(nextPath);
-           if (nextPath === "/") {
-          setAnimationClass("page-enter login-animation");
-        } else {
-          setAnimationClass("page-enter");
-        }
+        //    if (nextPath === "/") {
+        //   setAnimationClass("page-enter login-animation");
+        // } else {
+        //   setAnimationClass("page-enter");
+        // }
+         setAnimationClass("page-enter");
         }, 400);
         return () => clearTimeout(timeout);
       }
@@ -347,7 +352,7 @@ const [animationClass, setAnimationClass] = useState(() =>
   }, [location, currentPathname]);
 
   return (
-    <div className={`page-container ${animationClass}`}>
+<div className={`page-container ${location.pathname === "/" ? "" : animationClass}`}>
       <Routes location={displayLocation}>
         <Route
           path="/"

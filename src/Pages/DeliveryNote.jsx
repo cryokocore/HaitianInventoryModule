@@ -354,6 +354,39 @@ export default function DeliveryNote({ username }) {
     },
   ];
 
+  // useEffect(() => {
+  //   const nowUTC = new Date();
+  //   const dubaiOffset = 4 * 60;
+  //   const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+
+  //   const dubaiDayjs = dayjs(dubaiTime);
+  //   const formatted = dubaiDayjs.format("DD-MM-YYYY");
+
+  //   setDeliveryDate(formatted);
+
+  //   if (username === "Admin") {
+  //     // Only set for form field if admin (since it binds to form)
+  //     form.setFieldsValue({ date: dubaiDayjs });
+  //   } else {
+  //     // form.setFieldsValue({ date: dayjs(dubaiTime).format("DD-MM-YYYY") });
+  //        form.setFieldsValue({ date: formatted });
+  //     console.log(form.date);
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   const nowUTC = new Date();
+  //   const dubaiOffset = 4 * 60;
+  //   const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+  //   const dubaiDayjs = dayjs(dubaiTime);
+  //     const formatted = dubaiDayjs.format("DD-MM-YYYY");
+
+  //   setDeliveryDate(formatted);
+  //       console.log("Non-admin deliveryDate:", formatted); // ✅ Add this line
+
+  //   form.setFieldsValue({ date: dubaiDayjs });
+  // }, []);
+
   useEffect(() => {
     const nowUTC = new Date();
     const dubaiOffset = 4 * 60;
@@ -365,12 +398,14 @@ export default function DeliveryNote({ username }) {
     setDeliveryDate(formatted);
 
     if (username === "Admin") {
-      // Only set for form field if admin (since it binds to form)
+      // Admin gets dayjs object for DatePicker
       form.setFieldsValue({ date: dubaiDayjs });
     } else {
-      form.setFieldsValue({ date: dayjs(dubaiTime).format("DD-MM-YYYY") });
-      console.log(form.date);
+      // Non-admin gets formatted string for Input field
+      form.setFieldsValue({ date: formatted });
     }
+
+    console.log("Non-admin deliveryDate:", formatted);
   }, []);
 
   const handleAdd = () => {
@@ -464,6 +499,12 @@ export default function DeliveryNote({ username }) {
 
     try {
       setLoading(true);
+      console.log(
+        "Date sent to backend:",
+        values.date,
+        dayjs(values.date).format("DD-MM-YYYY")
+      );
+
       const response = await fetch(
         "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
         {
@@ -474,11 +515,10 @@ export default function DeliveryNote({ username }) {
             deliveryNumber: values.deliveryNumber,
             // date: values.date,
             // date: values.date ? dayjs(values.date).format("DD-MM-YYYY") : "",
-            date: values.date
-              ? typeof values.date === "string"
-                ? values.date
-                : dayjs(values.date).format("DD-MM-YYYY")
-              : "",
+            date:
+              username === "Admin"
+                ? dayjs(values.date).format("DD-MM-YYYY")
+                : deliveryDate,
 
             customername: values.customername,
             address: values.address,
@@ -495,7 +535,7 @@ export default function DeliveryNote({ username }) {
           message: "Success",
           description: result.message,
         });
-        form.resetFields();
+        // form.resetFields();
         setDataSource([]);
         setInputRow({
           partNumber: "",
@@ -520,9 +560,27 @@ export default function DeliveryNote({ username }) {
         const nowUTC = new Date();
         const dubaiOffset = 4 * 60;
         const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-        // const formattedDate = dayjs(dubaiTime).format("DD-MM-YYYY");
-        const formattedDate = dayjs(dubaiTime);
-        form.setFieldsValue({ date: formattedDate });
+
+        const dubaiDayjs = dayjs(dubaiTime);
+        const formatted = dubaiDayjs.format("DD-MM-YYYY");
+
+        setDeliveryDate(formatted);
+
+        if (username === "Admin") {
+          // Admin gets dayjs object for DatePicker
+          form.setFieldsValue({ date: dubaiDayjs });
+        } else {
+          // Non-admin gets formatted string for Input field
+          form.setFieldsValue({ date: formatted });
+        }
+        form.setFields([
+          { name: "customername", value: undefined },
+          { name: "address", value: undefined },
+          { name: "modeOfDelivery", value: undefined },
+          { name: "reference", value: undefined },
+        ]);
+
+        console.log("deliveryDate for non-admin:", deliveryDate);
       } else {
         notification.error({
           message: "Error",
@@ -719,44 +777,40 @@ export default function DeliveryNote({ username }) {
                       </div>
 
                       <div className="col-6">
-                        {username === "Admin" ? (
-                          <Form.Item
-                            label="Date"
-                            name="date"
-                            className="fw-bold"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please select the delivery date",
-                              },
-                            ]}
-                          >
+                        <Form.Item
+                          label="Date"
+                          name="date"
+                          className="fw-bold"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select the delivery date",
+                            },
+                          ]}
+                        >
+                          {username === "Admin" ? (
                             <DatePicker
                               format="DD-MM-YYYY"
-                              value={dayjs(deliveryDate, "DD-MM-YYYY")}
+                              value={form.getFieldValue("date")} // ✅ dayjs object
                               onChange={(date) => {
-                                if (!date || !dayjs.isDayjs(date)) {
-                                  setDeliveryDate("");
-                                  form.setFieldsValue({ date: null }); // clear date
-                                } else {
-                                  const formatted = date.format("DD-MM-YYYY");
-                                  setDeliveryDate(formatted);
+                                if (date && dayjs(date).isValid()) {
+                                  setDeliveryDate(date.format("DD-MM-YYYY"));
                                   form.setFieldsValue({ date });
+                                } else {
+                                  setDeliveryDate("");
+                                  form.setFieldsValue({ date: null });
                                 }
-                                console.log(date);
                               }}
                               className="w-100"
                             />
-                          </Form.Item>
-                        ) : (
-                          <Form.Item label="Date" className="fw-bold">
+                          ) : (
                             <Input
                               placeholder="Delivery Date"
                               value={deliveryDate}
                               readOnly
                             />
-                          </Form.Item>
-                        )}
+                          )}
+                        </Form.Item>
                       </div>
                     </div>
                     <Form.Item
@@ -892,7 +946,20 @@ export default function DeliveryNote({ username }) {
                               deliveryNumber: values.deliveryNumber,
                               date: values.date,
                             };
-                            form.resetFields();
+                            // form.resetFields();
+                            setDataSource([]);
+                            setInputRow({
+                              partNumber: "",
+                              itemDescription: "",
+                              quantity: "",
+                              stockInHand: "",
+                            });
+                            form.setFields([
+                              { name: "customername", value: undefined },
+                              { name: "address", value: undefined },
+                              { name: "modeOfDelivery", value: undefined },
+                              { name: "reference", value: undefined },
+                            ]);
                             form.setFieldsValue(preservedFields);
                             notification.success({
                               message: "Success",

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
+import UAE from "../Images/UAE.png";
+import US from "../Images/US.png";
 import {
   faCircleUser,
   faLock,
@@ -380,9 +382,19 @@ export default function CustomerDetails({ username }) {
                       ]}
                     >
                       <Select>
-                        <option value="AED">United Arab Emirates - AED</option>
+                        <option value="AED">
+                          <div className="d-flex align-items-center">
+                          <img src={UAE} alt="UAE" style={{width:"30px"}}/> <span className="ms-1">United Arab Emirates - AED (د.إ)
+                            </span>
+                          </div>
+                          
+                          </option>
                         <option value="USD">
-                          United States Of America - USD
+                          
+                          <div className="d-flex align-items-center">
+                          <img src={US} alt="US" style={{width:"30px"}}/> <span className="ms-1">United States Of America - USD ($)
+                            </span>
+                          </div>
                         </option>
                       </Select>
                     </Form.Item>

@@ -126,7 +126,7 @@ export default function Login({ onLoginSuccess }) {
         >
           <div className="w-50 m-auto ">
             <div
-              className={`container rounded-5 p-5 loginContainer bg-white ${
+              className={`container rounded-5 p-5 loginContainer bg-white fade-in ${
                 shake ? "shake" : ""
               }`}
             >
