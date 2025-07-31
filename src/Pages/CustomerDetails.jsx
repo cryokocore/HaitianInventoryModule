@@ -32,7 +32,7 @@ export default function CustomerDetails({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
+        "https://script.google.com/macros/s/AKfycbyUF1NR1vQDFipP4q8kMl58Ap8iWNvdxG4nIETkxfJ00ZLrB08ZhuPUkOqtUwz9jjvBJg/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -41,13 +41,21 @@ export default function CustomerDetails({ username }) {
             salutation: values.salutation || "-",
             firstname: values.firstname || "-",
             lastname: values.lastname || "-",
+            contactPersonSalutation: values.contactPersonSalutation || "-",
+            contactPersonFirstName: values.contactPersonFirstName || "-",
+            contactPersonLastName: values.contactPersonLastName || "-",
+            contactPersonPosition: values.contactPersonPosition || "-",
+            contactPersonNumber: values.contactPersonNumber || "-",
+            contactPersonEmail: values.contactPersonEmail || "-",
+            customerOwner: values.customerOwner || "-",
             customerEmail: values.customerEmail || "-",
             workPhoneNumber: values.workPhoneNumber || "-",
             mobileNumber: values.mobileNumber || "-",
             address: values.address || "-",
-            trn: values.trn || "-",
+            vataxId: values.vataxId || "-",
             currency: values.currency || "-",
             paymentTerms: values.paymentTerms || "-",
+            creditLimit : values.creditLimit || "-",
             deliveryTerms: values.deliveryTerms || "-",
             userName: username || "-",
           }),
@@ -192,6 +200,7 @@ export default function CustomerDetails({ username }) {
                     >
                       <Input placeholder="Enter Customer Name" />
                     </Form.Item>
+
                     <Form.Item
                       label="Primary Contact"
                       name="primarycontact"
@@ -262,13 +271,148 @@ export default function CustomerDetails({ username }) {
                     </Form.Item>
 
                     <Form.Item
+                      label="Contact Person"
+                      className="fw-bold"
+                    >
+                      <div className="row">
+                        <div className="col-2">
+                          <Form.Item
+                            name="contactPersonSalutation"
+                            rules={[
+                              {
+                                required: false,
+                                message: "Please select a salutation!",
+                              },
+                            ]}
+                          >
+                            <Select placeholder="Salutation">
+                              <Select.Option value="Mr.">Mr.</Select.Option>
+                              <Select.Option value="Mrs.">Mrs.</Select.Option>
+                            </Select>
+                          </Form.Item>
+                        </div>
+
+                        <div className="col-5">
+                          <Form.Item
+                            name="contactPersonFirstName"
+                            rules={[
+                              {
+                                required: false,
+                                message: "Please enter first name!",
+                              },
+                              {
+                                pattern: /^[A-Za-z\s.]+$/,
+                                message:
+                                  "First name should not contain numbers or special characters!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter First Name" />
+                          </Form.Item>
+                        </div>
+
+                        <div className="col-5">
+                          <Form.Item
+                            name="contactPersonLastName"
+                            rules={[
+                              {
+                                required: false,
+                                message: "Please enter last name!",
+                              },
+                              {
+                                pattern: /^[A-Za-z\s.]+$/,
+                                message:
+                                  "Last name should not contain numbers or special characters!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Last Name" />
+                          </Form.Item>
+                        </div>
+
+                        <div className="col-4">
+                          <Form.Item
+                            name="contactPersonPosition"
+                            rules={[
+                              {
+                                required: false,
+                                message: "Please enter position!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Position" />
+                          </Form.Item>
+                        </div>
+
+                        <div className="col-4">
+                          <Form.Item
+                            name="contactPersonNumber"
+                            rules={[
+                              {
+                                required: false,
+                                message: "Please enter contact number",
+                              },
+                              {
+                                pattern: /^[0-9\s-]+$/,
+                                message:
+                                  "Contact number should not contain letter",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Contact Number" />
+                          </Form.Item>
+                        </div>
+
+                        <div className="col-4">
+                          <Form.Item
+                            name="contactPersonEmail"
+                            rules={[
+                              {
+                                required: false,
+                                message: "Please enter email",
+                              },
+                              {
+                                validator: (_, value) => {
+                                  if (!value) return Promise.resolve();
+                                  const emailRegex =
+                                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                  return emailRegex.test(value)
+                                    ? Promise.resolve()
+                                    : Promise.reject(
+                                        "Please enter a valid email address"
+                                      );
+                                },
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Email" />
+                          </Form.Item>
+                        </div>
+                      </div>
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Customer Owner"
+                      name="customerOwner"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the customer owner!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter Customer Owner" />
+                    </Form.Item>
+
+                    <Form.Item
                       label="Customer Email"
                       name="customerEmail"
                       className="fw-bold"
                       rules={[
                         {
                           required: true,
-                          message: "Please input customer email!",
+                          message: "Please enter the customer email!",
                         },
                         {
                           validator: (_, value) => {
@@ -285,6 +429,7 @@ export default function CustomerDetails({ username }) {
                     >
                       <Input placeholder="Enter Customer Email" />
                     </Form.Item>
+
                     <Form.Item
                       label="Customer Phone"
                       name="customerPhone"
@@ -304,7 +449,7 @@ export default function CustomerDetails({ username }) {
                               {
                                 required: true,
                                 message:
-                                  "Please enter cutomer work phone number!",
+                                  "Please enter the cutomer work phone number!",
                               },
                               {
                                 pattern: /^[0-9\s-]+$/,
@@ -323,7 +468,8 @@ export default function CustomerDetails({ username }) {
                             rules={[
                               {
                                 required: true,
-                                message: "Please enter cutomer mobile number!",
+                                message:
+                                  "Please enter the cutomer mobile number!",
                               },
                               {
                                 pattern: /^[0-9\s-]+$/,
@@ -348,28 +494,23 @@ export default function CustomerDetails({ username }) {
                         },
                       ]}
                     >
-                      <Input.TextArea
-                        placeholder="Enter Address"
-                        rows={6}
-                      />
+                      <Input.TextArea placeholder="Enter Address" rows={6} />
                     </Form.Item>
+
                     <Form.Item
-                      label="TRN"
-                      name="trn"
+                      label="VAT/TAX ID"
+                      name="vataxId"
                       className="fw-bold"
                       rules={[
                         {
                           required: true,
-                          message: "Please enter transaction reference number!",
+                          message: "Please enter the VAT/TAX ID!",
                         },
                       ]}
                     >
-                      <Input
-                        showCount
-                        maxLength={18}
-                        placeholder="Enter Transaction Reference Number (TRN)"
-                      />
+                      <Input placeholder="Enter the VAT/TAX ID" />
                     </Form.Item>
+
                     <Form.Item
                       label="Currency"
                       name="currency"
@@ -381,18 +522,24 @@ export default function CustomerDetails({ username }) {
                         },
                       ]}
                     >
-                      <Select>
+                      <Select placeholder="Select Currency Type">
                         <option value="AED">
                           <div className="d-flex align-items-center">
-                          <img src={UAE} alt="UAE" style={{width:"30px"}}/> <span className="ms-1">United Arab Emirates - AED (د.إ)
+                            <img
+                              src={UAE}
+                              alt="UAE"
+                              style={{ width: "30px" }}
+                            />{" "}
+                            <span className="ms-1">
+                              United Arab Emirates - AED (د.إ)
                             </span>
                           </div>
-                          
-                          </option>
+                        </option>
                         <option value="USD">
-                          
                           <div className="d-flex align-items-center">
-                          <img src={US} alt="US" style={{width:"30px"}}/> <span className="ms-1">United States Of America - USD ($)
+                            <img src={US} alt="US" style={{ width: "30px" }} />{" "}
+                            <span className="ms-1">
+                              United States Of America - USD ($)
                             </span>
                           </div>
                         </option>
@@ -405,7 +552,7 @@ export default function CustomerDetails({ username }) {
                       rules={[
                         {
                           required: true,
-                          message: "Please enter payment terms!",
+                          message: "Please enter the payment terms!",
                         },
                       ]}
                     >
@@ -415,20 +562,30 @@ export default function CustomerDetails({ username }) {
                       />
                     </Form.Item>
                     <Form.Item
+                      label="Credit Limit"
+                      name="creditLimit"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the credit limit!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter Credit Limit" />
+                    </Form.Item>
+                    <Form.Item
                       label="Delivery Terms"
                       name="deliveryTerms"
                       className="fw-bold"
                       rules={[
                         {
                           required: true,
-                          message: "Please enter delivery terms!",
+                          message: "Please enter the delivery terms!",
                         },
                       ]}
                     >
-                      <Input.TextArea
-                        rows={3}
-                        placeholder="Enter Payment Terms"
-                      />
+                      <Input placeholder="Enter Payment Terms" />
                     </Form.Item>
                     <div className="col-12 text-center mt-4 mb-3">
                       <Button

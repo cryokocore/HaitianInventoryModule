@@ -15,6 +15,8 @@ export default function Login({ onLoginSuccess }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
+  const [initialAnimation, setInitialAnimation] = useState(true);
+
   useEffect(() => {
     if (shake) {
       const timer = setTimeout(() => {
@@ -24,8 +26,16 @@ export default function Login({ onLoginSuccess }) {
     }
   }, [shake]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInitialAnimation(false); // disable fade-in after first render
+    }, 800); // match fade-in duration
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleSubmit = async (values) => {
-        if (!navigator.onLine) {
+    if (!navigator.onLine) {
       notification.error({
         message: "No Internet Connection",
         description: "Please check your internet and try again.",
@@ -35,7 +45,7 @@ export default function Login({ onLoginSuccess }) {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec",
+        "https://script.google.com/macros/s/AKfycbyUF1NR1vQDFipP4q8kMl58Ap8iWNvdxG4nIETkxfJ00ZLrB08ZhuPUkOqtUwz9jjvBJg/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -126,9 +136,13 @@ export default function Login({ onLoginSuccess }) {
         >
           <div className="w-50 m-auto ">
             <div
-              className={`container rounded-5 p-5 loginContainer bg-white fade-in ${
-                shake ? "shake" : ""
-              }`}
+              // className={`container rounded-5 p-5 loginContainer bg-white fade-in ${
+              //   shake ? "shake" : ""
+              // }`}
+              className={`container rounded-5 p-5 loginContainer bg-white
+    ${initialAnimation ? "fade-in" : ""}
+    ${shake ? "shake" : ""}
+  `}
             >
               <div className="row">
                 <div className="col-12">

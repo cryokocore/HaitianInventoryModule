@@ -93,7 +93,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbz8zpHsOnMtZ4ETHMiYLCrNPKwi5c3lTD1Xv7u7_CUozmXd2aingkSuZuTcgV9nfp3xeQ/exec";
+    "https://script.google.com/macros/s/AKfycbyUF1NR1vQDFipP4q8kMl58Ap8iWNvdxG4nIETkxfJ00ZLrB08ZhuPUkOqtUwz9jjvBJg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
