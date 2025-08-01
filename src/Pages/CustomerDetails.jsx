@@ -19,12 +19,42 @@ import {
   Table,
   notification,
   Tooltip,
+  AutoComplete,
 } from "antd";
 import "../App.css";
 
 export default function CustomerDetails({ username }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [ownerLoading, setOwnerLoading] = useState(false);
+
+  const [ownerOptions, setOwnerOptions] = useState([]);
+
+  useEffect(() => {
+    fetchCustomerOwners();
+  }, []);
+  const fetchCustomerOwners = async () => {
+    setOwnerLoading(true);
+    try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbyVNAT7hc-h5CP-aeyLm_duaygnU8vA-qFy7UJ6AZFIdgORZ5SIcozmqHbfSl6BBxFNDQ/exec",
+        {
+          method: "POST",
+          body: new URLSearchParams({ action: "getCustomerOwners" }),
+        }
+      );
+
+      const result = await response.json();
+      if (result.success && Array.isArray(result.owners)) {
+        setOwnerOptions(result.owners);
+        console.log(ownerOptions);
+      }
+    } catch (err) {
+      console.error("Error fetching owners:", err);
+    } finally {
+      setOwnerLoading(false);
+    }
+  };
 
   const handleSubmit = async (values) => {
     console.log(values);
@@ -32,7 +62,7 @@ export default function CustomerDetails({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbyUF1NR1vQDFipP4q8kMl58Ap8iWNvdxG4nIETkxfJ00ZLrB08ZhuPUkOqtUwz9jjvBJg/exec",
+        "https://script.google.com/macros/s/AKfycbyVNAT7hc-h5CP-aeyLm_duaygnU8vA-qFy7UJ6AZFIdgORZ5SIcozmqHbfSl6BBxFNDQ/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -55,7 +85,7 @@ export default function CustomerDetails({ username }) {
             vataxId: values.vataxId || "-",
             currency: values.currency || "-",
             paymentTerms: values.paymentTerms || "-",
-            creditLimit : values.creditLimit || "-",
+            creditLimit: values.creditLimit || "-",
             deliveryTerms: values.deliveryTerms || "-",
             userName: username || "-",
           }),
@@ -68,6 +98,7 @@ export default function CustomerDetails({ username }) {
           description: result.message,
         });
         form.resetFields();
+        fetchCustomerOwners();
       } else {
         notification.error({
           message: "Error",
@@ -270,10 +301,7 @@ export default function CustomerDetails({ username }) {
                       </div>
                     </Form.Item>
 
-                    <Form.Item
-                      label="Contact Person"
-                      className="fw-bold"
-                    >
+                    <Form.Item label="Contact Person" className="fw-bold">
                       <div className="row">
                         <div className="col-2">
                           <Form.Item
@@ -402,7 +430,64 @@ export default function CustomerDetails({ username }) {
                         },
                       ]}
                     >
-                      <Input placeholder="Enter Customer Owner" />
+                      {/* <AutoComplete
+                        allowClear
+                        showSearch
+                        placeholder="Type or select owner"
+                        defaultActiveFirstOption={false} // Prevents ghost selection
+                        options={ownerOptions.map((owner) => ({
+                          label: owner,
+                          value: owner,
+                        }))}
+                        onSelect={(value) => {
+                          form.setFieldsValue({ customerOwner: value });
+                        }}
+                        // onBlur={() => {
+                        //   const value = form.getFieldValue("customerOwner");
+                        //   if (value && !ownerOptions.includes(value)) {
+                        //     setOwnerOptions((prev) => [...prev, value]);
+                        //   }
+                        // }}
+                        onChange={(value) => {
+                          form.setFieldsValue({ customerOwner: value });
+                        }}
+                        filterOption={(inputValue, option) =>
+                          option?.value
+                            ?.toLowerCase()
+                            .includes(inputValue.toLowerCase())
+                        }
+                      /> */}
+                      <AutoComplete
+                        allowClear
+                        showSearch
+                        placeholder="Type or select owner"
+                        defaultActiveFirstOption={false}
+                        options={
+                          ownerLoading
+                            ? [
+                                {
+                                  label: "Fetching...",
+                                  value: "",
+                                  disabled: true,
+                                },
+                              ]
+                            : ownerOptions.map((owner) => ({
+                                label: owner,
+                                value: owner,
+                              }))
+                        }
+                        onSelect={(value) => {
+                          form.setFieldsValue({ customerOwner: value });
+                        }}
+                        onChange={(value) => {
+                          form.setFieldsValue({ customerOwner: value });
+                        }}
+                        filterOption={(inputValue, option) =>
+                          option?.value
+                            ?.toLowerCase()
+                            .includes(inputValue.toLowerCase())
+                        }
+                      />
                     </Form.Item>
 
                     <Form.Item

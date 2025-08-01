@@ -42,18 +42,24 @@ export default function ProductCategories({ username }) {
     partNumber: "",
     description: "",
     quantity: "",
+    unit: "",
     stockInHand: "",
     note: "",
-    price: "",
+    purchaseCost: "",
+    sellingCost: "",
+    addOnCost: "",
     totalPrice: "",
   });
   const [machineinputRow, setMachineInputRow] = useState({
     partNumber: "",
     description: "",
     quantity: "",
+    unit: "",
     stockInHand: "",
     note: "",
-    price: "",
+    purchaseCost: "",
+    sellingCost: "",
+    addOnCost: "",
     totalPrice: "",
   });
   const [selectedAssets, setSelectedAssets] = useState(null);
@@ -62,18 +68,24 @@ export default function ProductCategories({ username }) {
     partNumber: "",
     description: "",
     quantity: "",
+    unit: "",
     stockInHand: "",
     note: "",
-    price: "",
+    purchaseCost: "",
+    sellingCost: "",
+    addOnCost: "",
     totalPrice: "",
   });
   const [assetsInputRow, setAssetsInputRow] = useState({
     partNumber: "",
     description: "",
     quantity: "",
+    unit: "",
     stockInHand: "",
     note: "",
-    price: "",
+    purchaseCost: "",
+    sellingCost: "",
+    addOnCost: "",
     totalPrice: "",
   });
   const [selectedMachine, setSelectedMachine] = useState(null);
@@ -83,17 +95,28 @@ export default function ProductCategories({ username }) {
   const [auxiliariesFetching, setAuxiliariesFetching] = useState(false);
   const [sparePartsFetching, setSparePartsFetching] = useState(false);
 
-  const updateTotalPrice = (price, quantity) => {
-    const p = parseFloat(price);
-    const q = parseFloat(quantity);
-    if (!isNaN(p) && !isNaN(q)) {
-      return (p * q).toFixed(2);
-    }
-    return "";
-  };
+ const updateTotalPrice = (purchase, addOn, quantity) => {
+  const p = parseFloat(purchase);
+  const a = parseFloat(addOn);
+  const q = parseInt(quantity);
+
+  let sellingPrice = "";
+  let totalPrice = "";
+
+  if (!isNaN(p) && !isNaN(a)) {
+    sellingPrice = (p + a).toFixed(2);
+  }
+
+  if (sellingPrice && !isNaN(q)) {
+    totalPrice = (parseFloat(sellingPrice) * q).toFixed(2);
+  }
+
+  return { sellingPrice, totalPrice };
+};
+
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbyUF1NR1vQDFipP4q8kMl58Ap8iWNvdxG4nIETkxfJ00ZLrB08ZhuPUkOqtUwz9jjvBJg/exec";
+    "https://script.google.com/macros/s/AKfycbyVNAT7hc-h5CP-aeyLm_duaygnU8vA-qFy7UJ6AZFIdgORZ5SIcozmqHbfSl6BBxFNDQ/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -592,13 +615,13 @@ export default function ProductCategories({ username }) {
   }, [inputRow.partNumber]);
 
   const handleSubmit = async (values) => {
-             if (!navigator.onLine) {
-              notification.error({
-                message: "No Internet Connection",
-                description: "Please check your internet and try again.",
-              });
-              return;
-            }
+    if (!navigator.onLine) {
+      notification.error({
+        message: "No Internet Connection",
+        description: "Please check your internet and try again.",
+      });
+      return;
+    }
     if (
       loading ||
       (machineDataSource.length === 0 &&
@@ -800,20 +823,32 @@ export default function ProductCategories({ username }) {
   };
 
   const handleAdd = () => {
-    const { partNumber, description, quantity, price, totalPrice } = inputRow;
+    const {
+      partNumber,
+      description,
+      quantity,
+      unit,
+      purchaseCost,
+      addOnCost,
+      sellingCost,
+      totalPrice,
+    } = inputRow;
 
     if (
       !partNumber ||
       !description ||
       !quantity ||
-      !price ||
+      !unit ||
+      !purchaseCost ||
+      !addOnCost ||
+      !sellingCost ||
       !totalPrice ||
       !inputRow.date
     ) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Date, Part Number, Description, Quantity, Price and ensure Total Price is calculated",
+          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost, Selling Cost and ensure Total Price is calculated",
       });
       return;
     }
@@ -829,8 +864,11 @@ export default function ProductCategories({ username }) {
       partNumber: "",
       description: "",
       quantity: "",
+      unit: "",
       stockInHand: "",
-      price: "",
+      purchaseCost: "",
+      addOnCost: "",
+      sellingCost: "",
       totalPrice: "",
       note: "",
     });
@@ -961,31 +999,88 @@ export default function ProductCategories({ username }) {
         ),
     },
     {
-      title: "Price In AED(per item) ",
-      dataIndex: "price",
+      title: "Purchase Cost(per item)",
+      dataIndex: "purchaseCost",
       ellipsis: true,
       width: 250,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
             <Input
-              placeholder="Price"
+              placeholder="Enter purchase cost"
               type="number"
               min={0}
-              value={inputRow.price}
+              value={inputRow.purchaseCost}
               onChange={(e) => {
-                const price = e.target.value;
+                const purchaseCost = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  purchaseCost,
+                  inputRow.addOnCost,
+                  inputRow.quantity
+                );
                 setInputRow((prev) => ({
                   ...prev,
-                  price,
-                  totalPrice: updateTotalPrice(price, prev.quantity),
+                  purchaseCost,
+                  sellingCost: sellingPrice,
+                  totalPrice,
                 }));
               }}
             />
           </Tooltip>
         ) : (
-          <Tooltip title={record.price}>
-            <span>{record.price || "-"}</span>
+          <Tooltip title={record.purchaseCost}>
+            <span>{record.purchaseCost || "-"}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Add On Cost",
+      dataIndex: "addOnCost",
+      ellipsis: true,
+      width: 250,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Enter add on cost"
+              value={inputRow.addOnCost}
+              onChange={(e) => {
+                const addOnCost = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  inputRow.purchaseCost,
+                  addOnCost,
+                  inputRow.quantity
+                );
+                setInputRow((prev) => ({
+                  ...prev,
+                  addOnCost,
+                  sellingCost: sellingPrice,
+                  totalPrice,
+                }));
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.addOnCost}>
+            <span>{record.addOnCost}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Selling Cost",
+      dataIndex: "sellingCost",
+      ellipsis: true,
+      width: 250,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input value={inputRow.sellingCost || ""} readOnly />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.sellingCost}>
+            <span>{record.sellingCost}</span>
           </Tooltip>
         ),
     },
@@ -999,16 +1094,22 @@ export default function ProductCategories({ username }) {
         record.isInput ? (
           <Tooltip>
             <Input
-              placeholder="Enter Quantity"
+              placeholder="Enter quantity"
               type="number"
               min={1}
               value={inputRow.quantity}
               onChange={(e) => {
                 const quantity = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  inputRow.purchaseCost,
+                  inputRow.addOnCost,
+                  quantity
+                );
                 setInputRow((prev) => ({
                   ...prev,
                   quantity,
-                  totalPrice: updateTotalPrice(prev.price, quantity),
+                  sellingCost: sellingPrice, // still needed in case it's blank initially
+                  totalPrice,
                 }));
               }}
             />
@@ -1019,7 +1120,32 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
-
+    {
+      title: "Unit",
+      dataIndex: "unit",
+      width: 250,
+      ellipsis: true,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip title="">
+            <Select
+              placeholder="Select unit"
+              className="w-100"
+              value={inputRow.unit}
+              onChange={(value) => {
+                setInputRow({ ...inputRow, unit: value });
+              }}
+            >
+              <Select.Option value="Set">Set</Select.Option>
+              <Select.Option value="Piece">Piece</Select.Option>
+              <Select.Option value="Number">Number</Select.Option>
+              <Select.Option value="Litre">Litre</Select.Option>
+            </Select>
+          </Tooltip>
+        ) : (
+          record.unit || ""
+        ),
+    },
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
@@ -1809,21 +1935,32 @@ export default function ProductCategories({ username }) {
   ];
 
   const handleMachineAdd = () => {
-    const { partNumber, description, quantity, price, totalPrice } =
-      machineinputRow;
+    const {
+      partNumber,
+      description,
+      quantity,
+      unit,
+      purchaseCost,
+      addOnCost,
+      sellingCost,
+      totalPrice,
+    } = machineinputRow;
 
     if (
       !partNumber ||
       !description ||
       !quantity ||
-      !price ||
+      !unit ||
+      !purchaseCost ||
+      !addOnCost ||
+      !sellingCost ||
       !totalPrice ||
       !machineinputRow.date
     ) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Date, Part Number, Description, Quantity, Price and ensure Total Price is calculated",
+          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost, Selling Cost and ensure Total Price is calculated",
       });
       return;
     }
@@ -1838,8 +1975,11 @@ export default function ProductCategories({ username }) {
       partNumber: "",
       description: "",
       quantity: "",
+      unit: "",
       stockInHand: "",
-      price: "",
+      purchaseCost: "",
+      addOnCost: "",
+      sellingCost: "",
       totalPrice: "",
       note: "",
     });
@@ -1975,31 +2115,96 @@ export default function ProductCategories({ username }) {
         ),
     },
     {
-      title: "Price In AED(per item)",
-      dataIndex: "price",
+      title: "Purchase Cost(per item)",
+      dataIndex: "purchaseCost",
       ellipsis: true,
       width: 250,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
             <Input
-              placeholder="Price"
+              placeholder="Enter purchase cost"
               type="number"
               min={0}
-              value={machineinputRow.price}
+              value={machineinputRow.purchaseCost}
               onChange={(e) => {
-                const price = e.target.value;
-                setMachineInputRow((prev) => ({
-                  ...prev,
-                  price,
-                  totalPrice: updateTotalPrice(price, prev.quantity),
-                }));
+                const purchaseCost = e.target.value;
+                setMachineInputRow((prev) => {
+                  const newRow = {
+                    ...prev,
+                    purchaseCost,
+                  };
+                  return {
+                    ...newRow,
+                    totalPrice: updateTotalPrice(
+                      purchaseCost,
+                      newRow.addOnCost,
+                      newRow.sellingCost,
+                      newRow.quantity
+                    ),
+                  };
+                });
               }}
             />
           </Tooltip>
         ) : (
-          <Tooltip title={record.price}>
-            <span>{record.price || "-"}</span>
+          <Tooltip title={record.purchaseCost}>
+            <span>{record.purchaseCost || "-"}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Add On Cost",
+      dataIndex: "addOnCost",
+      ellipsis: true,
+      width: 250,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Enter add on cost"
+              value={machineinputRow.addOnCost}
+              onChange={(e) => {
+                const addOnCost = e.target.value;
+                setMachineInputRow((prev) => {
+                  const newRow = {
+                    ...prev,
+                    addOnCost,
+                  };
+                  return {
+                    ...newRow,
+                    totalPrice: updateTotalPrice(
+                      newRow.purchaseCost,
+                      addOnCost,
+                      newRow.sellingCost,
+                      newRow.quantity
+                    ),
+                  };
+                });
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.addOnCost}>
+            <span>{record.addOnCost}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Selling Cost",
+      dataIndex: "sellingCost",
+      ellipsis: true,
+      width: 250,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input value={inputRow.sellingCost || ""} readOnly />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.sellingCost}>
+            <span>{record.sellingCost}</span>
           </Tooltip>
         ),
     },
@@ -2021,7 +2226,12 @@ export default function ProductCategories({ username }) {
                 setMachineInputRow((prev) => ({
                   ...prev,
                   quantity,
-                  totalPrice: updateTotalPrice(prev.price, quantity),
+                  totalPrice: updateTotalPrice(
+                    prev.purchaseCost,
+                    prev.sellingCost,
+                    prev.addOnCost,
+                    quantity
+                  ),
                 }));
               }}
             />
@@ -2030,6 +2240,32 @@ export default function ProductCategories({ username }) {
           <Tooltip title={record.quantity}>
             <span>{record.quantity}</span>
           </Tooltip>
+        ),
+    },
+    {
+      title: "Unit",
+      dataIndex: "unit",
+      width: 250,
+      ellipsis: true,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip title="">
+            <Select
+              placeholder="Select unit"
+              className="w-100"
+              value={machineinputRow.unit}
+              onChange={(value) => {
+                setMachineInputRow({ ...machineinputRow, unit: value });
+              }}
+            >
+              <Select.Option value="Set">Set</Select.Option>
+              <Select.Option value="Piece">Piece</Select.Option>
+              <Select.Option value="Number">Number</Select.Option>
+              <Select.Option value="Litre">Litre</Select.Option>
+            </Select>
+          </Tooltip>
+        ) : (
+          record.unit || ""
         ),
     },
     {
