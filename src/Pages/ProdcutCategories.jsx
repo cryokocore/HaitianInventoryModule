@@ -95,28 +95,27 @@ export default function ProductCategories({ username }) {
   const [auxiliariesFetching, setAuxiliariesFetching] = useState(false);
   const [sparePartsFetching, setSparePartsFetching] = useState(false);
 
- const updateTotalPrice = (purchase, addOn, quantity) => {
-  const p = parseFloat(purchase);
-  const a = parseFloat(addOn);
-  const q = parseInt(quantity);
+  const updateTotalPrice = (purchase, addOn, quantity) => {
+    const p = parseFloat(purchase);
+    const a = parseFloat(addOn);
+    const q = parseFloat(quantity);
 
-  let sellingPrice = "";
-  let totalPrice = "";
+    let sellingPrice = "";
+    let totalPrice = "";
 
-  if (!isNaN(p) && !isNaN(a)) {
-    sellingPrice = (p + a).toFixed(2);
-  }
+    if (!isNaN(p) && !isNaN(a)) {
+      sellingPrice = (p + a).toFixed(2);
+    }
 
-  if (sellingPrice && !isNaN(q)) {
-    totalPrice = (parseFloat(sellingPrice) * q).toFixed(2);
-  }
+    if (sellingPrice && !isNaN(q)) {
+      totalPrice = (parseFloat(sellingPrice) * q).toFixed(2);
+    }
 
-  return { sellingPrice, totalPrice };
-};
-
+    return { sellingPrice, totalPrice };
+  };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbyVNAT7hc-h5CP-aeyLm_duaygnU8vA-qFy7UJ6AZFIdgORZ5SIcozmqHbfSl6BBxFNDQ/exec";
+    "https://script.google.com/macros/s/AKfycbxhsKzEStLdiurBwhK0wcUkSEBxgCAR2_RWQ7k1blcA4rF8JiPxvS0FlbUGCJgrzCL5Ow/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -635,7 +634,7 @@ export default function ProductCategories({ username }) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Date, Part Number, Description, Quantity, Price and click Add before submitting",
+          "Please fill in Date, Part Number, Description, Quantity,  Unit, Purchase Cost, Add On Cost and click Add before submitting",
       });
       return;
     }
@@ -701,7 +700,10 @@ export default function ProductCategories({ username }) {
           machineQuantity: machine.quantity || "-",
           machineStockInHand: machine.stockInHand || "0",
           machineNote: machine.note || "-",
-          machinePrice: machine.price || "-",
+          machinePurchaseCost: machine.purchaseCost || "-",
+          machineAddOnCost: machine.addOnCost || "-",
+          machineSellingCost: machine.sellingCost || "-",
+          machineUnit: machine.unit || "-",
           machineTotalPrice: machine.totalPrice || "-",
           machineDate: machine.date || "",
           userName: username || "",
@@ -718,7 +720,10 @@ export default function ProductCategories({ username }) {
           auxQuantity: auxiliary.quantity || "-",
           auxStockInHand: auxiliary.stockInHand || "0",
           auxNote: auxiliary.note || "-",
-          auxPrice: auxiliary.price || "-",
+          auxPurchaseCost: auxiliary.purchaseCost || "-",
+          auxAddOnCost: auxiliary.addOnCost || "-",
+          auxSellingCost: auxiliary.sellingCost || "-",
+          auxUnit: auxiliary.unit || "-",
           auxTotalPrice: auxiliary.totalPrice || "-",
           auxDate: auxiliary.date || "-",
 
@@ -729,7 +734,10 @@ export default function ProductCategories({ username }) {
           assetQuantity: asset.quantity || "-",
           assetStockInHand: asset.stockInHand || "0",
           assetNote: asset.note || "-",
-          assetPrice: asset.price || "-",
+          assetPurchaseCost: asset.purchaseCost || "-",
+          assetAddOnCost: asset.addOnCost || "-",
+          assetSellingCost: asset.sellingCost || "-",
+          assetUnit: asset.unit || "-",
           assetTotalPrice: asset.totalPrice || "-",
           assetDate: asset.date || "",
 
@@ -738,7 +746,10 @@ export default function ProductCategories({ username }) {
           spareQuantity: spare.quantity || "-",
           spareStockInHand: spare.stockInHand || "0",
           spareNote: spare.note || "-",
-          sparePrice: spare.price || "-",
+          sparePurchaseCost: spare.purchaseCost || "-",
+          spareAddOnCost: spare.addOnCost || "-",
+          spareSellingCost: spare.sellingCost || "-",
+          spareUnit: spare.unit || "-",
           spareTotalPrice: spare.totalPrice || "-",
           spareDate: spare.date || "",
         });
@@ -848,7 +859,7 @@ export default function ProductCategories({ username }) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost, Selling Cost and ensure Total Price is calculated",
+          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost and ensure Selling Cost & Total Price is calculated",
       });
       return;
     }
@@ -878,7 +889,7 @@ export default function ProductCategories({ username }) {
     setDataSource(dataSource.filter((item) => item.key !== key));
   };
 
-  const columns = [
+  const sparePartsColumns = [
     {
       title: "Date",
       dataIndex: "date",
@@ -889,30 +900,6 @@ export default function ProductCategories({ username }) {
             <DatePicker
               format="DD-MM-YYYY"
               style={{ width: "100%" }}
-              // value={
-              //   inputRow.date
-              //     ? dayjs.tz(inputRow.date, "DD-MM-YYYY", "Asia/Dubai")
-              //     : null
-              // }
-              // onChange={(date) => {
-              //   const dubaiDate = dayjs(date).tz("Asia/Dubai");
-              //   const formattedDate = dubaiDate.format("DD-MM-YYYY");
-              //   const formattedTime = dubaiDate.format("HH:mm:ss");
-
-              //   setInputRow({
-              //     ...inputRow,
-              //     date: formattedDate,
-              //   });
-
-              //   // ✅ Log time in Dubai
-              //   console.log("Selected Dubai Date:", formattedDate);
-              //   console.log("Selected Dubai Time:", formattedTime);
-              //   console.log(
-              //     "Full Dubai Date-Time:",
-              //     dubaiDate.format("DD-MM-YYYY HH:mm:ss")
-              //   );
-              // }}
-
               value={
                 inputRow.date && dayjs(inputRow.date, "DD-MM-YYYY").isValid()
                   ? dayjs.tz(inputRow.date, "DD-MM-YYYY", "Asia/Dubai")
@@ -1254,21 +1241,40 @@ export default function ProductCategories({ username }) {
   ];
 
   const handleAuxiliariesAdd = () => {
-    const { partNumber, description, quantity, price, totalPrice } =
-      auxiliariesInputRow;
+    const {
+      partNumber,
+      description,
+      quantity,
+      unit,
+      purchaseCost,
+      addOnCost,
+      sellingCost,
+      totalPrice,
+    } = auxiliariesInputRow;
 
+    // if (
+    //   !partNumber?.trim() ||
+    //   !description?.trim() ||
+    //   !quantity?.trim() ||
+    //   isNaN(parseFloat(price)) ||
+    //   isNaN(parseFloat(totalPrice)) ||
+    //   !auxiliariesInputRow.date
+    // )
     if (
-      !partNumber?.trim() ||
-      !description?.trim() ||
-      !quantity?.trim() ||
-      isNaN(parseFloat(price)) ||
-      isNaN(parseFloat(totalPrice)) ||
+      !partNumber ||
+      !description ||
+      !quantity ||
+      !unit ||
+      !purchaseCost ||
+      !addOnCost ||
+      !sellingCost ||
+      !totalPrice ||
       !auxiliariesInputRow.date
     ) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Date, Part Number, Description, Quantity, Price and ensure Total Price is calculated correctly",
+          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost and ensure Selling Cost & Total Price is calculated",
       });
       return;
     }
@@ -1284,8 +1290,11 @@ export default function ProductCategories({ username }) {
       partNumber: "",
       description: "",
       quantity: "",
+      unit: "",
       stockInHand: "",
-      price: "",
+      purchaseCost: "",
+      addOnCost: "",
+      sellingCost: "",
       totalPrice: "",
       note: "",
     });
@@ -1308,33 +1317,6 @@ export default function ProductCategories({ username }) {
             <DatePicker
               format="DD-MM-YYYY"
               style={{ width: "100%" }}
-              // value={
-              //   auxiliariesInputRow.date
-              //     ? dayjs.tz(
-              //         auxiliariesInputRow.date,
-              //         "DD-MM-YYYY",
-              //         "Asia/Dubai"
-              //       )
-              //     : null
-              // }
-              // onChange={(date) => {
-              //   const dubaiDate = dayjs(date).tz("Asia/Dubai");
-              //   const formattedDate = dubaiDate.format("DD-MM-YYYY");
-              //   const formattedTime = dubaiDate.format("HH:mm:ss");
-
-              //   setAuxiliariesInputRow({
-              //     ...auxiliariesInputRow,
-              //     date: formattedDate,
-              //   });
-
-              //   console.log("Selected Dubai Date:", formattedDate);
-              //   console.log("Selected Dubai Time:", formattedTime);
-              //   console.log(
-              //     "Full Dubai Date-Time:",
-              //     dubaiDate.format("DD-MM-YYYY HH:mm:ss")
-              //   );
-              // }}
-
               value={
                 auxiliariesInputRow.date &&
                 dayjs(auxiliariesInputRow.date, "DD-MM-YYYY").isValid()
@@ -1434,31 +1416,88 @@ export default function ProductCategories({ username }) {
         ),
     },
     {
-      title: "Price In AED(per item)",
-      dataIndex: "price",
-      width: 250,
+      title: "Purchase Cost(per item)",
+      dataIndex: "purchaseCost",
       ellipsis: true,
+      width: 250,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
             <Input
-              placeholder="Price"
+              placeholder="Enter purchase cost"
               type="number"
               min={0}
-              value={auxiliariesInputRow.price}
+              value={auxiliariesInputRow.purchaseCost}
               onChange={(e) => {
-                const price = e.target.value;
+                const purchaseCost = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  purchaseCost,
+                  auxiliariesInputRow.addOnCost,
+                  auxiliariesInputRow.quantity
+                );
                 setAuxiliariesInputRow((prev) => ({
                   ...prev,
-                  price,
-                  totalPrice: updateTotalPrice(price, prev.quantity),
+                  purchaseCost,
+                  sellingCost: sellingPrice,
+                  totalPrice,
                 }));
               }}
             />
           </Tooltip>
         ) : (
-          <Tooltip title={record.price}>
-            <span>{record.price || "-"}</span>
+          <Tooltip title={record.purchaseCost}>
+            <span>{record.purchaseCost || "-"}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Add On Cost",
+      dataIndex: "addOnCost",
+      ellipsis: true,
+      width: 250,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Enter add on cost"
+              value={auxiliariesInputRow.addOnCost}
+              onChange={(e) => {
+                const addOnCost = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  auxiliariesInputRow.purchaseCost,
+                  addOnCost,
+                  auxiliariesInputRow.quantity
+                );
+                setAuxiliariesInputRow((prev) => ({
+                  ...prev,
+                  addOnCost,
+                  sellingCost: sellingPrice,
+                  totalPrice,
+                }));
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.addOnCost}>
+            <span>{record.addOnCost}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Selling Cost",
+      dataIndex: "sellingCost",
+      ellipsis: true,
+      width: 250,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input value={auxiliariesInputRow.sellingCost || ""} readOnly />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.sellingCost}>
+            <span>{record.sellingCost}</span>
           </Tooltip>
         ),
     },
@@ -1478,10 +1517,16 @@ export default function ProductCategories({ username }) {
               value={auxiliariesInputRow.quantity}
               onChange={(e) => {
                 const quantity = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  auxiliariesInputRow.purchaseCost,
+                  auxiliariesInputRow.addOnCost,
+                  quantity
+                );
                 setAuxiliariesInputRow((prev) => ({
                   ...prev,
                   quantity,
-                  totalPrice: updateTotalPrice(prev.price, quantity),
+                  sellingCost: sellingPrice,
+                  totalPrice,
                 }));
               }}
             />
@@ -1490,6 +1535,32 @@ export default function ProductCategories({ username }) {
           <Tooltip title={record.quantity}>
             <span>{record.quantity}</span>
           </Tooltip>
+        ),
+    },
+    {
+      title: "Unit",
+      dataIndex: "unit",
+      width: 250,
+      ellipsis: true,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip title="">
+            <Select
+              placeholder="Select unit"
+              className="w-100"
+              value={auxiliariesInputRow.unit}
+              onChange={(value) => {
+                setAuxiliariesInputRow({ ...auxiliariesInputRow, unit: value });
+              }}
+            >
+              <Select.Option value="Set">Set</Select.Option>
+              <Select.Option value="Piece">Piece</Select.Option>
+              <Select.Option value="Number">Number</Select.Option>
+              <Select.Option value="Litre">Litre</Select.Option>
+            </Select>
+          </Tooltip>
+        ) : (
+          record.unit || ""
         ),
     },
     {
@@ -1602,21 +1673,32 @@ export default function ProductCategories({ username }) {
   ];
 
   const handleAssetsAdd = () => {
-    const { partNumber, description, quantity, price, totalPrice } =
-      assetsInputRow;
+    const {
+      partNumber,
+      description,
+      quantity,
+      unit,
+      purchaseCost,
+      addOnCost,
+      sellingCost,
+      totalPrice,
+    } = assetsInputRow;
 
     if (
       !partNumber ||
       !description ||
       !quantity ||
-      !price ||
+      !unit ||
+      !purchaseCost ||
+      !addOnCost ||
+      !sellingCost ||
       !totalPrice ||
       !assetsInputRow.date
     ) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Date, Part Number, Description, Quantity, Price and ensure Total Price is calculated",
+          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost and ensure Selling Cost & Total Price is calculated",
       });
       return;
     }
@@ -1631,8 +1713,11 @@ export default function ProductCategories({ username }) {
       partNumber: "",
       description: "",
       quantity: "",
+      unit: "",
       stockInHand: "",
-      price: "",
+      purchaseCost: "",
+      addOnCost: "",
+      sellingCost: "",
       totalPrice: "",
       note: "",
     });
@@ -1653,30 +1738,6 @@ export default function ProductCategories({ username }) {
             <DatePicker
               format="DD-MM-YYYY"
               style={{ width: "100%" }}
-              // value={
-              //   assetsInputRow.date
-              //     ? dayjs.tz(assetsInputRow.date, "DD-MM-YYYY", "Asia/Dubai")
-              //     : null
-              // }
-              // onChange={(date) => {
-              //   const dubaiDate = dayjs(date).tz("Asia/Dubai");
-              //   const formattedDate = dubaiDate.format("DD-MM-YYYY");
-              //   const formattedTime = dubaiDate.format("HH:mm:ss");
-
-              //   setAssetsInputRow({
-              //     ...assetsInputRow,
-              //     date: formattedDate,
-              //   });
-
-              //   // ✅ Log time in Dubai
-              //   console.log("Selected Dubai Date:", formattedDate);
-              //   console.log("Selected Dubai Time:", formattedTime);
-              //   console.log(
-              //     "Full Dubai Date-Time:",
-              //     dubaiDate.format("DD-MM-YYYY HH:mm:ss")
-              //   );
-              // }}
-
               value={
                 assetsInputRow.date &&
                 dayjs(assetsInputRow.date, "DD-MM-YYYY").isValid()
@@ -1771,31 +1832,88 @@ export default function ProductCategories({ username }) {
         ),
     },
     {
-      title: "Price In AED(per item)",
-      dataIndex: "price",
-      width: 250,
+      title: "Purchase Cost(per item)",
+      dataIndex: "purchaseCost",
       ellipsis: true,
+      width: 250,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
             <Input
-              placeholder="Price"
+              placeholder="Enter purchase cost"
               type="number"
               min={0}
-              value={assetsInputRow.price}
+              value={assetsInputRow.purchaseCost}
               onChange={(e) => {
-                const price = e.target.value;
+                const purchaseCost = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  purchaseCost,
+                  assetsInputRow.addOnCost,
+                  assetsInputRow.quantity
+                );
                 setAssetsInputRow((prev) => ({
                   ...prev,
-                  price,
-                  totalPrice: updateTotalPrice(price, prev.quantity),
+                  purchaseCost,
+                  sellingCost: sellingPrice,
+                  totalPrice,
                 }));
               }}
             />
           </Tooltip>
         ) : (
-          <Tooltip title={record.price}>
-            <span>{record.price || "-"}</span>
+          <Tooltip title={record.purchaseCost}>
+            <span>{record.purchaseCost || "-"}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Add On Cost",
+      dataIndex: "addOnCost",
+      ellipsis: true,
+      width: 250,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Enter add on cost"
+              value={assetsInputRow.addOnCost}
+              onChange={(e) => {
+                const addOnCost = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  assetsInputRow.purchaseCost,
+                  addOnCost,
+                  assetsInputRow.quantity
+                );
+                setAssetsInputRow((prev) => ({
+                  ...prev,
+                  addOnCost,
+                  sellingCost: sellingPrice,
+                  totalPrice,
+                }));
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.addOnCost}>
+            <span>{record.addOnCost}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Selling Cost",
+      dataIndex: "sellingCost",
+      ellipsis: true,
+      width: 250,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input value={assetsInputRow.sellingCost || ""} readOnly />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.sellingCost}>
+            <span>{record.sellingCost}</span>
           </Tooltip>
         ),
     },
@@ -1815,10 +1933,16 @@ export default function ProductCategories({ username }) {
               value={assetsInputRow.quantity}
               onChange={(e) => {
                 const quantity = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  assetsInputRow.purchaseCost,
+                  assetsInputRow.addOnCost,
+                  quantity
+                );
                 setAssetsInputRow((prev) => ({
                   ...prev,
                   quantity,
-                  totalPrice: updateTotalPrice(prev.price, quantity),
+                  sellingCost: sellingPrice, // still needed in case it's blank initially
+                  totalPrice,
                 }));
               }}
             />
@@ -1827,6 +1951,32 @@ export default function ProductCategories({ username }) {
           <Tooltip title={record.quantity}>
             <span>{record.quantity}</span>
           </Tooltip>
+        ),
+    },
+    {
+      title: "Unit",
+      dataIndex: "unit",
+      width: 250,
+      ellipsis: true,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip title="">
+            <Select
+              placeholder="Select unit"
+              className="w-100"
+              value={assetsInputRow.unit}
+              onChange={(value) => {
+                setAssetsInputRow({ ...assetsInputRow, unit: value });
+              }}
+            >
+              <Select.Option value="Set">Set</Select.Option>
+              <Select.Option value="Piece">Piece</Select.Option>
+              <Select.Option value="Number">Number</Select.Option>
+              <Select.Option value="Litre">Litre</Select.Option>
+            </Select>
+          </Tooltip>
+        ) : (
+          record.unit || ""
         ),
     },
     {
@@ -1960,7 +2110,7 @@ export default function ProductCategories({ username }) {
       notification.error({
         message: "Error",
         description:
-          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost, Selling Cost and ensure Total Price is calculated",
+          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost and ensure Selling Cost & Total Price is calculated",
       });
       return;
     }
@@ -2000,30 +2150,6 @@ export default function ProductCategories({ username }) {
             <DatePicker
               format="DD-MM-YYYY"
               style={{ width: "100%" }}
-              // value={
-              //   machineinputRow.date
-              //     ? dayjs.tz(machineinputRow.date, "DD-MM-YYYY", "Asia/Dubai")
-              //     : null
-              // }
-              // onChange={(date) => {
-              //   const dubaiDate = dayjs(date).tz("Asia/Dubai");
-              //   const formattedDate = dubaiDate.format("DD-MM-YYYY");
-              //   const formattedTime = dubaiDate.format("HH:mm:ss");
-
-              //   setMachineInputRow({
-              //     ...machineinputRow,
-              //     date: formattedDate,
-              //   });
-
-              //   // ✅ Log time in Dubai
-              //   console.log("Selected Dubai Date:", formattedDate);
-              //   console.log("Selected Dubai Time:", formattedTime);
-              //   console.log(
-              //     "Full Dubai Date-Time:",
-              //     dubaiDate.format("DD-MM-YYYY HH:mm:ss")
-              //   );
-              // }}
-
               value={
                 machineinputRow.date &&
                 dayjs(machineinputRow.date, "DD-MM-YYYY").isValid()
@@ -2129,21 +2255,17 @@ export default function ProductCategories({ username }) {
               value={machineinputRow.purchaseCost}
               onChange={(e) => {
                 const purchaseCost = e.target.value;
-                setMachineInputRow((prev) => {
-                  const newRow = {
-                    ...prev,
-                    purchaseCost,
-                  };
-                  return {
-                    ...newRow,
-                    totalPrice: updateTotalPrice(
-                      purchaseCost,
-                      newRow.addOnCost,
-                      newRow.sellingCost,
-                      newRow.quantity
-                    ),
-                  };
-                });
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  purchaseCost,
+                  machineinputRow.addOnCost,
+                  machineinputRow.quantity
+                );
+                setMachineInputRow((prev) => ({
+                  ...prev,
+                  purchaseCost,
+                  sellingCost: sellingPrice,
+                  totalPrice,
+                }));
               }}
             />
           </Tooltip>
@@ -2168,21 +2290,17 @@ export default function ProductCategories({ username }) {
               value={machineinputRow.addOnCost}
               onChange={(e) => {
                 const addOnCost = e.target.value;
-                setMachineInputRow((prev) => {
-                  const newRow = {
-                    ...prev,
-                    addOnCost,
-                  };
-                  return {
-                    ...newRow,
-                    totalPrice: updateTotalPrice(
-                      newRow.purchaseCost,
-                      addOnCost,
-                      newRow.sellingCost,
-                      newRow.quantity
-                    ),
-                  };
-                });
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  machineinputRow.purchaseCost,
+                  addOnCost,
+                  machineinputRow.quantity
+                );
+                setMachineInputRow((prev) => ({
+                  ...prev,
+                  addOnCost,
+                  sellingCost: sellingPrice,
+                  totalPrice,
+                }));
               }}
             />
           </Tooltip>
@@ -2200,7 +2318,7 @@ export default function ProductCategories({ username }) {
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={inputRow.sellingCost || ""} readOnly />
+            <Input value={machineinputRow.sellingCost || ""} readOnly />
           </Tooltip>
         ) : (
           <Tooltip title={record.sellingCost}>
@@ -2217,21 +2335,22 @@ export default function ProductCategories({ username }) {
         record.isInput ? (
           <Tooltip>
             <Input
-              placeholder="Enter Quantity"
+              placeholder="Enter quantity"
               type="number"
               min={1}
               value={machineinputRow.quantity}
               onChange={(e) => {
                 const quantity = e.target.value;
+                const { sellingPrice, totalPrice } = updateTotalPrice(
+                  machineinputRow.purchaseCost,
+                  machineinputRow.addOnCost,
+                  quantity
+                );
                 setMachineInputRow((prev) => ({
                   ...prev,
                   quantity,
-                  totalPrice: updateTotalPrice(
-                    prev.purchaseCost,
-                    prev.sellingCost,
-                    prev.addOnCost,
-                    quantity
-                  ),
+                  sellingCost: sellingPrice, // still needed in case it's blank initially
+                  totalPrice,
                 }));
               }}
             />
@@ -2962,7 +3081,7 @@ export default function ProductCategories({ username }) {
                         <div className="col-12">
                           <h6 className="haitianColor fw-bold">Spare Parts</h6>
                           <Table
-                            columns={columns}
+                            columns={sparePartsColumns}
                             dataSource={displayData}
                             pagination={{ ageSize: 10 }}
                             rowKey="key"
