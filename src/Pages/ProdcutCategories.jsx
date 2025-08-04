@@ -47,6 +47,7 @@ export default function ProductCategories({ username }) {
     note: "",
     purchaseCost: "",
     sellingCost: "",
+    stockUnit: "",
     addOnCost: "",
     totalPrice: "",
   });
@@ -59,6 +60,7 @@ export default function ProductCategories({ username }) {
     note: "",
     purchaseCost: "",
     sellingCost: "",
+    stockUnit: "",
     addOnCost: "",
     totalPrice: "",
   });
@@ -73,6 +75,7 @@ export default function ProductCategories({ username }) {
     note: "",
     purchaseCost: "",
     sellingCost: "",
+    stockUnit: "",
     addOnCost: "",
     totalPrice: "",
   });
@@ -85,6 +88,7 @@ export default function ProductCategories({ username }) {
     note: "",
     purchaseCost: "",
     sellingCost: "",
+    stockUnit: "",
     addOnCost: "",
     totalPrice: "",
   });
@@ -115,7 +119,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbxhsKzEStLdiurBwhK0wcUkSEBxgCAR2_RWQ7k1blcA4rF8JiPxvS0FlbUGCJgrzCL5Ow/exec";
+    "https://script.google.com/macros/s/AKfycbz-B4J_PIOzykOqaq--8JIB8NNGK4Ek9KoGEi2dz-Ym0SJhPXVICufBlB7u9mBHTRZJmg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -454,6 +458,8 @@ export default function ProductCategories({ username }) {
             setMachineInputRow((prev) => ({
               ...prev,
               stockInHand: result.stockInHand.toString(),
+            stockUnit: result.unit,
+
             }));
           } else {
             setMachineInputRow((prev) => ({
@@ -500,6 +506,8 @@ export default function ProductCategories({ username }) {
             setAuxiliariesInputRow((prev) => ({
               ...prev,
               stockInHand: result.stockInHand.toString(),
+            stockUnit: result.unit,
+
             }));
           } else {
             setAuxiliariesInputRow((prev) => ({
@@ -546,6 +554,8 @@ export default function ProductCategories({ username }) {
             setAssetsInputRow((prev) => ({
               ...prev,
               stockInHand: result.stockInHand.toString(),
+              stockUnit: result.unit,
+
             }));
           } else {
             setAssetsInputRow((prev) => ({
@@ -591,6 +601,7 @@ export default function ProductCategories({ username }) {
             setInputRow((prev) => ({
               ...prev,
               stockInHand: result.stockInHand.toString(),
+              stockUnit: result.unit,
             }));
           } else {
             setInputRow((prev) => ({
@@ -833,7 +844,7 @@ export default function ProductCategories({ username }) {
     }
   };
 
-  const handleAdd = () => {
+  const handleSparePartsAdd = () => {
     const {
       partNumber,
       description,
@@ -868,6 +879,7 @@ export default function ProductCategories({ username }) {
       key: Date.now(),
       ...inputRow,
       stockInHand: inputRow.stockInHand || "0",
+      stockUnit: inputRow.stockUnit || "",
     };
 
     setDataSource([...dataSource, newData]);
@@ -877,6 +889,7 @@ export default function ProductCategories({ username }) {
       quantity: "",
       unit: "",
       stockInHand: "",
+      stockUnit: "",
       purchaseCost: "",
       addOnCost: "",
       sellingCost: "",
@@ -885,7 +898,7 @@ export default function ProductCategories({ username }) {
     });
   };
 
-  const handleDelete = (key) => {
+  const handleSparePartsDelete = (key) => {
     setDataSource(dataSource.filter((item) => item.key !== key));
   };
 
@@ -1137,18 +1150,29 @@ export default function ProductCategories({ username }) {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
       width: 200,
-      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={inputRow.stockInHand || "0"} readOnly />
+            <Input
+              readOnly
+              value={
+                inputRow.stockInHand
+                  ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
+                  : ""
+              }
+            />
           </Tooltip>
         ) : (
-          <Tooltip title={record.stockInHand}>
-            <span>{record.stockInHand || "-"}</span>
+          <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+            <span>
+              {record.stockInHand
+                ? `${record.stockInHand} ${record.stockUnit || ""}`
+                : "-"}
+            </span>
           </Tooltip>
         ),
     },
+
     {
       title: "Total Price In AED",
       dataIndex: "totalPrice",
@@ -1216,7 +1240,7 @@ export default function ProductCategories({ username }) {
         record.isInput ? (
           <Button
             className="addButton ps-4 pe-4"
-            onClick={handleAdd}
+            onClick={handleSparePartsAdd}
             disabled={sparePartsFetching}
             loading={sparePartsFetching}
           >
@@ -1225,7 +1249,7 @@ export default function ProductCategories({ username }) {
         ) : (
           <Button
             className="deleteButton ps-3 pe-3"
-            onClick={() => handleDelete(record.key)}
+            onClick={() => handleSparePartsDelete(record.key)}
           >
             Delete
           </Button>
@@ -1295,6 +1319,7 @@ export default function ProductCategories({ username }) {
       purchaseCost: "",
       addOnCost: "",
       sellingCost: "",
+      stockUnit: "",
       totalPrice: "",
       note: "",
     });
@@ -1567,15 +1592,25 @@ export default function ProductCategories({ username }) {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
       width: 200,
-      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={auxiliariesInputRow.stockInHand || "0"} readOnly />
+            <Input
+              readOnly
+              value={
+                auxiliariesInputRow.stockInHand
+                  ? `${auxiliariesInputRow.stockInHand} ${auxiliariesInputRow.stockUnit || ""}`
+                  : ""
+              }
+            />
           </Tooltip>
         ) : (
-          <Tooltip title={record.stockInHand}>
-            <span>{record.stockInHand || "-"}</span>
+          <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+            <span>
+              {record.stockInHand
+                ? `${record.stockInHand} ${record.stockUnit || ""}`
+                : "-"}
+            </span>
           </Tooltip>
         ),
     },
@@ -1718,6 +1753,7 @@ export default function ProductCategories({ username }) {
       purchaseCost: "",
       addOnCost: "",
       sellingCost: "",
+      stockUnit: "",
       totalPrice: "",
       note: "",
     });
@@ -1979,19 +2015,29 @@ export default function ProductCategories({ username }) {
           record.unit || ""
         ),
     },
-    {
+   {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
       width: 200,
-      ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={assetsInputRow.stockInHand || "0"} readOnly />
+            <Input
+              readOnly
+              value={
+                assetsInputRow.stockInHand
+                  ? `${assetsInputRow.stockInHand} ${assetsInputRow.stockUnit || ""}`
+                  : ""
+              }
+            />
           </Tooltip>
         ) : (
-          <Tooltip title={record.stockInHand}>
-            <span>{record.stockInHand || "-"}</span>
+          <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+            <span>
+              {record.stockInHand
+                ? `${record.stockInHand} ${record.stockUnit || ""}`
+                : "-"}
+            </span>
           </Tooltip>
         ),
     },
@@ -2132,6 +2178,7 @@ export default function ProductCategories({ username }) {
       sellingCost: "",
       totalPrice: "",
       note: "",
+      stockUnit: "",
     });
   };
 
@@ -2387,19 +2434,29 @@ export default function ProductCategories({ username }) {
           record.unit || ""
         ),
     },
-    {
+   {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
-      ellipsis: true,
       width: 200,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={machineinputRow.stockInHand || "0"} readOnly />
+            <Input
+              readOnly
+              value={
+                machineinputRow.stockInHand
+                  ? `${machineinputRow.stockInHand} ${machineinputRow.stockUnit || ""}`
+                  : ""
+              }
+            />
           </Tooltip>
         ) : (
-          <Tooltip title={record.stockInHand}>
-            <span>{record.stockInHand || "-"}</span>
+          <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+            <span>
+              {record.stockInHand
+                ? `${record.stockInHand} ${record.stockUnit || ""}`
+                : "-"}
+            </span>
           </Tooltip>
         ),
     },

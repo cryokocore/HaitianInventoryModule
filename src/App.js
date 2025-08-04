@@ -308,6 +308,9 @@ notification.config({
   maxCount: 2,
   placement: "bottomRight",
   duration: 3,
+  pauseOnHover: false,
+  showProgress: true,
+  
 });
 
 function AppRoutes({ isLoggedIn, handleLoginSuccess, username }) {

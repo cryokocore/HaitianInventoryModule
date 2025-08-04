@@ -29,6 +29,9 @@ export default function DeliveryNote({ username }) {
   const [dataSource, setDataSource] = useState([]);
   const [deliveryDate, setDeliveryDate] = useState("");
   const [loadingDeliveryNumber, setLoadingDeliveryNumber] = useState(true);
+  const [loadingCustomerName, setLoadingCustomerName] = useState(true);
+  const [loadingDescription, setLoadingDescription] = useState(true);
+  const [loadingPartNumber, setLoadingPartNumber] = useState(true);
   const [fetchingData, setFetchingData] = useState(false);
   const [descriptionList, setDescriptionList] = useState([]);
   const [inputRow, setInputRow] = useState({
@@ -37,6 +40,7 @@ export default function DeliveryNote({ username }) {
     itemDescription: "",
     quantity: "",
     stockInHand: "",
+    unit:"",
   });
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
@@ -46,7 +50,7 @@ export default function DeliveryNote({ username }) {
       try {
         setLoadingDeliveryNumber(true);
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbxhsKzEStLdiurBwhK0wcUkSEBxgCAR2_RWQ7k1blcA4rF8JiPxvS0FlbUGCJgrzCL5Ow/exec",
+          "https://script.google.com/macros/s/AKfycbz-B4J_PIOzykOqaq--8JIB8NNGK4Ek9KoGEi2dz-Ym0SJhPXVICufBlB7u9mBHTRZJmg/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -70,8 +74,10 @@ export default function DeliveryNote({ username }) {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
+        setLoadingCustomerName(true);
+
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbxhsKzEStLdiurBwhK0wcUkSEBxgCAR2_RWQ7k1blcA4rF8JiPxvS0FlbUGCJgrzCL5Ow/exec",
+          "https://script.google.com/macros/s/AKfycbz-B4J_PIOzykOqaq--8JIB8NNGK4Ek9KoGEi2dz-Ym0SJhPXVICufBlB7u9mBHTRZJmg/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -85,6 +91,8 @@ export default function DeliveryNote({ username }) {
         }
       } catch (err) {
         console.error("Failed to fetch customer details:", err);
+      } finally {
+        setLoadingCustomerName(false);
       }
     };
 
@@ -94,8 +102,9 @@ export default function DeliveryNote({ username }) {
   useEffect(() => {
     const fetchDescriptions = async () => {
       try {
+        setLoadingDescription(true);
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbxhsKzEStLdiurBwhK0wcUkSEBxgCAR2_RWQ7k1blcA4rF8JiPxvS0FlbUGCJgrzCL5Ow/exec",
+          "https://script.google.com/macros/s/AKfycbz-B4J_PIOzykOqaq--8JIB8NNGK4Ek9KoGEi2dz-Ym0SJhPXVICufBlB7u9mBHTRZJmg/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -111,6 +120,8 @@ export default function DeliveryNote({ username }) {
         }
       } catch (err) {
         console.error("Failed to fetch descriptions:", err);
+      } finally {
+        setLoadingDescription(false);
       }
     };
 
@@ -127,7 +138,7 @@ export default function DeliveryNote({ username }) {
         setFetchingData(true);
         try {
           const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbxhsKzEStLdiurBwhK0wcUkSEBxgCAR2_RWQ7k1blcA4rF8JiPxvS0FlbUGCJgrzCL5Ow/exec",
+            "https://script.google.com/macros/s/AKfycbz-B4J_PIOzykOqaq--8JIB8NNGK4Ek9KoGEi2dz-Ym0SJhPXVICufBlB7u9mBHTRZJmg/exec",
             {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -146,11 +157,13 @@ export default function DeliveryNote({ username }) {
             setInputRow((prev) => ({
               ...prev,
               stockInHand: result.stockInHand.toString(),
+               unit: result.unit || "", 
             }));
           } else {
             setInputRow((prev) => ({
               ...prev,
               stockInHand: "0",
+              unit: "",
             }));
           }
         } catch (err) {
@@ -200,6 +213,10 @@ export default function DeliveryNote({ username }) {
               showSearch
               placeholder="Enter part number"
               value={inputRow.partNumber}
+              loading={loadingDescription} // shows spinner
+              notFoundContent={
+                loadingDescription ? "Fetching..." : "No results found"
+              }
               filterOption={(input, option) =>
                 option.children.toLowerCase().includes(input.toLowerCase())
               }
@@ -248,6 +265,10 @@ export default function DeliveryNote({ username }) {
             <Select
               showSearch
               value={inputRow.itemDescription}
+                loading={loadingDescription} 
+              notFoundContent={
+                loadingDescription ? "Fetching..." : "No results found"
+              }
               placeholder="Select or type description"
               filterOption={(input, option) =>
                 option.children.toLowerCase().includes(input.toLowerCase())
@@ -310,24 +331,33 @@ export default function DeliveryNote({ username }) {
           </Tooltip>
         ),
     },
-
-    {
-      title: "Stock In Hand",
-      dataIndex: "stockInHand",
-      width: 200,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input value={inputRow.stockInHand || "0"} readOnly />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.stockInHand}>
-            <span>{record.stockInHand || "-"}</span>
-          </Tooltip>
-        ),
-    },
-
+   {
+  title: "Stock In Hand",
+  dataIndex: "stockInHand",
+  width: 200,
+  ellipsis: true,
+  render: (_, record) =>
+    record.isInput ? (
+      <Tooltip>
+        <Input
+          value={
+            inputRow.stockInHand
+              ? `${inputRow.stockInHand} ${inputRow.unit || ""}`
+              : "0"
+          }
+          readOnly
+        />
+      </Tooltip>
+    ) : (
+      <Tooltip title={`${record.stockInHand} ${record.unit || ""}`}>
+        <span>
+          {record.stockInHand
+            ? `${record.stockInHand} ${record.unit || ""}`
+            : "-"}
+        </span>
+      </Tooltip>
+    ),
+},
     {
       title: "Action",
       width: 120,
@@ -454,6 +484,7 @@ export default function DeliveryNote({ username }) {
       itemDescription,
       quantity,
       stockInHand: inputRow.stockInHand || "0",
+      unit: inputRow.unit || "",
     };
 
     const updatedData = [...dataSource, newData].map((item, index) => ({
@@ -468,6 +499,7 @@ export default function DeliveryNote({ username }) {
       itemDescription: "",
       quantity: "",
       stockInHand: "",
+      unit: "", 
     });
   };
 
@@ -506,7 +538,7 @@ export default function DeliveryNote({ username }) {
       );
 
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxhsKzEStLdiurBwhK0wcUkSEBxgCAR2_RWQ7k1blcA4rF8JiPxvS0FlbUGCJgrzCL5Ow/exec",
+        "https://script.google.com/macros/s/AKfycbz-B4J_PIOzykOqaq--8JIB8NNGK4Ek9KoGEi2dz-Ym0SJhPXVICufBlB7u9mBHTRZJmg/exec",
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -545,7 +577,7 @@ export default function DeliveryNote({ username }) {
         });
         // Fetch new delivery number
         const nextRes = await fetch(
-          "https://script.google.com/macros/s/AKfycbxhsKzEStLdiurBwhK0wcUkSEBxgCAR2_RWQ7k1blcA4rF8JiPxvS0FlbUGCJgrzCL5Ow/exec",
+          "https://script.google.com/macros/s/AKfycbz-B4J_PIOzykOqaq--8JIB8NNGK4Ek9KoGEi2dz-Ym0SJhPXVICufBlB7u9mBHTRZJmg/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -827,6 +859,12 @@ export default function DeliveryNote({ username }) {
                       <Select
                         showSearch
                         placeholder="Search company name"
+                        loading={loadingCustomerName}
+                        notFoundContent={
+                          loadingCustomerName
+                            ? "Fetching..."
+                            : "No results found"
+                        }
                         filterOption={(input, option) =>
                           option.children
                             .toLowerCase()
