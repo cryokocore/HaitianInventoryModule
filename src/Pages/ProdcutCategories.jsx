@@ -10,6 +10,7 @@ import {
   notification,
   Tooltip,
   DatePicker,
+  AutoComplete,
 } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
@@ -98,28 +99,25 @@ export default function ProductCategories({ username }) {
   const [machineFetching, setMachineFetching] = useState(false);
   const [auxiliariesFetching, setAuxiliariesFetching] = useState(false);
   const [sparePartsFetching, setSparePartsFetching] = useState(false);
+  const [spareUnitOptions, setSpareUnitOptions] = useState([]);
+  const [spareUnitLoading, setSpareUnitLoading] = useState(false);
 
   const updateTotalPrice = (purchase, addOn, quantity) => {
     const p = parseFloat(purchase);
     const a = parseFloat(addOn);
     const q = parseFloat(quantity);
 
-    let sellingPrice = "";
     let totalPrice = "";
 
-    if (!isNaN(p) && !isNaN(a)) {
-      sellingPrice = (p + a).toFixed(2);
+    if (!isNaN(p) && !isNaN(a) && !isNaN(q)) {
+      totalPrice = ((p + a) * q).toFixed(2);
     }
 
-    if (sellingPrice && !isNaN(q)) {
-      totalPrice = (parseFloat(sellingPrice) * q).toFixed(2);
-    }
-
-    return { sellingPrice, totalPrice };
+    return { totalPrice };
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbz-B4J_PIOzykOqaq--8JIB8NNGK4Ek9KoGEi2dz-Ym0SJhPXVICufBlB7u9mBHTRZJmg/exec";
+    "https://script.google.com/macros/s/AKfycbwPXZ9nwqop20rQQjnL5X8RWyeQK09qcpQASlI7pB3nwPzakD4qqtz4FsYTFUC4tbZcvg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -458,8 +456,7 @@ export default function ProductCategories({ username }) {
             setMachineInputRow((prev) => ({
               ...prev,
               stockInHand: result.stockInHand.toString(),
-            stockUnit: result.unit,
-
+              stockUnit: result.unit,
             }));
           } else {
             setMachineInputRow((prev) => ({
@@ -506,8 +503,7 @@ export default function ProductCategories({ username }) {
             setAuxiliariesInputRow((prev) => ({
               ...prev,
               stockInHand: result.stockInHand.toString(),
-            stockUnit: result.unit,
-
+              stockUnit: result.unit,
             }));
           } else {
             setAuxiliariesInputRow((prev) => ({
@@ -555,7 +551,6 @@ export default function ProductCategories({ username }) {
               ...prev,
               stockInHand: result.stockInHand.toString(),
               stockUnit: result.unit,
-
             }));
           } else {
             setAssetsInputRow((prev) => ({
@@ -578,49 +573,113 @@ export default function ProductCategories({ username }) {
     };
   }, [assetsInputRow.partNumber]);
 
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   const debounceTimer = setTimeout(() => {
+  //     const fetchStockInHand = async () => {
+  //       if (!inputRow.partNumber.trim()) return;
+  //       setSparePartsFetching(true);
+  //       try {
+  //         const res = await fetch(GAS_URL, {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //           body: new URLSearchParams({
+  //             action: "getStockForPartNumber",
+  //             partNumber: inputRow.partNumber.trim(),
+  //             category: "Spare Parts",
+  //           }),
+  //           signal: controller.signal,
+  //         });
+
+  //         const result = await res.json();
+  //         if (result.success) {
+  //           setInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: result.stockInHand.toString(),
+  //             stockUnit: result.unit,
+  //           }));
+  //         } else {
+  //           setInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: "0",
+  //           }));
+  //         }
+  //       } catch (err) {
+  //         console.error("Error fetching stock (Spare Parts):", err);
+  //       } finally {
+  //         setSparePartsFetching(false);
+  //       }
+  //     };
+
+  //     fetchStockInHand();
+  //   }, 400);
+  //   return () => {
+  //     clearTimeout(debounceTimer); // Clear timer on partNumber change
+  //     controller.abort(); // Cancel previous fetch
+  //   };
+  // }, [inputRow.partNumber]);
+
   useEffect(() => {
     const controller = new AbortController();
-    const debounceTimer = setTimeout(() => {
-      const fetchStockInHand = async () => {
-        if (!inputRow.partNumber.trim()) return;
-        setSparePartsFetching(true);
+    const timer = setTimeout(async () => {
+      const part = inputRow.partNumber?.trim();
+      if (!part) return;
+
+      setSparePartsFetching(true);
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "getUnitForPartNumber",
+            partNumber: part,
+            category: "Spare Parts",
+          }),
+        });
+
+        const text = await res.text();
+        let json;
         try {
-          const res = await fetch(GAS_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "getStockForPartNumber",
-              partNumber: inputRow.partNumber.trim(),
-              category: "Spare Parts",
-            }),
-            signal: controller.signal,
-          });
-
-          const result = await res.json();
-          if (result.success) {
-            setInputRow((prev) => ({
-              ...prev,
-              stockInHand: result.stockInHand.toString(),
-              stockUnit: result.unit,
-            }));
-          } else {
-            setInputRow((prev) => ({
-              ...prev,
-              stockInHand: "0",
-            }));
-          }
-        } catch (err) {
-          console.error("Error fetching stock (Spare Parts):", err);
-        } finally {
-          setSparePartsFetching(false);
+          json = JSON.parse(text);
+        } catch (parseErr) {
+          console.error("JSON parse error:", parseErr);
+          setInputRow((prev) => ({ ...prev, stockInHand: "0" }));
+          return;
         }
-      };
 
-      fetchStockInHand();
+        if (json.success) {
+          const unit = (json.unit || "").toString().trim();
+
+          setInputRow((prev) => ({
+            ...prev,
+            stockInHand: (json.stockInHand || 0).toString(),
+            unit: unit || "", // update unit only if available
+          }));
+
+          // Set dropdown: if unit found, show only that; otherwise show defaults
+          if (unit) {
+            setSpareUnitOptions([unit]);
+          } else {
+            setSpareUnitOptions(["Set", "Piece", "Number", "Metre", "Litre"]);
+          }
+        } else {
+          // no match found — fallback to default
+          setInputRow((prev) => ({ ...prev, stockInHand: "0", unit: "" }));
+          setSpareUnitOptions(["Set", "Piece", "Number", "Metre", "Litre"]);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Fetch error:", err);
+        }
+        setSpareUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+      } finally {
+        setSparePartsFetching(false);
+      }
     }, 400);
+
     return () => {
-      clearTimeout(debounceTimer); // Clear timer on partNumber change
-      controller.abort(); // Cancel previous fetch
+      clearTimeout(timer);
+      controller.abort();
     };
   }, [inputRow.partNumber]);
 
@@ -948,7 +1007,10 @@ export default function ProductCategories({ username }) {
               placeholder="Enter part number"
               value={inputRow.partNumber}
               onChange={(e) =>
-                setInputRow({ ...inputRow, partNumber: e.target.value })
+                setInputRow({
+                  ...inputRow,
+                  partNumber: e.target.value.toUpperCase(),
+                })
               }
             />
           </Tooltip>
@@ -998,8 +1060,44 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+    // {
+    //   title: "Purchase Cost In AED (per item)",
+    //   dataIndex: "purchaseCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter purchase cost"
+    //           type="number"
+    //           min={0}
+    //           value={inputRow.purchaseCost}
+    //           onChange={(e) => {
+    //             const purchaseCost = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               purchaseCost,
+    //               inputRow.addOnCost,
+    //               inputRow.quantity
+    //             );
+    //             setInputRow((prev) => ({
+    //               ...prev,
+    //               purchaseCost,
+    //               sellingCost: sellingPrice,
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.purchaseCost}>
+    //         <span>{record.purchaseCost || "-"}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
-      title: "Purchase Cost(per item)",
+      title: "Purchase Cost In AED (per item)",
       dataIndex: "purchaseCost",
       ellipsis: true,
       width: 250,
@@ -1012,18 +1110,34 @@ export default function ProductCategories({ username }) {
               min={0}
               value={inputRow.purchaseCost}
               onChange={(e) => {
-                const purchaseCost = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  purchaseCost,
-                  inputRow.addOnCost,
-                  inputRow.quantity
-                );
-                setInputRow((prev) => ({
-                  ...prev,
-                  purchaseCost,
-                  sellingCost: sellingPrice,
-                  totalPrice,
-                }));
+                const value = e.target.value.trim();
+                setInputRow((prev) => ({ ...prev, purchaseCost: value }));
+
+                clearTimeout(window.purchaseCostDebounce);
+                window.purchaseCostDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Purchase Cost",
+                      description: "Purchase cost must be greater than 0.",
+                    });
+                    setInputRow((prev) => ({ ...prev, purchaseCost: "" }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      value,
+                      inputRow.addOnCost,
+                      inputRow.quantity
+                    );
+                    setInputRow((prev) => ({ ...prev, totalPrice }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -1033,8 +1147,45 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Add On Cost In AED",
+    //   dataIndex: "addOnCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           type="number"
+    //           min={0}
+    //           placeholder="Enter add on cost"
+    //           value={inputRow.addOnCost}
+    //           onChange={(e) => {
+    //             const addOnCost = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               inputRow.purchaseCost,
+    //               addOnCost,
+    //               inputRow.quantity
+    //             );
+    //             setInputRow((prev) => ({
+    //               ...prev,
+    //               addOnCost,
+    //               sellingCost: sellingPrice,
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.addOnCost}>
+    //         <span>{record.addOnCost}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
-      title: "Add On Cost",
+      title: "Add On Cost In AED",
       dataIndex: "addOnCost",
       ellipsis: true,
       width: 250,
@@ -1047,18 +1198,34 @@ export default function ProductCategories({ username }) {
               placeholder="Enter add on cost"
               value={inputRow.addOnCost}
               onChange={(e) => {
-                const addOnCost = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  inputRow.purchaseCost,
-                  addOnCost,
-                  inputRow.quantity
-                );
-                setInputRow((prev) => ({
-                  ...prev,
-                  addOnCost,
-                  sellingCost: sellingPrice,
-                  totalPrice,
-                }));
+                const value = e.target.value.trim();
+                setInputRow((prev) => ({ ...prev, addOnCost: value }));
+
+                clearTimeout(window.addOnCostDebounce);
+                window.addOnCostDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Add On Cost",
+                      description: "Add on cost must be greater than 0.",
+                    });
+                    setInputRow((prev) => ({ ...prev, addOnCost: "" }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      inputRow.purchaseCost,
+                      value,
+                      inputRow.quantity
+                    );
+                    setInputRow((prev) => ({ ...prev, totalPrice }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -1068,15 +1235,44 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
     {
-      title: "Selling Cost",
+      title: "Selling Cost (AED)",
       dataIndex: "sellingCost",
       ellipsis: true,
       width: 250,
-      render: (_, record) =>
+      render: (_, record, index) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={inputRow.sellingCost || ""} readOnly />
+            <Input
+              type="number"
+              min={0}
+              placeholder="Enter Selling Cost"
+              value={inputRow.sellingCost || ""}
+              onChange={(e) => {
+                const value = e.target.value.trim();
+                setInputRow((prev) => ({ ...prev, sellingCost: value }));
+
+                clearTimeout(window.sellingCostDebounce);
+                window.sellingCostDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Selling Cost",
+                      description: "Selling cost must be greater than 0.",
+                    });
+                    setInputRow((prev) => ({ ...prev, sellingCost: "" }));
+                  }
+                }, 3000);
+              }}
+            />
           </Tooltip>
         ) : (
           <Tooltip title={record.sellingCost}>
@@ -1084,6 +1280,42 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   ellipsis: true,
+    //   width: 200,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter quantity"
+    //           type="number"
+    //           min={1}
+    //           value={inputRow.quantity}
+    //           onChange={(e) => {
+    //             const quantity = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               inputRow.purchaseCost,
+    //               inputRow.addOnCost,
+    //               quantity
+    //             );
+    //             setInputRow((prev) => ({
+    //               ...prev,
+    //               quantity,
+    //               sellingCost: sellingPrice, // still needed in case it's blank initially
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.quantity}>
+    //         <span>{record.quantity}</span>
+    //       </Tooltip>
+    //     ),
+    // },
 
     {
       title: "Quantity",
@@ -1099,18 +1331,34 @@ export default function ProductCategories({ username }) {
               min={1}
               value={inputRow.quantity}
               onChange={(e) => {
-                const quantity = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  inputRow.purchaseCost,
-                  inputRow.addOnCost,
-                  quantity
-                );
-                setInputRow((prev) => ({
-                  ...prev,
-                  quantity,
-                  sellingCost: sellingPrice, // still needed in case it's blank initially
-                  totalPrice,
-                }));
+                const value = e.target.value.trim();
+                setInputRow((prev) => ({ ...prev, quantity: value }));
+
+                clearTimeout(window.quantityDebounce);
+                window.quantityDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Quantity",
+                      description: "Quantity must be greater than 0.",
+                    });
+                    setInputRow((prev) => ({ ...prev, quantity: "" }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      inputRow.purchaseCost,
+                      inputRow.addOnCost,
+                      value
+                    );
+                    setInputRow((prev) => ({ ...prev, totalPrice }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -1120,6 +1368,7 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
     {
       title: "Unit",
       dataIndex: "unit",
@@ -1127,25 +1376,24 @@ export default function ProductCategories({ username }) {
       ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
-          <Tooltip title="">
-            <Select
-              placeholder="Select unit"
-              className="w-100"
-              value={inputRow.unit}
-              onChange={(value) => {
-                setInputRow({ ...inputRow, unit: value });
-              }}
-            >
-              <Select.Option value="Set">Set</Select.Option>
-              <Select.Option value="Piece">Piece</Select.Option>
-              <Select.Option value="Number">Number</Select.Option>
-              <Select.Option value="Litre">Litre</Select.Option>
-            </Select>
-          </Tooltip>
+          <Select
+            className="w-100"
+            value={inputRow.unit}
+            onChange={(value) =>
+              setInputRow((prev) => ({ ...prev, unit: value }))
+            }
+            options={spareUnitOptions.map((u) => ({ value: u, label: u }))}
+            loading={spareUnitLoading}
+            placeholder={spareUnitLoading ? "Fetching unit..." : "Select Unit"}
+            notFoundContent={
+              spareUnitLoading ? "Fetching unit..." : "No units found"
+            }
+          />
         ) : (
           record.unit || ""
         ),
     },
+
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
@@ -1387,7 +1635,7 @@ export default function ProductCategories({ username }) {
               onChange={(e) =>
                 setAuxiliariesInputRow({
                   ...auxiliariesInputRow,
-                  partNumber: e.target.value,
+                  partNumber: e.target.value.toUpperCase(),
                 })
               }
             />
@@ -1440,8 +1688,45 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Purchase Cost In AED (per item)",
+    //   dataIndex: "purchaseCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter purchase cost"
+    //           type="number"
+    //           min={0}
+    //           value={auxiliariesInputRow.purchaseCost}
+    //           onChange={(e) => {
+    //             const purchaseCost = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               purchaseCost,
+    //               auxiliariesInputRow.addOnCost,
+    //               auxiliariesInputRow.quantity
+    //             );
+    //             setAuxiliariesInputRow((prev) => ({
+    //               ...prev,
+    //               purchaseCost,
+    //               sellingCost: sellingPrice,
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.purchaseCost}>
+    //         <span>{record.purchaseCost || "-"}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
-      title: "Purchase Cost(per item)",
+      title: "Purchase Cost In AED (per item)",
       dataIndex: "purchaseCost",
       ellipsis: true,
       width: 250,
@@ -1454,18 +1739,47 @@ export default function ProductCategories({ username }) {
               min={0}
               value={auxiliariesInputRow.purchaseCost}
               onChange={(e) => {
-                const purchaseCost = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  purchaseCost,
-                  auxiliariesInputRow.addOnCost,
-                  auxiliariesInputRow.quantity
-                );
+                const value = e.target.value.trim();
+                // update immediately so user sees what they type
                 setAuxiliariesInputRow((prev) => ({
                   ...prev,
-                  purchaseCost,
-                  sellingCost: sellingPrice,
-                  totalPrice,
+                  purchaseCost: value,
                 }));
+
+                // debounce validation
+                clearTimeout(window.auxPurchaseCostDebounce);
+                window.auxPurchaseCostDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+
+                  // if field non-empty and invalid zero-like or NaN -> show error
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Purchase Cost",
+                      description: "Purchase cost must be greater than 0.",
+                    });
+                    // you can either clear the invalid value or leave it; here we clear it
+                    setAuxiliariesInputRow((prev) => ({
+                      ...prev,
+                      purchaseCost: "",
+                    }));
+                    return;
+                  }
+
+                  // valid -> recalc total
+                  const { totalPrice } = updateTotalPrice(
+                    value,
+                    auxiliariesInputRow.addOnCost,
+                    auxiliariesInputRow.quantity
+                  );
+                  setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -1475,8 +1789,45 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Add On Cost In AED",
+    //   dataIndex: "addOnCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           type="number"
+    //           min={0}
+    //           placeholder="Enter add on cost"
+    //           value={auxiliariesInputRow.addOnCost}
+    //           onChange={(e) => {
+    //             const addOnCost = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               auxiliariesInputRow.purchaseCost,
+    //               addOnCost,
+    //               auxiliariesInputRow.quantity
+    //             );
+    //             setAuxiliariesInputRow((prev) => ({
+    //               ...prev,
+    //               addOnCost,
+    //               sellingCost: sellingPrice,
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.addOnCost}>
+    //         <span>{record.addOnCost}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
-      title: "Add On Cost",
+      title: "Add On Cost In AED",
       dataIndex: "addOnCost",
       ellipsis: true,
       width: 250,
@@ -1489,18 +1840,41 @@ export default function ProductCategories({ username }) {
               placeholder="Enter add on cost"
               value={auxiliariesInputRow.addOnCost}
               onChange={(e) => {
-                const addOnCost = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  auxiliariesInputRow.purchaseCost,
-                  addOnCost,
-                  auxiliariesInputRow.quantity
-                );
+                const value = e.target.value.trim();
                 setAuxiliariesInputRow((prev) => ({
                   ...prev,
-                  addOnCost,
-                  sellingCost: sellingPrice,
-                  totalPrice,
+                  addOnCost: value,
                 }));
+
+                clearTimeout(window.auxAddOnCostDebounce);
+                window.auxAddOnCostDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Add On Cost",
+                      description: "Add on cost must be greater than 0.",
+                    });
+                    setAuxiliariesInputRow((prev) => ({
+                      ...prev,
+                      addOnCost: "",
+                    }));
+                    return;
+                  }
+
+                  const { totalPrice } = updateTotalPrice(
+                    auxiliariesInputRow.purchaseCost,
+                    value,
+                    auxiliariesInputRow.quantity
+                  );
+                  setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -1510,15 +1884,52 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
     {
-      title: "Selling Cost",
+      title: "Selling Cost (AED)",
       dataIndex: "sellingCost",
       ellipsis: true,
       width: 250,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={auxiliariesInputRow.sellingCost || ""} readOnly />
+            <Input
+              type="number"
+              min={0}
+              placeholder="Enter Selling Cost"
+              value={auxiliariesInputRow.sellingCost || ""}
+              onChange={(e) => {
+                const value = e.target.value.trim();
+                setAuxiliariesInputRow((prev) => ({
+                  ...prev,
+                  sellingCost: value,
+                }));
+
+                clearTimeout(window.auxSellingCostDebounce);
+                window.auxSellingCostDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Selling Cost",
+                      description: "Selling cost must be greater than 0.",
+                    });
+                    setAuxiliariesInputRow((prev) => ({
+                      ...prev,
+                      sellingCost: "",
+                    }));
+                    return;
+                  }
+                  // no total recalculation needed here unless you want to sync totalPrice
+                }, 3000);
+              }}
+            />
           </Tooltip>
         ) : (
           <Tooltip title={record.sellingCost}>
@@ -1541,18 +1952,41 @@ export default function ProductCategories({ username }) {
               min={1}
               value={auxiliariesInputRow.quantity}
               onChange={(e) => {
-                const quantity = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  auxiliariesInputRow.purchaseCost,
-                  auxiliariesInputRow.addOnCost,
-                  quantity
-                );
+                const value = e.target.value.trim();
                 setAuxiliariesInputRow((prev) => ({
                   ...prev,
-                  quantity,
-                  sellingCost: sellingPrice,
-                  totalPrice,
+                  quantity: value,
                 }));
+
+                clearTimeout(window.auxQuantityDebounce);
+                window.auxQuantityDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Quantity",
+                      description: "Quantity must be greater than 0.",
+                    });
+                    setAuxiliariesInputRow((prev) => ({
+                      ...prev,
+                      quantity: "",
+                    }));
+                    return;
+                  }
+
+                  const { totalPrice } = updateTotalPrice(
+                    auxiliariesInputRow.purchaseCost,
+                    auxiliariesInputRow.addOnCost,
+                    value
+                  );
+                  setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -1562,6 +1996,7 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
     {
       title: "Unit",
       dataIndex: "unit",
@@ -1581,6 +2016,7 @@ export default function ProductCategories({ username }) {
               <Select.Option value="Set">Set</Select.Option>
               <Select.Option value="Piece">Piece</Select.Option>
               <Select.Option value="Number">Number</Select.Option>
+              <Select.Option value="Metre">Metre</Select.Option>
               <Select.Option value="Litre">Litre</Select.Option>
             </Select>
           </Tooltip>
@@ -1599,7 +2035,9 @@ export default function ProductCategories({ username }) {
               readOnly
               value={
                 auxiliariesInputRow.stockInHand
-                  ? `${auxiliariesInputRow.stockInHand} ${auxiliariesInputRow.stockUnit || ""}`
+                  ? `${auxiliariesInputRow.stockInHand} ${
+                      auxiliariesInputRow.stockUnit || ""
+                    }`
                   : ""
               }
             />
@@ -1815,7 +2253,7 @@ export default function ProductCategories({ username }) {
               onChange={(e) =>
                 setAssetsInputRow({
                   ...assetsInputRow,
-                  partNumber: e.target.value,
+                  partNumber: e.target.value.toUpperCase(),
                 })
               }
             />
@@ -1867,8 +2305,44 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+    // {
+    //   title: "Purchase Cost(per item)",
+    //   dataIndex: "purchaseCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter purchase cost"
+    //           type="number"
+    //           min={0}
+    //           value={assetsInputRow.purchaseCost}
+    //           onChange={(e) => {
+    //             const purchaseCost = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               purchaseCost,
+    //               assetsInputRow.addOnCost,
+    //               assetsInputRow.quantity
+    //             );
+    //             setAssetsInputRow((prev) => ({
+    //               ...prev,
+    //               purchaseCost,
+    //               sellingCost: sellingPrice,
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.purchaseCost}>
+    //         <span>{record.purchaseCost || "-"}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
-      title: "Purchase Cost(per item)",
+      title: "Purchase Cost (per item)",
       dataIndex: "purchaseCost",
       ellipsis: true,
       width: 250,
@@ -1881,18 +2355,49 @@ export default function ProductCategories({ username }) {
               min={0}
               value={assetsInputRow.purchaseCost}
               onChange={(e) => {
-                const purchaseCost = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  purchaseCost,
-                  assetsInputRow.addOnCost,
-                  assetsInputRow.quantity
-                );
+                const value = e.target.value.trim();
+
+                // Always update the input field so user can type freely
                 setAssetsInputRow((prev) => ({
                   ...prev,
-                  purchaseCost,
-                  sellingCost: sellingPrice,
-                  totalPrice,
+                  purchaseCost: value,
                 }));
+
+                // Debounce validation
+                clearTimeout(window.purchaseCostDebounce);
+                window.purchaseCostDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Purchase Cost",
+                      description: "Purchase cost must be greater than 0.",
+                    });
+
+                    setAssetsInputRow((prev) => ({
+                      ...prev,
+                      purchaseCost: "",
+                    }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      value,
+                      assetsInputRow.addOnCost,
+                      assetsInputRow.quantity
+                    );
+
+                    setAssetsInputRow((prev) => ({
+                      ...prev,
+                      totalPrice,
+                    }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -1902,6 +2407,43 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Add On Cost",
+    //   dataIndex: "addOnCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           type="number"
+    //           min={0}
+    //           placeholder="Enter add on cost"
+    //           value={assetsInputRow.addOnCost}
+    //           onChange={(e) => {
+    //             const addOnCost = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               assetsInputRow.purchaseCost,
+    //               addOnCost,
+    //               assetsInputRow.quantity
+    //             );
+    //             setAssetsInputRow((prev) => ({
+    //               ...prev,
+    //               addOnCost,
+    //               sellingCost: sellingPrice,
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.addOnCost}>
+    //         <span>{record.addOnCost}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
       title: "Add On Cost",
       dataIndex: "addOnCost",
@@ -1916,18 +2458,45 @@ export default function ProductCategories({ username }) {
               placeholder="Enter add on cost"
               value={assetsInputRow.addOnCost}
               onChange={(e) => {
-                const addOnCost = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  assetsInputRow.purchaseCost,
-                  addOnCost,
-                  assetsInputRow.quantity
-                );
+                const value = e.target.value.trim();
+
                 setAssetsInputRow((prev) => ({
                   ...prev,
-                  addOnCost,
-                  sellingCost: sellingPrice,
-                  totalPrice,
+                  addOnCost: value,
                 }));
+
+                clearTimeout(window.addOnDebounce);
+                window.addOnDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Add On Cost",
+                      description: "Add on cost must be greater than 0.",
+                    });
+                    setAssetsInputRow((prev) => ({
+                      ...prev,
+                      addOnCost: "",
+                    }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      assetsInputRow.purchaseCost,
+                      value,
+                      assetsInputRow.quantity
+                    );
+                    setAssetsInputRow((prev) => ({
+                      ...prev,
+                      totalPrice,
+                    }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -1937,15 +2506,52 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
     {
-      title: "Selling Cost",
+      title: "Selling Cost (AED)",
       dataIndex: "sellingCost",
       ellipsis: true,
       width: 250,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={assetsInputRow.sellingCost || ""} readOnly />
+            <Input
+              type="number"
+              min={0}
+              placeholder="Enter Selling Cost"
+              value={assetsInputRow.sellingCost || ""}
+              onChange={(e) => {
+                const value = e.target.value.trim();
+
+                setAssetsInputRow((prev) => ({
+                  ...prev,
+                  sellingCost: value,
+                }));
+
+                clearTimeout(window.sellingDebounce);
+                window.sellingDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Selling Cost",
+                      description: "Selling cost must be greater than 0.",
+                    });
+                    setAssetsInputRow((prev) => ({
+                      ...prev,
+                      sellingCost: "",
+                    }));
+                  }
+                }, 3000);
+              }}
+            />
           </Tooltip>
         ) : (
           <Tooltip title={record.sellingCost}>
@@ -1953,6 +2559,42 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   width: 200,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter Quantity"
+    //           type="number"
+    //           min={1}
+    //           value={assetsInputRow.quantity}
+    //           onChange={(e) => {
+    //             const quantity = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               assetsInputRow.purchaseCost,
+    //               assetsInputRow.addOnCost,
+    //               quantity
+    //             );
+    //             setAssetsInputRow((prev) => ({
+    //               ...prev,
+    //               quantity,
+    //               sellingCost: sellingPrice, // still needed in case it's blank initially
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.quantity}>
+    //         <span>{record.quantity}</span>
+    //       </Tooltip>
+    //     ),
+    // },
 
     {
       title: "Quantity",
@@ -1968,18 +2610,45 @@ export default function ProductCategories({ username }) {
               min={1}
               value={assetsInputRow.quantity}
               onChange={(e) => {
-                const quantity = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  assetsInputRow.purchaseCost,
-                  assetsInputRow.addOnCost,
-                  quantity
-                );
+                const value = e.target.value.trim();
+
                 setAssetsInputRow((prev) => ({
                   ...prev,
-                  quantity,
-                  sellingCost: sellingPrice, // still needed in case it's blank initially
-                  totalPrice,
+                  quantity: value,
                 }));
+
+                clearTimeout(window.quantityDebounce);
+                window.quantityDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Quantity",
+                      description: "Quantity must be greater than 0.",
+                    });
+                    setAssetsInputRow((prev) => ({
+                      ...prev,
+                      quantity: "",
+                    }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      assetsInputRow.purchaseCost,
+                      assetsInputRow.addOnCost,
+                      value
+                    );
+                    setAssetsInputRow((prev) => ({
+                      ...prev,
+                      totalPrice,
+                    }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -2008,6 +2677,7 @@ export default function ProductCategories({ username }) {
               <Select.Option value="Set">Set</Select.Option>
               <Select.Option value="Piece">Piece</Select.Option>
               <Select.Option value="Number">Number</Select.Option>
+              <Select.Option value="Metre">Metre</Select.Option>
               <Select.Option value="Litre">Litre</Select.Option>
             </Select>
           </Tooltip>
@@ -2015,7 +2685,7 @@ export default function ProductCategories({ username }) {
           record.unit || ""
         ),
     },
-   {
+    {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
       width: 200,
@@ -2026,7 +2696,9 @@ export default function ProductCategories({ username }) {
               readOnly
               value={
                 assetsInputRow.stockInHand
-                  ? `${assetsInputRow.stockInHand} ${assetsInputRow.stockUnit || ""}`
+                  ? `${assetsInputRow.stockInHand} ${
+                      assetsInputRow.stockUnit || ""
+                    }`
                   : ""
               }
             />
@@ -2236,7 +2908,7 @@ export default function ProductCategories({ username }) {
               onChange={(e) =>
                 setMachineInputRow({
                   ...machineinputRow,
-                  partNumber: e.target.value,
+                  partNumber: e.target.value.toUpperCase(),
                 })
               }
             />
@@ -2287,6 +2959,43 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Purchase Cost(per item)",
+    //   dataIndex: "purchaseCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter purchase cost"
+    //           type="number"
+    //           min={0}
+    //           value={machineinputRow.purchaseCost}
+    //           onChange={(e) => {
+    //             const purchaseCost = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               purchaseCost,
+    //               machineinputRow.addOnCost,
+    //               machineinputRow.quantity
+    //             );
+    //             setMachineInputRow((prev) => ({
+    //               ...prev,
+    //               purchaseCost,
+    //               sellingCost: sellingPrice,
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.purchaseCost}>
+    //         <span>{record.purchaseCost || "-"}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
       title: "Purchase Cost(per item)",
       dataIndex: "purchaseCost",
@@ -2301,18 +3010,44 @@ export default function ProductCategories({ username }) {
               min={0}
               value={machineinputRow.purchaseCost}
               onChange={(e) => {
-                const purchaseCost = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  purchaseCost,
-                  machineinputRow.addOnCost,
-                  machineinputRow.quantity
-                );
+                const value = e.target.value.trim();
+
                 setMachineInputRow((prev) => ({
                   ...prev,
-                  purchaseCost,
-                  sellingCost: sellingPrice,
-                  totalPrice,
+                  purchaseCost: value,
                 }));
+
+                clearTimeout(window.machinePurchaseDebounce);
+                window.machinePurchaseDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Purchase Cost",
+                      description: "Purchase cost must be greater than 0.",
+                    });
+                    setMachineInputRow((prev) => ({
+                      ...prev,
+                      purchaseCost: "",
+                    }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      value,
+                      machineinputRow.addOnCost,
+                      machineinputRow.quantity
+                    );
+                    setMachineInputRow((prev) => ({
+                      ...prev,
+                      totalPrice,
+                    }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -2322,6 +3057,42 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Add On Cost",
+    //   dataIndex: "addOnCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           type="number"
+    //           min={0}
+    //           placeholder="Enter add on cost"
+    //           value={machineinputRow.addOnCost}
+    //           onChange={(e) => {
+    //             const addOnCost = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               machineinputRow.purchaseCost,
+    //               addOnCost,
+    //               machineinputRow.quantity
+    //             );
+    //             setMachineInputRow((prev) => ({
+    //               ...prev,
+    //               addOnCost,
+    //               sellingCost: sellingPrice,
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.addOnCost}>
+    //         <span>{record.addOnCost}</span>
+    //       </Tooltip>
+    //     ),
+    // },
     {
       title: "Add On Cost",
       dataIndex: "addOnCost",
@@ -2336,18 +3107,44 @@ export default function ProductCategories({ username }) {
               placeholder="Enter add on cost"
               value={machineinputRow.addOnCost}
               onChange={(e) => {
-                const addOnCost = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  machineinputRow.purchaseCost,
-                  addOnCost,
-                  machineinputRow.quantity
-                );
+                const value = e.target.value.trim();
+
                 setMachineInputRow((prev) => ({
                   ...prev,
-                  addOnCost,
-                  sellingCost: sellingPrice,
-                  totalPrice,
+                  addOnCost: value,
                 }));
+
+                clearTimeout(window.machineAddOnDebounce);
+                window.machineAddOnDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Add On Cost",
+                      description: "Add on cost must be greater than 0.",
+                    });
+                    setMachineInputRow((prev) => ({
+                      ...prev,
+                      addOnCost: "",
+                    }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      machineinputRow.purchaseCost,
+                      value,
+                      machineinputRow.quantity
+                    );
+                    setMachineInputRow((prev) => ({
+                      ...prev,
+                      totalPrice,
+                    }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -2357,15 +3154,97 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Selling Cost (AED)",
+    //   dataIndex: "sellingCost",
+    //   ellipsis: true,
+    //   width: 250,
+    //   render: (_, record, index) =>
+    //     record.isInput ? (
+    //       <Tooltip title="Enter Selling Cost">
+    //         <Input
+    //           type="number"
+    //           min={0}
+    //           placeholder="Enter Selling Cost"
+    //           value={machineinputRow.sellingCost || ""}
+    //           onChange={(e) => {
+    //             const value = e.target.value.trim();
+    //             const num = parseFloat(value);
+
+    //             // Reject values: "0", "0.0", ".0", 0
+    //             if (
+    //               value === "0" ||
+    //               value === "0.0" ||
+    //               value === ".0" ||
+    //               isNaN(num) ||
+    //               num === 0
+    //             ) {
+    //               notification.error({
+    //                 message: "Invalid Selling Cost",
+    //                 description: "Selling cost must be greater than 0.",
+    //               });
+    //               return;
+    //             }
+
+    //             setMachineInputRow((prev) => ({
+    //               ...prev,
+    //               sellingCost: value,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.sellingCost}>
+    //         <span>{record.sellingCost}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
-      title: "Selling Cost",
+      title: "Selling Cost (AED)",
       dataIndex: "sellingCost",
       ellipsis: true,
       width: 250,
       render: (_, record) =>
         record.isInput ? (
           <Tooltip>
-            <Input value={machineinputRow.sellingCost || ""} readOnly />
+            <Input
+              type="number"
+              min={0}
+              placeholder="Enter Selling Cost"
+              value={machineinputRow.sellingCost || ""}
+              onChange={(e) => {
+                const value = e.target.value.trim();
+
+                setMachineInputRow((prev) => ({
+                  ...prev,
+                  sellingCost: value,
+                }));
+
+                clearTimeout(window.machineSellingDebounce);
+                window.machineSellingDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Selling Cost",
+                      description: "Selling cost must be greater than 0.",
+                    });
+                    setMachineInputRow((prev) => ({
+                      ...prev,
+                      sellingCost: "",
+                    }));
+                  }
+                }, 3000);
+              }}
+            />
           </Tooltip>
         ) : (
           <Tooltip title={record.sellingCost}>
@@ -2373,6 +3252,42 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   width: 200,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter quantity"
+    //           type="number"
+    //           min={1}
+    //           value={machineinputRow.quantity}
+    //           onChange={(e) => {
+    //             const quantity = e.target.value;
+    //             const { sellingPrice, totalPrice } = updateTotalPrice(
+    //               machineinputRow.purchaseCost,
+    //               machineinputRow.addOnCost,
+    //               quantity
+    //             );
+    //             setMachineInputRow((prev) => ({
+    //               ...prev,
+    //               quantity,
+    //               sellingCost: sellingPrice, // still needed in case it's blank initially
+    //               totalPrice,
+    //             }));
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.quantity}>
+    //         <span>{record.quantity}</span>
+    //       </Tooltip>
+    //     ),
+    // },
     {
       title: "Quantity",
       dataIndex: "quantity",
@@ -2387,18 +3302,44 @@ export default function ProductCategories({ username }) {
               min={1}
               value={machineinputRow.quantity}
               onChange={(e) => {
-                const quantity = e.target.value;
-                const { sellingPrice, totalPrice } = updateTotalPrice(
-                  machineinputRow.purchaseCost,
-                  machineinputRow.addOnCost,
-                  quantity
-                );
+                const value = e.target.value.trim();
+
                 setMachineInputRow((prev) => ({
                   ...prev,
-                  quantity,
-                  sellingCost: sellingPrice, // still needed in case it's blank initially
-                  totalPrice,
+                  quantity: value,
                 }));
+
+                clearTimeout(window.machineQuantityDebounce);
+                window.machineQuantityDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Quantity",
+                      description: "Quantity must be greater than 0.",
+                    });
+                    setMachineInputRow((prev) => ({
+                      ...prev,
+                      quantity: "",
+                    }));
+                  } else {
+                    const { totalPrice } = updateTotalPrice(
+                      machineinputRow.purchaseCost,
+                      machineinputRow.addOnCost,
+                      value
+                    );
+                    setMachineInputRow((prev) => ({
+                      ...prev,
+                      totalPrice,
+                    }));
+                  }
+                }, 3000);
               }}
             />
           </Tooltip>
@@ -2408,6 +3349,7 @@ export default function ProductCategories({ username }) {
           </Tooltip>
         ),
     },
+
     {
       title: "Unit",
       dataIndex: "unit",
@@ -2427,6 +3369,7 @@ export default function ProductCategories({ username }) {
               <Select.Option value="Set">Set</Select.Option>
               <Select.Option value="Piece">Piece</Select.Option>
               <Select.Option value="Number">Number</Select.Option>
+              <Select.Option value="Metre">Metre</Select.Option>
               <Select.Option value="Litre">Litre</Select.Option>
             </Select>
           </Tooltip>
@@ -2434,7 +3377,7 @@ export default function ProductCategories({ username }) {
           record.unit || ""
         ),
     },
-   {
+    {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
       width: 200,
@@ -2445,7 +3388,9 @@ export default function ProductCategories({ username }) {
               readOnly
               value={
                 machineinputRow.stockInHand
-                  ? `${machineinputRow.stockInHand} ${machineinputRow.stockUnit || ""}`
+                  ? `${machineinputRow.stockInHand} ${
+                      machineinputRow.stockUnit || ""
+                    }`
                   : ""
               }
             />
