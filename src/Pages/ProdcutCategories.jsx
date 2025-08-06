@@ -101,6 +101,19 @@ export default function ProductCategories({ username }) {
   const [sparePartsFetching, setSparePartsFetching] = useState(false);
   const [spareUnitOptions, setSpareUnitOptions] = useState([]);
   const [spareUnitLoading, setSpareUnitLoading] = useState(false);
+  const [sparePartsUnitFetched, setSparePartsUnitFetched] = useState(false);
+  const [machineUnitFetched, setMachineUnitFetched] = useState(false);
+  const [machineUnitOptions, setMachineUnitOptions] = useState([]);
+  const [machineUnitLoading, setMachineUnitLoading] = useState(false);
+  const [assetsUnitFetched, setAssetsUnitFetched] = useState(false);
+  const [assetsUnitOptions, setAssetsUnitOptions] = useState([]);
+  const [assetsUnitLoading, setAssetsUnitLoading] = useState(false);
+  const [auxiliariesUnitFetched, setAuxiliariesUnitFetched] = useState(false);
+  const [auxiliariesUnitOptions, setAuxiliariesUnitOptions] = useState([]);
+  const [auxiliariesUnitLoading, setAuxiliariesUnitLoading] = useState(false);
+
+
+  const [userRole, setUserRole] = useState(username);
 
   const updateTotalPrice = (purchase, addOn, quantity) => {
     const p = parseFloat(purchase);
@@ -117,7 +130,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbwPXZ9nwqop20rQQjnL5X8RWyeQK09qcpQASlI7pB3nwPzakD4qqtz4FsYTFUC4tbZcvg/exec";
+    "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -431,147 +444,447 @@ export default function ProductCategories({ username }) {
     },
   ];
 
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   const debounceTimer = setTimeout(() => {
+  //     const fetchStockInHand = async () => {
+  //       if (!machineinputRow.partNumber.trim()) return;
+  //       setMachineFetching(true);
+  //       try {
+  //         const res = await fetch(GAS_URL, {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //           body: new URLSearchParams({
+  //             action: "getStockForPartNumber",
+  //             partNumber: machineinputRow.partNumber.trim(),
+  //             category: "Machine",
+  //           }),
+  //           signal: controller.signal,
+  //         });
+
+  //         const result = await res.json();
+  //         console.log("✅ Stock fetch response:", result);
+
+  //         if (result.success) {
+  //           setMachineInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: result.stockInHand.toString(),
+  //             stockUnit: result.unit,
+  //           }));
+  //         } else {
+  //           setMachineInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: "0",
+  //           }));
+  //         }
+  //       } catch (err) {
+  //         console.error("Error fetching stock:", err);
+  //       } finally {
+  //         setMachineFetching(false);
+  //       }
+  //     };
+
+  //     fetchStockInHand();
+  //   }, 400); // Wait 400ms after last change
+
+  //   return () => {
+  //     clearTimeout(debounceTimer); // Clear timer on partNumber change
+  //     controller.abort(); // Cancel previous fetch
+  //   };
+  // }, [machineinputRow.partNumber]);
+
+useEffect(() => {
+  const controller = new AbortController();
+  const timer = setTimeout(async () => {
+    const part = machineinputRow.partNumber?.trim();
+    if (!part) return;
+
+    setMachineFetching(true);
+    setMachineUnitLoading(true);
+
+    try {
+      // Fetch stock first
+      const stockRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getStockForPartNumber",
+          partNumber: part,
+          category: "Machine",
+        }),
+        signal: controller.signal,
+      });
+
+      const stockText = await stockRes.text();
+      const stockResult = JSON.parse(stockText);
+      const stock = stockResult?.stockInHand || 0;
+      const stockUnit = stockResult?.unit || "";
+
+      // Fetch unit second
+      const unitRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getUnitForPartNumber",
+          partNumber: part,
+          category: "Machine",
+        }),
+        signal: controller.signal,
+      });
+
+      const unitText = await unitRes.text();
+      const unitResult = JSON.parse(unitText);
+      const unit = (unitResult?.unit || "").toString().trim();
+      const finalStockInHand = `${stock} ${stockUnit}`.trim();
+
+      // Update state
+      setMachineInputRow((prev) => ({
+        ...prev,
+        stockInHand: finalStockInHand,
+        unit,
+        machineUnitFetched: !!unit,
+      }));
+
+      form.setFieldsValue({ unit });
+
+      const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+      setMachineUnitOptions(
+         userRole === "Admin"
+    ? unit
+      ? [...new Set([unit, ...defaultUnits])]
+      : [...defaultUnits]
+    : unit
+    ? [unit]
+    : [...defaultUnits]
+      );
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error("Fetch error:", err);
+      }
+      setMachineInputRow((prev) => ({
+        ...prev,
+        stockInHand: "0",
+        unit: "",
+        machineUnitFetched: false,
+      }));
+      form.setFieldsValue({ unit: "" });
+      setMachineUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+    } finally {
+      setMachineFetching(false);
+      setMachineUnitLoading(false);
+    }
+  }, 400);
+
+  return () => {
+    clearTimeout(timer);
+    controller.abort();
+  };
+}, [machineinputRow.partNumber]);
+
+
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   const debounceTimer = setTimeout(() => {
+  //     const fetchStockInHand = async () => {
+  //       if (!auxiliariesInputRow.partNumber.trim()) return;
+  //       setAuxiliariesFetching(true);
+  //       try {
+  //         const res = await fetch(GAS_URL, {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //           body: new URLSearchParams({
+  //             action: "getStockForPartNumber",
+  //             partNumber: auxiliariesInputRow.partNumber.trim(),
+  //             category: "Auxiliaries",
+  //           }),
+  //           signal: controller.signal,
+  //         });
+
+  //         const result = await res.json();
+  //         if (result.success) {
+  //           setAuxiliariesInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: result.stockInHand.toString(),
+  //             stockUnit: result.unit,
+  //           }));
+  //         } else {
+  //           setAuxiliariesInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: "0",
+  //           }));
+  //         }
+  //       } catch (err) {
+  //         console.error("Error fetching stock (Auxiliaries):", err);
+  //       } finally {
+  //         setAuxiliariesFetching(false);
+  //       }
+  //     };
+
+  //     fetchStockInHand();
+  //   }, 400);
+  //   return () => {
+  //     clearTimeout(debounceTimer); // Clear timer on partNumber change
+  //     controller.abort(); // Cancel previous fetch
+  //   };
+  // }, [auxiliariesInputRow.partNumber]);
+
+
   useEffect(() => {
-    const controller = new AbortController();
-    const debounceTimer = setTimeout(() => {
-      const fetchStockInHand = async () => {
-        if (!machineinputRow.partNumber.trim()) return;
-        setMachineFetching(true);
-        try {
-          const res = await fetch(GAS_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "getStockForPartNumber",
-              partNumber: machineinputRow.partNumber.trim(),
-              category: "Machine",
-            }),
-            signal: controller.signal,
-          });
+  const controller = new AbortController();
+  const timer = setTimeout(async () => {
+    const part = auxiliariesInputRow.partNumber?.trim();
+    if (!part) return;
 
-          const result = await res.json();
-          console.log("✅ Stock fetch response:", result);
+    setAuxiliariesFetching(true);
+    setAuxiliariesUnitLoading(true);
 
-          if (result.success) {
-            setMachineInputRow((prev) => ({
-              ...prev,
-              stockInHand: result.stockInHand.toString(),
-              stockUnit: result.unit,
-            }));
-          } else {
-            setMachineInputRow((prev) => ({
-              ...prev,
-              stockInHand: "0",
-            }));
-          }
-        } catch (err) {
-          console.error("Error fetching stock:", err);
-        } finally {
-          setMachineFetching(false);
-        }
-      };
+    try {
+      console.log(`🔄 Fetching stock for part: ${part}`);
 
-      fetchStockInHand();
-    }, 400); // Wait 400ms after last change
+      // Step 1: Fetch stock
+      const stockRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getStockForPartNumber",
+          partNumber: part,
+          category: "Auxiliaries",
+        }),
+        signal: controller.signal,
+      });
 
-    return () => {
-      clearTimeout(debounceTimer); // Clear timer on partNumber change
-      controller.abort(); // Cancel previous fetch
-    };
-  }, [machineinputRow.partNumber]);
+      const stockText = await stockRes.text();
+      console.log("📦 Stock API Raw Response:", stockText);
+      const stockResult = JSON.parse(stockText);
+      const stock = stockResult?.stockInHand || 0;
+      const stockUnit = stockResult?.unit || "";
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const debounceTimer = setTimeout(() => {
-      const fetchStockInHand = async () => {
-        if (!auxiliariesInputRow.partNumber.trim()) return;
-        setAuxiliariesFetching(true);
-        try {
-          const res = await fetch(GAS_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "getStockForPartNumber",
-              partNumber: auxiliariesInputRow.partNumber.trim(),
-              category: "Auxiliaries",
-            }),
-            signal: controller.signal,
-          });
+      console.log(`✅ Stock in hand for ${part}:`, stock);
 
-          const result = await res.json();
-          if (result.success) {
-            setAuxiliariesInputRow((prev) => ({
-              ...prev,
-              stockInHand: result.stockInHand.toString(),
-              stockUnit: result.unit,
-            }));
-          } else {
-            setAuxiliariesInputRow((prev) => ({
-              ...prev,
-              stockInHand: "0",
-            }));
-          }
-        } catch (err) {
-          console.error("Error fetching stock (Auxiliaries):", err);
-        } finally {
-          setAuxiliariesFetching(false);
-        }
-      };
+      // Step 2: Fetch unit
+      console.log(`🔄 Fetching unit for part: ${part}`);
 
-      fetchStockInHand();
-    }, 400);
-    return () => {
-      clearTimeout(debounceTimer); // Clear timer on partNumber change
-      controller.abort(); // Cancel previous fetch
-    };
-  }, [auxiliariesInputRow.partNumber]);
+      const unitRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getUnitForPartNumber",
+          partNumber: part,
+          category: "Auxiliaries",
+        }),
+        signal: controller.signal,
+      });
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const debounceTimer = setTimeout(() => {
-      const fetchStockInHand = async () => {
-        if (!assetsInputRow.partNumber.trim()) return;
-        setAssetsFetching(true);
-        try {
-          const res = await fetch(GAS_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "getStockForPartNumber",
-              partNumber: assetsInputRow.partNumber.trim(),
-              category: "Assets",
-            }),
-            signal: controller.signal,
-          });
+      const unitText = await unitRes.text();
+      console.log("📏 Unit API Raw Response:", unitText);
+      const unitResult = JSON.parse(unitText);
+      const unit = (unitResult?.unit || "").toString().trim();
 
-          const result = await res.json();
-          console.log("✅ Stock fetch response:", result);
-          if (result.success) {
-            setAssetsInputRow((prev) => ({
-              ...prev,
-              stockInHand: result.stockInHand.toString(),
-              stockUnit: result.unit,
-            }));
-          } else {
-            setAssetsInputRow((prev) => ({
-              ...prev,
-              stockInHand: "0",
-            }));
-          }
-        } catch (err) {
-          console.error("Error fetching stock (Assets):", err);
-        } finally {
-          setAssetsFetching(false);
-        }
-      };
+      console.log(`✅ Unit for ${part}:`, unit);
 
-      fetchStockInHand();
-    }, 400);
-    return () => {
-      clearTimeout(debounceTimer); // Clear timer on partNumber change
-      controller.abort(); // Cancel previous fetch
-    };
-  }, [assetsInputRow.partNumber]);
+      // Final step: update state
+      const finalStockInHand = `${stock} ${stockUnit}`.trim();
+      console.log("📝 Updating input row with:", {
+        stockInHand: finalStockInHand,
+        unit,
+      });
+
+      setAuxiliariesInputRow((prev) => ({
+        ...prev,
+        stockInHand: finalStockInHand,
+        unit,
+        auxiliariesUnitFetched: !!unit,
+      }));
+
+      form.setFieldsValue({ unit });
+
+      const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+      setAuxiliariesUnitOptions(
+          userRole === "Admin"
+    ? unit
+      ? [...new Set([unit, ...defaultUnits])]
+      : [...defaultUnits]
+    : unit
+    ? [unit]
+    : [...defaultUnits]
+      );
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error("❌ Fetch error:", err);
+      }
+
+      setAuxiliariesInputRow((prev) => ({
+        ...prev,
+        stockInHand: "0",
+        unit: "",
+        auxiliariesUnitFetched: false,
+      }));
+      form.setFieldsValue({ unit: "" });
+      setAuxiliariesUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+    } finally {
+      setAuxiliariesFetching(false);
+      setAuxiliariesUnitLoading(false);
+    }
+  }, 400);
+
+  return () => {
+    clearTimeout(timer);
+    controller.abort();
+  };
+}, [auxiliariesInputRow.partNumber]);
+
+
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   const debounceTimer = setTimeout(() => {
+  //     const fetchStockInHand = async () => {
+  //       if (!assetsInputRow.partNumber.trim()) return;
+  //       setAssetsFetching(true);
+  //       try {
+  //         const res = await fetch(GAS_URL, {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //           body: new URLSearchParams({
+  //             action: "getStockForPartNumber",
+  //             partNumber: assetsInputRow.partNumber.trim(),
+  //             category: "Assets",
+  //           }),
+  //           signal: controller.signal,
+  //         });
+
+  //         const result = await res.json();
+  //         console.log("✅ Stock fetch response:", result);
+  //         if (result.success) {
+  //           setAssetsInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: result.stockInHand.toString(),
+  //             stockUnit: result.unit,
+  //           }));
+  //         } else {
+  //           setAssetsInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: "0",
+  //           }));
+  //         }
+  //       } catch (err) {
+  //         console.error("Error fetching stock (Assets):", err);
+  //       } finally {
+  //         setAssetsFetching(false);
+  //       }
+  //     };
+
+  //     fetchStockInHand();
+  //   }, 400);
+  //   return () => {
+  //     clearTimeout(debounceTimer); // Clear timer on partNumber change
+  //     controller.abort(); // Cancel previous fetch
+  //   };
+  // }, [assetsInputRow.partNumber]);
+
+    useEffect(() => {
+  const controller = new AbortController();
+  const timer = setTimeout(async () => {
+    const part = assetsInputRow.partNumber?.trim();
+    if (!part) return;
+
+    setAssetsFetching(true);
+    setAssetsUnitLoading(true);
+
+    try {
+      console.log(`🔄 Fetching stock for part: ${part}`);
+
+      // Step 1: Fetch stock
+      const stockRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getStockForPartNumber",
+          partNumber: part,
+          category: "Assets",
+        }),
+        signal: controller.signal,
+      });
+
+      const stockText = await stockRes.text();
+      console.log("📦 Stock API Raw Response:", stockText);
+      const stockResult = JSON.parse(stockText);
+      const stock = stockResult?.stockInHand || 0;
+      const stockUnit = stockResult?.unit || "";
+
+      console.log(`✅ Stock in hand for ${part}:`, stock);
+
+      // Step 2: Fetch unit
+      console.log(`🔄 Fetching unit for part: ${part}`);
+
+      const unitRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getUnitForPartNumber",
+          partNumber: part,
+          category: "Assets",
+        }),
+        signal: controller.signal,
+      });
+
+      const unitText = await unitRes.text();
+      console.log("📏 Unit API Raw Response:", unitText);
+      const unitResult = JSON.parse(unitText);
+      const unit = (unitResult?.unit || "").toString().trim();
+
+      console.log(`✅ Unit for ${part}:`, unit);
+
+      // Final step: update state
+      const finalStockInHand = `${stock} ${stockUnit}`.trim();
+      console.log("📝 Updating input row with:", {
+        stockInHand: finalStockInHand,
+        unit,
+      });
+
+      setAssetsInputRow((prev) => ({
+        ...prev,
+        stockInHand: finalStockInHand,
+        unit,
+        assetsUnitFetched: !!unit,
+      }));
+
+      form.setFieldsValue({ unit });
+
+      const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+      setAssetsUnitOptions(
+          userRole === "Admin"
+    ? unit
+      ? [...new Set([unit, ...defaultUnits])]
+      : [...defaultUnits]
+    : unit
+    ? [unit]
+    : [...defaultUnits]
+      );
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error("❌ Fetch error:", err);
+      }
+
+      setAssetsInputRow((prev) => ({
+        ...prev,
+        stockInHand: "0",
+        unit: "",
+        assetsUnitFetched: false,
+      }));
+      form.setFieldsValue({ unit: "" });
+      setAssetsUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+    } finally {
+     setAssetsFetching(false);
+    setAssetsUnitLoading(false);
+      
+    }
+  }, 400);
+
+  return () => {
+    clearTimeout(timer);
+    controller.abort();
+  };
+}, [assetsInputRow.partNumber]);
 
   // useEffect(() => {
   //   const controller = new AbortController();
@@ -619,69 +932,260 @@ export default function ProductCategories({ username }) {
   //   };
   // }, [inputRow.partNumber]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      const part = inputRow.partNumber?.trim();
-      if (!part) return;
+  //   useEffect(() => {
+  //     const controller = new AbortController();
+  //     const timer = setTimeout(async () => {
+  //       const part = inputRow.partNumber?.trim();
+  //       if (!part) return;
 
-      setSparePartsFetching(true);
-      try {
-        const res = await fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "getUnitForPartNumber",
-            partNumber: part,
-            category: "Spare Parts",
-          }),
-        });
+  //       setSparePartsFetching(true);
+  //       try {
+  //         const res = await fetch(GAS_URL, {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //           body: new URLSearchParams({
+  //             action: "getUnitForPartNumber",
+  //             partNumber: part,
+  //             category: "Spare Parts",
+  //           }),
+  //         });
 
-        const text = await res.text();
-        let json;
-        try {
-          json = JSON.parse(text);
-        } catch (parseErr) {
-          console.error("JSON parse error:", parseErr);
-          setInputRow((prev) => ({ ...prev, stockInHand: "0" }));
-          return;
-        }
+  //         const text = await res.text();
+  //         let json;
+  //         try {
+  //           json = JSON.parse(text);
+  //         } catch (parseErr) {
+  //           console.error("JSON parse error:", parseErr);
+  //           setInputRow((prev) => ({ ...prev, stockInHand: "0" }));
+  //           return;
+  //         }
 
-        if (json.success) {
-          const unit = (json.unit || "").toString().trim();
+  // if (json.success) {
+  //   const unit = (json.unit || "").toString().trim();
 
-          setInputRow((prev) => ({
-            ...prev,
-            stockInHand: (json.stockInHand || 0).toString(),
-            unit: unit || "", // update unit only if available
-          }));
+  //   setInputRow((prev) => ({
+  //     ...prev,
+  //     stockInHand: (json.stockInHand || 0).toString(),
+  //     unit,
+  //   }));
 
-          // Set dropdown: if unit found, show only that; otherwise show defaults
-          if (unit) {
-            setSpareUnitOptions([unit]);
-          } else {
-            setSpareUnitOptions(["Set", "Piece", "Number", "Metre", "Litre"]);
-          }
-        } else {
-          // no match found — fallback to default
-          setInputRow((prev) => ({ ...prev, stockInHand: "0", unit: "" }));
-          setSpareUnitOptions(["Set", "Piece", "Number", "Metre", "Litre"]);
-        }
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Fetch error:", err);
-        }
-        setSpareUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
-      } finally {
-        setSparePartsFetching(false);
+  //   form.setFieldsValue({ unit }); // ✅ sync with AntD Form
+
+  //   setUnitFetched(!!unit);
+
+  //   if (unit) {
+  //     if (userRole === "Admin") {
+  //       const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+  //       setSpareUnitOptions([...new Set([unit, ...defaultUnits])]);
+  //     } else {
+  //       setSpareUnitOptions([unit]);
+  //     }
+  //   } else {
+  //     setSpareUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+  //   }
+  // }
+
+  //       } catch (err) {
+  //         if (err.name !== "AbortError") {
+  //           console.error("Fetch error:", err);
+  //         }
+  //         setSpareUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+  //       } finally {
+  //         setSparePartsFetching(false);
+  //       }
+  //     }, 400);
+
+  //     return () => {
+  //       clearTimeout(timer);
+  //       controller.abort();
+  //     };
+  //   }, [inputRow.partNumber]);
+
+  // useEffect(() => {
+  //   const controller = new AbortController();
+  //   const timer = setTimeout(async () => {
+  //     const part = inputRow.partNumber?.trim();
+  //     if (!part) return;
+
+  //     setSparePartsFetching(true);
+  //     try {
+  //       const res = await fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({
+  //           action: "getUnitForPartNumber",
+  //           partNumber: part,
+  //           category: "Spare Parts",
+  //         }),
+  //         signal: controller.signal,
+  //       });
+
+  //       const text = await res.text();
+  //       let result;
+  //       try {
+  //         result = JSON.parse(text);
+  //       } catch (parseErr) {
+  //         console.error("JSON parse error:", parseErr);
+  //         setInputRow((prev) => ({
+  //           ...prev,
+  //           stockInHand: "0",
+  //           unit: "",
+  //           sparePartsUnitFetched: false, 
+  //         }));
+  //         return;
+  //       }
+
+  //       if (result.success) {
+  //         const unit = (result.unit || "").toString().trim();
+
+  //         setInputRow((prev) => ({
+  //           ...prev,
+  //           stockInHand: (result.stockInHand || 0).toString(),
+  //           unit,
+  //           sparePartsUnitFetched: !!unit, 
+  //         }));
+
+  //         form.setFieldsValue({ unit }); 
+
+  //         if (unit) {
+  //           const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+  //           if (userRole === "Admin") {
+  //             setSpareUnitOptions([...new Set([unit, ...defaultUnits])]);
+  //           } else {
+  //             setSpareUnitOptions([unit]); 
+  //           }
+  //         } else {
+  //           setSpareUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+  //         }
+  //       } else {
+  //         setInputRow((prev) => ({
+  //           ...prev,
+  //           stockInHand: "0",
+  //           unit: "",
+  //           sparePartsUnitFetched: false, 
+  //         }));
+  //         form.setFieldsValue({ unit: "" });
+  //         setSpareUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+  //       }
+  //     } catch (err) {
+  //       if (err.name !== "AbortError") {
+  //         console.error("Fetch error:", err);
+  //       }
+  //       setSpareUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+  //     } finally {
+  //       setSparePartsFetching(false);
+  //     }
+  //   }, 400);
+
+  //   return () => {
+  //     clearTimeout(timer);
+  //     controller.abort();
+  //   };
+  // }, [inputRow.partNumber]);
+
+   useEffect(() => {
+  const controller = new AbortController();
+  const timer = setTimeout(async () => {
+    const part = inputRow.partNumber?.trim();
+    if (!part) return;
+
+    setSparePartsFetching(true);
+    setSpareUnitLoading(true);
+
+    try {
+      console.log(`🔄 Fetching stock for part: ${part}`);
+
+      // Step 1: Fetch stock
+      const stockRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getStockForPartNumber",
+          partNumber: part,
+          category: "Spare Parts",
+        }),
+        signal: controller.signal,
+      });
+
+      const stockText = await stockRes.text();
+      console.log("📦 Stock API Raw Response:", stockText);
+      const stockResult = JSON.parse(stockText);
+      const stock = stockResult?.stockInHand || 0;
+      const stockUnit = stockResult?.unit || "";
+
+      console.log(`✅ Stock in hand for ${part}:`, stock);
+
+   
+      console.log(`🔄 Fetching unit for part: ${part}`);
+
+      const unitRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getUnitForPartNumber",
+          partNumber: part,
+          category: "Spare Parts",
+        }),
+        signal: controller.signal,
+      });
+
+      const unitText = await unitRes.text();
+      console.log("📏 Unit API Raw Response:", unitText);
+      const unitResult = JSON.parse(unitText);
+      const unit = (unitResult?.unit || "").toString().trim();
+
+      console.log(`✅ Unit for ${part}:`, unit);
+
+      const finalStockInHand = `${stock} ${stockUnit}`.trim();
+      console.log("📝 Updating input row with:", {
+        stockInHand: finalStockInHand,
+        unit,
+      });
+
+      setInputRow((prev) => ({
+        ...prev,
+        stockInHand: finalStockInHand,
+        unit,
+        sparePartsUnitFetched: !!unit,
+      }));
+
+      form.setFieldsValue({ unit });
+
+      const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+ setSpareUnitOptions(
+  userRole === "Admin"
+    ? unit
+      ? [...new Set([unit, ...defaultUnits])]
+      : [...defaultUnits]
+    : unit
+    ? [unit]
+    : [...defaultUnits]
+);
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        console.error("❌ Fetch error:", err);
       }
-    }, 400);
 
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [inputRow.partNumber]);
+      setInputRow((prev) => ({
+        ...prev,
+        stockInHand: "0",
+        unit: "",
+        sparePartsUnitFetched: false,
+      }));
+      form.setFieldsValue({ unit: "" });
+      setSpareUnitOptions(["Set", "Number", "Metre", "Piece", "Litre"]);
+    } finally {
+       setSparePartsFetching(false);
+    setSpareUnitLoading(false);
+      
+    }
+  }, 400);
+
+  return () => {
+    clearTimeout(timer);
+    controller.abort();
+  };
+}, [inputRow.partNumber]);
 
   const handleSubmit = async (values) => {
     if (!navigator.onLine) {
@@ -1388,6 +1892,7 @@ export default function ProductCategories({ username }) {
             notFoundContent={
               spareUnitLoading ? "Fetching unit..." : "No units found"
             }
+            // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
           />
         ) : (
           record.unit || ""
@@ -2004,22 +2509,20 @@ export default function ProductCategories({ username }) {
       ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
-          <Tooltip title="">
-            <Select
-              placeholder="Select unit"
-              className="w-100"
-              value={auxiliariesInputRow.unit}
-              onChange={(value) => {
-                setAuxiliariesInputRow({ ...auxiliariesInputRow, unit: value });
-              }}
-            >
-              <Select.Option value="Set">Set</Select.Option>
-              <Select.Option value="Piece">Piece</Select.Option>
-              <Select.Option value="Number">Number</Select.Option>
-              <Select.Option value="Metre">Metre</Select.Option>
-              <Select.Option value="Litre">Litre</Select.Option>
-            </Select>
-          </Tooltip>
+          <Select
+            className="w-100"
+            value={auxiliariesInputRow.unit}
+            onChange={(value) =>
+              setAuxiliariesInputRow((prev) => ({ ...prev, unit: value }))
+            }
+            options={auxiliariesUnitOptions.map((u) => ({ value: u, label: u }))}
+            loading={auxiliariesUnitLoading}
+            placeholder={auxiliariesUnitLoading ? "Fetching unit..." : "Select Unit"}
+            notFoundContent={
+              auxiliariesUnitLoading ? "Fetching unit..." : "No units found"
+            }
+            // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
+          />
         ) : (
           record.unit || ""
         ),
@@ -2665,22 +3168,20 @@ export default function ProductCategories({ username }) {
       ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
-          <Tooltip title="">
-            <Select
-              placeholder="Select unit"
-              className="w-100"
-              value={assetsInputRow.unit}
-              onChange={(value) => {
-                setAssetsInputRow({ ...assetsInputRow, unit: value });
-              }}
-            >
-              <Select.Option value="Set">Set</Select.Option>
-              <Select.Option value="Piece">Piece</Select.Option>
-              <Select.Option value="Number">Number</Select.Option>
-              <Select.Option value="Metre">Metre</Select.Option>
-              <Select.Option value="Litre">Litre</Select.Option>
-            </Select>
-          </Tooltip>
+          <Select
+            className="w-100"
+            value={assetsInputRow.unit}
+            onChange={(value) =>
+              setAssetsInputRow((prev) => ({ ...prev, unit: value }))
+            }
+            options={assetsUnitOptions.map((u) => ({ value: u, label: u }))}
+            loading={assetsUnitLoading}
+            placeholder={assetsUnitLoading ? "Fetching unit..." : "Select Unit"}
+            notFoundContent={
+              assetsUnitLoading ? "Fetching unit..." : "No units found"
+            }
+            // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
+          />
         ) : (
           record.unit || ""
         ),
@@ -3350,6 +3851,33 @@ export default function ProductCategories({ username }) {
         ),
     },
 
+    // {
+    //   title: "Unit",
+    //   dataIndex: "unit",
+    //   width: 250,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip title="">
+    //         <Select
+    //           placeholder="Select unit"
+    //           className="w-100"
+    //           value={machineinputRow.unit}
+    //           onChange={(value) => {
+    //             setMachineInputRow({ ...machineinputRow, unit: value });
+    //           }}
+    //         >
+    //           <Select.Option value="Set">Set</Select.Option>
+    //           <Select.Option value="Piece">Piece</Select.Option>
+    //           <Select.Option value="Number">Number</Select.Option>
+    //           <Select.Option value="Metre">Metre</Select.Option>
+    //           <Select.Option value="Litre">Litre</Select.Option>
+    //         </Select>
+    //       </Tooltip>
+    //     ) : (
+    //       record.unit || ""
+    //     ),
+    // },
     {
       title: "Unit",
       dataIndex: "unit",
@@ -3357,26 +3885,26 @@ export default function ProductCategories({ username }) {
       ellipsis: true,
       render: (_, record) =>
         record.isInput ? (
-          <Tooltip title="">
-            <Select
-              placeholder="Select unit"
-              className="w-100"
-              value={machineinputRow.unit}
-              onChange={(value) => {
-                setMachineInputRow({ ...machineinputRow, unit: value });
-              }}
-            >
-              <Select.Option value="Set">Set</Select.Option>
-              <Select.Option value="Piece">Piece</Select.Option>
-              <Select.Option value="Number">Number</Select.Option>
-              <Select.Option value="Metre">Metre</Select.Option>
-              <Select.Option value="Litre">Litre</Select.Option>
-            </Select>
-          </Tooltip>
+          <Select
+            className="w-100"
+            value={machineinputRow.unit}
+            onChange={(value) =>
+              setMachineInputRow((prev) => ({ ...prev, unit: value }))
+            }
+            options={machineUnitOptions.map((u) => ({ value: u, label: u }))}
+            loading={machineUnitLoading}
+            placeholder={machineUnitLoading ? "Fetching unit..." : "Select Unit"}
+            notFoundContent={
+              machineUnitLoading ? "Fetching unit..." : "No units found"
+            }
+            // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
+          />
         ) : (
           record.unit || ""
         ),
     },
+
+
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",

@@ -50,7 +50,7 @@ export default function DeliveryNote({ username }) {
       try {
         setLoadingDeliveryNumber(true);
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbwPXZ9nwqop20rQQjnL5X8RWyeQK09qcpQASlI7pB3nwPzakD4qqtz4FsYTFUC4tbZcvg/exec",
+          "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -77,7 +77,7 @@ export default function DeliveryNote({ username }) {
         setLoadingCustomerName(true);
 
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbwPXZ9nwqop20rQQjnL5X8RWyeQK09qcpQASlI7pB3nwPzakD4qqtz4FsYTFUC4tbZcvg/exec",
+          "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -104,7 +104,7 @@ export default function DeliveryNote({ username }) {
       try {
         setLoadingDescription(true);
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbwPXZ9nwqop20rQQjnL5X8RWyeQK09qcpQASlI7pB3nwPzakD4qqtz4FsYTFUC4tbZcvg/exec",
+          "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -138,7 +138,7 @@ export default function DeliveryNote({ username }) {
         setFetchingData(true);
         try {
           const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbwPXZ9nwqop20rQQjnL5X8RWyeQK09qcpQASlI7pB3nwPzakD4qqtz4FsYTFUC4tbZcvg/exec",
+            "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
             {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -538,7 +538,7 @@ export default function DeliveryNote({ username }) {
       );
 
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwPXZ9nwqop20rQQjnL5X8RWyeQK09qcpQASlI7pB3nwPzakD4qqtz4FsYTFUC4tbZcvg/exec",
+        "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -577,7 +577,7 @@ export default function DeliveryNote({ username }) {
         });
         // Fetch new delivery number
         const nextRes = await fetch(
-          "https://script.google.com/macros/s/AKfycbwPXZ9nwqop20rQQjnL5X8RWyeQK09qcpQASlI7pB3nwPzakD4qqtz4FsYTFUC4tbZcvg/exec",
+          "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
