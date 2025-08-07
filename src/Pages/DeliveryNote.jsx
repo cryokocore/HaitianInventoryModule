@@ -40,7 +40,8 @@ export default function DeliveryNote({ username }) {
     itemDescription: "",
     quantity: "",
     stockInHand: "",
-    unit:"",
+    unit: "",
+      stockUnit: "",
   });
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
@@ -50,7 +51,7 @@ export default function DeliveryNote({ username }) {
       try {
         setLoadingDeliveryNumber(true);
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
+          "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -77,7 +78,7 @@ export default function DeliveryNote({ username }) {
         setLoadingCustomerName(true);
 
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
+          "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -88,6 +89,14 @@ export default function DeliveryNote({ username }) {
         const result = await res.json();
         if (result.success) {
           setCustomerList(result.customers);
+          console.log("Fetched Customers:");
+          result.customers.forEach((cust, index) => {
+            console.log(
+              `${index + 1}. Name: ${cust.customername}, Address: ${
+                cust.address
+              }`
+            );
+          });
         }
       } catch (err) {
         console.error("Failed to fetch customer details:", err);
@@ -104,7 +113,7 @@ export default function DeliveryNote({ username }) {
       try {
         setLoadingDescription(true);
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
+          "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -115,6 +124,7 @@ export default function DeliveryNote({ username }) {
         );
 
         const result = await res.json();
+        console.log(result);
         if (result.success) {
           setDescriptionList(result.items);
         }
@@ -138,7 +148,7 @@ export default function DeliveryNote({ username }) {
         setFetchingData(true);
         try {
           const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
+            "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
             {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -154,16 +164,18 @@ export default function DeliveryNote({ username }) {
           const result = await res.json();
 
           if (result.success) {
+            console.log("Fetched stock/unit:", result.stockInHand, result.unit);
+
             setInputRow((prev) => ({
               ...prev,
               stockInHand: result.stockInHand.toString(),
-               unit: result.unit || "", 
+              stockUnit: result.unit || "",
             }));
           } else {
             setInputRow((prev) => ({
               ...prev,
               stockInHand: "0",
-              unit: "",
+              stockUnit: "",
             }));
           }
         } catch (err) {
@@ -229,6 +241,8 @@ export default function DeliveryNote({ username }) {
                   partNumber: value,
                   itemDescription:
                     selected?.description || prev.itemDescription,
+                    unit: selected?.unit || "", 
+
                 }));
               }}
               onSearch={(value) => {
@@ -265,7 +279,7 @@ export default function DeliveryNote({ username }) {
             <Select
               showSearch
               value={inputRow.itemDescription}
-                loading={loadingDescription} 
+              loading={loadingDescription}
               notFoundContent={
                 loadingDescription ? "Fetching..." : "No results found"
               }
@@ -331,33 +345,49 @@ export default function DeliveryNote({ username }) {
           </Tooltip>
         ),
     },
-   {
-  title: "Stock In Hand",
-  dataIndex: "stockInHand",
-  width: 200,
-  ellipsis: true,
-  render: (_, record) =>
-    record.isInput ? (
-      <Tooltip>
-        <Input
-          value={
-            inputRow.stockInHand
-              ? `${inputRow.stockInHand} ${inputRow.unit || ""}`
-              : "0"
-          }
-          readOnly
-        />
-      </Tooltip>
-    ) : (
-      <Tooltip title={`${record.stockInHand} ${record.unit || ""}`}>
-        <span>
-          {record.stockInHand
-            ? `${record.stockInHand} ${record.unit || ""}`
-            : "-"}
-        </span>
-      </Tooltip>
-    ),
-},
+    {
+      title: "Unit",
+      dataIndex: "unit",
+      ellipsis: true,
+      width: 200,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input value={inputRow.unit ? inputRow.unit : " "} readOnly />
+          </Tooltip>
+        ) : (
+          <Tooltip title={inputRow.unit}>
+            <span>{record.unit ? record.unit : "-"}</span>
+          </Tooltip>
+        ),
+    },
+    {
+      title: "Stock In Hand",
+      dataIndex: "stockInHand",
+      width: 200,
+      ellipsis: true,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input
+              value={
+                inputRow.stockInHand
+                  ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
+                  : "0"
+              }
+              readOnly
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+            <span>
+              {record.stockInHand
+                ? `${record.stockInHand} ${record.stockUnit || ""}`
+                : "-"}
+            </span>
+          </Tooltip>
+        ),
+    },
     {
       title: "Action",
       width: 120,
@@ -485,6 +515,7 @@ export default function DeliveryNote({ username }) {
       quantity,
       stockInHand: inputRow.stockInHand || "0",
       unit: inputRow.unit || "",
+        stockUnit: inputRow.stockUnit || "",
     };
 
     const updatedData = [...dataSource, newData].map((item, index) => ({
@@ -499,7 +530,7 @@ export default function DeliveryNote({ username }) {
       itemDescription: "",
       quantity: "",
       stockInHand: "",
-      unit: "", 
+      unit: "",
     });
   };
 
@@ -538,7 +569,7 @@ export default function DeliveryNote({ username }) {
       );
 
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
+        "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -573,11 +604,12 @@ export default function DeliveryNote({ username }) {
           partNumber: "",
           itemDescription: "",
           quantity: "",
+          unit:"",
           stockInHand: "",
         });
         // Fetch new delivery number
         const nextRes = await fetch(
-          "https://script.google.com/macros/s/AKfycbz1isbvpeEiK6rmR5H1LN0spFG6qqKWKcJQpsfAjks8I4AW0XCd0FY33E035myCpZpeiA/exec",
+          "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -852,13 +884,13 @@ export default function DeliveryNote({ username }) {
                       rules={[
                         {
                           required: true,
-                          message: "Please input company name!",
+                          message: "Please input customer name!",
                         },
                       ]}
                     >
                       <Select
                         showSearch
-                        placeholder="Search company name"
+                        placeholder="Search Customer Name"
                         loading={loadingCustomerName}
                         notFoundContent={
                           loadingCustomerName
@@ -990,6 +1022,7 @@ export default function DeliveryNote({ username }) {
                               partNumber: "",
                               itemDescription: "",
                               quantity: "",
+                              unit:"",
                               stockInHand: "",
                             });
                             form.setFields([
