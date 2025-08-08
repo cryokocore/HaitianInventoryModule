@@ -37,7 +37,7 @@ export default function CustomerDetails({ username }) {
     setOwnerLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
+        "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
         {
           method: "POST",
           body: new URLSearchParams({ action: "getCustomerOwners" }),
@@ -62,7 +62,7 @@ export default function CustomerDetails({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
+        "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -641,12 +641,64 @@ export default function CustomerDetails({ username }) {
                         },
                       ]}
                     >
-                      <Input.TextArea
-                        rows={3}
-                        placeholder="Enter Payment Terms"
-                      />
+                       <Select placeholder="Select Payment Terms">
+                        <option value="30% as an advance, Balance 70% before the Shipment">
+                        30% as an advance, Balance 70% before the Shipment
+                        </option>
+                         <option value="40% as an advance, Balance 60% before the Shipment">
+                        40% as an advance, Balance 60% before the Shipment
+                        </option>
+                         <option value="50% as an advance, Balance 50% before the Shipment">
+                        50% as an advance, Balance 50% before the Shipment
+                        </option>
+                         <option value="30% as an advance balance, 365 days' Credit from the date of BL based on Insurance approval">
+                        30% as an advance balance, 365 days' Credit from the date of BL based on Insurance approval
+                        </option>
+                         <option value="30% as an advance, Balance 70% before the Shipment">
+                        30% as an advance, Balance 70% before the Shipment
+                        </option>
+                         <option value="100% advance">
+                        100% advance 
+                        </option>
+                          <option value="90days from the date Invoice">
+                        90days from the date Invoice
+                        </option>
+                      </Select>
                     </Form.Item>
+                
                     <Form.Item
+                      label="Delivery Terms"
+                      name="deliveryTerms"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the delivery terms!",
+                        },
+                      ]}
+                    >
+                      {/* <Input placeholder="Enter Payment Terms" /> */}
+                      <Select placeholder="Select Payment Terms">
+                        <option value="Ex-works Ningbo">
+                        Ex-works Ningbo
+                        </option>
+                         <option value="FOB Ningbo">
+                        FOB Ningbo
+                        </option>
+                         <option value="CIF Jebel Ali">
+                        CIF Jebel Ali
+                        </option>
+                         <option value="Ex-works Hamriyah freezone">
+                        Ex-works Hamriyah freezone
+                        </option>
+                         <option value="Ex-works Umm al Quwain">
+                        Ex-works Umm al Quwain
+                        </option>
+                        
+                      </Select>
+                    </Form.Item>
+
+                          <Form.Item
                       label="Credit Limit"
                       name="creditLimit"
                       className="fw-bold"
@@ -659,20 +711,8 @@ export default function CustomerDetails({ username }) {
                     >
                       <Input placeholder="Enter Credit Limit" />
                     </Form.Item>
-                    <Form.Item
-                      label="Delivery Terms"
-                      name="deliveryTerms"
-                      className="fw-bold"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please enter the delivery terms!",
-                        },
-                      ]}
-                    >
-                      <Input placeholder="Enter Payment Terms" />
-                    </Form.Item>
-                    <div className="col-12 text-center mt-4 mb-3">
+
+                    <div className="col-12 text-center mt-5 pt-3 mb-3">
                       <Button
                         htmlType="submit"
                         size="large"

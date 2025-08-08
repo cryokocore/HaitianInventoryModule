@@ -51,7 +51,7 @@ export default function DeliveryNote({ username }) {
       try {
         setLoadingDeliveryNumber(true);
         const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
+          "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -78,7 +78,7 @@ export default function DeliveryNote({ username }) {
         setLoadingCustomerName(true);
 
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
+          "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -113,7 +113,7 @@ export default function DeliveryNote({ username }) {
       try {
         setLoadingDescription(true);
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
+          "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -148,7 +148,7 @@ export default function DeliveryNote({ username }) {
         setFetchingData(true);
         try {
           const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
+            "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
             {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -318,33 +318,77 @@ export default function DeliveryNote({ username }) {
           </Tooltip>
         ),
     },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      ellipsis: true,
-      width: 200,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              placeholder="Enter Quantity"
-              type="number"
-              min={1}
-              value={inputRow.quantity}
-              onChange={(e) => {
-                const value = parseInt(e.target.value);
-                if (value >= 1 || e.target.value === "") {
-                  setInputRow({ ...inputRow, quantity: e.target.value });
-                }
-              }}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.quantity}>
-            <span>{record.quantity}</span>
-          </Tooltip>
-        ),
-    },
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   ellipsis: true,
+    //   width: 200,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter Quantity"
+    //           type="number"
+    //           min={1}
+    //           value={inputRow.quantity}
+    //           onChange={(e) => {
+    //             const value = parseInt(e.target.value);
+    //             if (value >= 1 || e.target.value === "") {
+    //               setInputRow({ ...inputRow, quantity: e.target.value });
+    //             }
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.quantity}>
+    //         <span>{record.quantity}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+        {
+          title: "Quantity",
+          dataIndex: "quantity",
+          ellipsis: true,
+          width: 200,
+          render: (_, record) =>
+            record.isInput ? (
+              <Tooltip>
+                <Input
+                  placeholder="Enter quantity"
+                  type="number"
+                  min={1}
+                  value={inputRow.quantity}
+                  onChange={(e) => {
+                    const value = e.target.value.trim();
+                    setInputRow((prev) => ({ ...prev, quantity: value }));
+    
+                    clearTimeout(window.quantityDebounce);
+                    window.quantityDebounce = setTimeout(() => {
+                      const num = parseFloat(value);
+                      if (
+                        value !== "" &&
+                        (value === "0" ||
+                          value === "0.0" ||
+                          value === ".0" ||
+                          isNaN(num) ||
+                          num === 0)
+                      ) {
+                        notification.error({
+                          message: "Invalid Quantity",
+                          description: "Quantity must be greater than 0.",
+                        });
+                        setInputRow((prev) => ({ ...prev, quantity: "" }));
+                      } 
+                    }, 3000);
+                  }}
+                />
+              </Tooltip>
+            ) : (
+              <Tooltip title={record.quantity}>
+                <span>{record.quantity}</span>
+              </Tooltip>
+            ),
+        },
     {
       title: "Unit",
       dataIndex: "unit",
@@ -569,7 +613,7 @@ export default function DeliveryNote({ username }) {
       );
 
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
+        "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -609,7 +653,7 @@ export default function DeliveryNote({ username }) {
         });
         // Fetch new delivery number
         const nextRes = await fetch(
-          "https://script.google.com/macros/s/AKfycbztCO6j70WhFVSyXdhf2WDyAsg7Yr9Agu11CgDjSTozqSylMDJk4jkeP0oDGyXRAaR6Mw/exec",
+          "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
