@@ -1,16 +1,137 @@
 import React, { useEffect, useState } from "react";
-import 'antd/dist/reset.css'; 
-import { Button, Form, Input, Radio, Select } from "antd";
-import {notification, message } from "antd";
+import "antd/dist/reset.css";
+import { Button, Form, Input, Table } from "antd";
+import { notification } from "antd";
 // import HaitianLogo from "../Images/HaitianLogo.jpeg";
 import "../App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 export default function Inventory() {
   const [form] = Form.useForm();
-    const [loading, setLoading] = useState(false);
-    return(
- <>
+  const [loading, setLoading] = useState(false);
+  const [tableDataSource, setTableDataSource] = useState();
+  const columns = [
+    { title: "Serial Number", dataIndex: "Serial Number", key: "serial" },
+    { title: "Part Number", dataIndex: "Part Number", key: "partNumber" },
+    { title: "Description", dataIndex: "Description", key: "description" },
+    { title: "Quantity", dataIndex: "Quantity", key: "quantity" },
+    { title: "Unit", dataIndex: "Unit", key: "unit" },
+    {
+      title: "Total Price in AED",
+      dataIndex: "Total Price in AED",
+      key: "totalPrice",
+    },
+    {
+      title: "Purchase Cost(per item)",
+      dataIndex: "Purchase Cost(per item)",
+      key: "purchaseCost",
+    },
+    { title: "Add On Cost", dataIndex: "Add On Cost", key: "addOnCost" },
+    { title: "Selling Cost", dataIndex: "Selling Cost", key: "sellingCost" },
+  ];
+
+  const fetchInventory = async (values = {}) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        action: "getInventory",
+        partNumber: values.partNumber || "",
+        description: values.description || "",
+      });
+
+      const res = await fetch("https://script.google.com/macros/s/AKfycbyELES1dYaCII-ILiHab9ejO2_dp-jmVQkGjfHkCTwpWfE9Oa_w40rBNncbBCyy2yy7jA/exec", {
+        method: "POST",
+        body: params,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setTableDataSource(data.data);
+      } else {
+        notification.error({ message: "Error", description: data.message });
+      }
+    } catch (err) {
+      notification.error({ message: "Error", description: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    const values = form.getFieldsValue();
+    fetchInventory(values);
+  };
+
+  useEffect(() => {
+    fetchInventory(); // initial load
+  }, []);
+
+  const styl = `.ant-form-item .ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-weight: normal;
+  }
+  .ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+    transition: none;
+    pointer-events: none;
+    font-weight: normal;
+  }
+  
+ .ant-cascader-dropdown.ant-select-dropdown {
+    padding: 0;
+    width: 60% !important;
+    height: auto !important;
+}
+    .ant-form-item .ant-form-item-label >label {
+    position: relative;
+    display: inline-flex;
+    color: #0D3884;
+    font-size: 14px;
+
+    align-items: center;
+    max-width: 100%;
+    height: 32px;
+    color: #0D3884;
+    font-size: 14px;
+}
+.ant-form-item .ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-weight: normal !important;
+}    
+  [class^="ant-table"] [class^="ant-table"], [class*=" ant-table"] [class^="ant-table"], [class^="ant-table"] [class*=" ant-table"], [class*=" ant-table"] [class*=" ant-table"] {
+    box-sizing: border-box;
+    color: #0D3884 !important;
+}
+    .ant-tooltip .ant-tooltip-inner {
+    min-width: 28px;
+    min-height: 32px;
+    padding: 6px 8px;
+    color: white;
+    text-align: start;
+    text-decoration: none;
+    word-wrap: break-word;
+    background-color: #0D3883;
+    border-radius: 6px;
+      border: 2px solid rgba(137, 137, 137, 0.87);
+    box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+}
+    .ant-table-wrapper .ant-table-thead >tr>th, .ant-table-wrapper .ant-table-thead >tr>td {
+    position: relative;
+    color: #0d3884 !important;
+    font-weight: 600;
+    text-align: start;
+    background-color: #E8F0FE;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s ease;
+  
+}   
+  
+  `;
+  return (
+    <>
+      <style>{styl}</style>
+
       <div className="container-fluid ">
         <div className="container">
           <div>
@@ -45,7 +166,13 @@ export default function Inventory() {
                       icon={faUserPlus}
                       size="lg"
                       style={{ color: "#0D3884" }}
+                      
                     /> */}
+                    <FontAwesomeIcon
+                      icon={faMagnifyingGlass}
+                      size="lg"
+                      style={{ color: "#0D3884" }}
+                    />
                   </div>
                   <div>
                     <div
@@ -65,132 +192,67 @@ export default function Inventory() {
 
                 <div className="border border-1"></div>
 
-                <Form
-                  form={form}
-                  layout="vertical"
-                  // onFinish={handleSubmit}
-                  className="mt-3 mt-lg-3"
-                  disabled={loading}
-                >
-                  <div className="row mt-3 d-flex">
-                    <Form.Item
-                      name="partNumber"
-                      className="fw-bold"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input the part number",
-                        },
-                      ]}
-                    >
-                      <Input placeholder="Enter Part Number" />
-                    </Form.Item>
+            <Form
+  form={form}
+  layout="vertical"
+  className="mt-2"
+>
+  <Form.Item
+    label={<span style={{ color: "#0D3884", fontWeight: "bold" }}>Part Number</span>}
+    name="partNumber"
+  >
+    <Input placeholder="Enter Part Number" />
+  </Form.Item>
 
-                    <Form.Item
-                      label="Password"
-                      name="password"
-                      className="fw-bold"
-                      hasFeedback
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input your password!",
-                        },
-                        ({ getFieldValue }) => ({
-                          validator(_, value) {
-                            const regex =
-                              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/;
-                            if (!value) {
-                              return Promise.resolve();
-                            }
-                            if (!regex.test(value)) {
-                              return Promise.reject(
-                                new Error(
-                                  "Password must be 8–15 characters and include uppercase, lowercase, number, and special character."
-                                )
-                              );
-                            }
-                            return Promise.resolve();
-                          },
-                        }),
-                      ]}
-                    >
-                      <Input.Password placeholder="Enter Password" />
-                    </Form.Item>
+  <Form.Item
+    label={<span style={{ color: "#0D3884", fontWeight: "bold" }}>Description</span>}
+    name="description"
+  >
+    <Input placeholder="Enter Description" />
+  </Form.Item>
 
-                    <Form.Item
-                      label="Confirm Password"
-                      name="confirmpassword"
-                      className="fw-bold"
-                      dependencies={["password"]}
-                      hasFeedback
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please confirm your password!",
-                        },
-                        ({ getFieldValue }) => ({
-                          validator(_, value) {
-                            if (!value || getFieldValue("password") === value) {
-                              return Promise.resolve();
-                            }
-                            return Promise.reject(
-                              new Error("Passwords do not match!")
-                            );
-                          },
-                        }),
-                      ]}
-                    >
-                      <Input.Password placeholder="Enter Conform Password" />
-                    </Form.Item>
+  <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }} className="col-8 m-auto">
+    <Button
+      type="primary"
+      size="large"
+   className="submitButton"
+      onClick={handleSearch}
+    >
+      Search Inventory Data
+    </Button>
 
-                    <div className="col-12 text-center mt-4 mb-3">
-                      <Button
-                        htmlType="submit"
-                        size="large"
-                        className="submitButton mt-2"
-                        loading={loading}
-                      >
-                        {loading ? "Registring User" : "Register User"}
-                      </Button>
-                      <Button
-                        htmlType="button"
-                        size="large"
-                        className="clearButton mt-2 ms-3"
-                        onClick={() => {
-                          const values = form.getFieldsValue();
-                          const isEmpty = Object.values(values).every(
-                            (value) =>
-                              value === undefined ||
-                              value === null ||
-                              value === "" ||
-                              (Array.isArray(value) && value.length === 0)
-                          );
+    <Button
+      size="large"
+     className="clearButton"
+      onClick={() => {
+        form.resetFields();
+        fetchInventory();
+      }}
+    >
+      Clear Search
+    </Button>
+  </div>
+</Form>
 
-                          if (isEmpty) {
-                            notification.info({
-                              message: "Nothing to clear",
-                              description: "All fields are already empty.",
-                            });
-                          } else {
-                            form.resetFields();
-                            notification.success({
-                              message: "Success",
-                              description: "Form cleared successfully!",
-                            });
-                          }
+
+        <Table
+          className="mt-5"
+          columns={columns}
+          dataSource={tableDataSource}
+            pagination={{
+                          pageSize: 10,
                         }}
-                      >
-                        Clear
-                      </Button>
-                    </div>
-                  </div>
-                </Form>
+                        scroll={{ x: "max-content" }}
+                        size="middle"
+                        bordered
+          loading={loading}
+          rowKey={(record, idx) => idx}
+        />
               </div>
             </div>
           </div>
         </div>
       </div>
     </>
-    );
+  );
 }

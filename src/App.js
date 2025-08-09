@@ -323,6 +323,8 @@ function AppRoutes({ isLoggedIn, handleLoginSuccess, username }) {
 const [animationClass, setAnimationClass] = useState("page-enter");
 
   useEffect(() => {
+      let timeout;
+
     const nextPath = location.pathname;
     const prevPath = currentPathname;
     // const shouldSkipAnimation = nextPath === "/" || prevPath === "/";
@@ -352,6 +354,7 @@ const [animationClass, setAnimationClass] = useState("page-enter");
     } else {
       setDisplayLocation(location);
     }
+    return () => clearTimeout(timeout);
   }, [location, currentPathname]);
 
   return (

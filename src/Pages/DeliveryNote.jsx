@@ -34,6 +34,7 @@ export default function DeliveryNote({ username }) {
   const [loadingPartNumber, setLoadingPartNumber] = useState(true);
   const [fetchingData, setFetchingData] = useState(false);
   const [descriptionList, setDescriptionList] = useState([]);
+  const [stockLoading, setStockLoading] = useState(false);
   const [inputRow, setInputRow] = useState({
     serialNumber: "",
     partNumber: "",
@@ -45,156 +46,300 @@ export default function DeliveryNote({ username }) {
   });
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyELES1dYaCII-ILiHab9ejO2_dp-jmVQkGjfHkCTwpWfE9Oa_w40rBNncbBCyy2yy7jA/exec"
 
-  useEffect(() => {
-    const fetchDeliveryNumber = async () => {
-      try {
-        setLoadingDeliveryNumber(true);
-        const response = await fetch(
-          "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-          }
-        );
-        const result = await response.json();
-        if (result.success) {
-          form.setFieldsValue({ deliveryNumber: result.deliveryNumber });
-        }
-      } catch (err) {
-        console.error("Error fetching delivery number:", err);
-      } finally {
-        setLoadingDeliveryNumber(false); // Done loading
+  // useEffect(() => {
+  //   const fetchDeliveryNumber = async () => {
+  //     try {
+  //       setLoadingDeliveryNumber(true);
+  //       const response = await fetch(
+  //         "https://script.google.com/macros/s/AKfycbyX0zO1CBzWD8nzyZBt7och2YiwRIpyQ1CANs8xf4YvzYyXPnO4VDhW9bl2sG2XnXw/exec",
+  //         {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //           body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+  //         }
+  //       );
+  //       const result = await response.json();
+  //       if (result.success) {
+  //         form.setFieldsValue({ deliveryNumber: result.deliveryNumber });
+  //       }
+  //     } catch (err) {
+  //       console.error("Error fetching delivery number:", err);
+  //     } finally {
+  //       setLoadingDeliveryNumber(false); // Done loading
+  //     }
+  //   };
+
+  //   fetchDeliveryNumber();
+  // }, []);
+
+  // useEffect(() => {
+  //   const fetchCustomers = async () => {
+  //     try {
+  //       setLoadingCustomerName(true);
+
+  //       const res = await fetch(
+  //         "https://script.google.com/macros/s/AKfycbxf-gDxhJvbpiC_qPYwonX3CpjIVQlZwsxG05JT_WLHppKdHImlyGLBfGEe9j7GMPky_Q/exec",
+  //         {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //           body: new URLSearchParams({ action: "getCustomerDetails" }),
+  //         }
+  //       );
+
+  //       const result = await res.json();
+  //       if (result.success) {
+  //         setCustomerList(result.customers);
+  //         console.log("Fetched Customers:");
+  //         result.customers.forEach((cust, index) => {
+  //           console.log(
+  //             `${index + 1}. Name: ${cust.customername}, Address: ${
+  //               cust.address
+  //             }`
+  //           );
+  //         });
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch customer details:", err);
+  //     } finally {
+  //       setLoadingCustomerName(false);
+  //     }
+  //   };
+
+  //   fetchCustomers();
+  // }, []);
+
+  // useEffect(() => {
+  //   const fetchDescriptions = async () => {
+  //     try {
+  //       setLoadingDescription(true);
+  //       const res = await fetch(
+  //         "https://script.google.com/macros/s/AKfycbxf-gDxhJvbpiC_qPYwonX3CpjIVQlZwsxG05JT_WLHppKdHImlyGLBfGEe9j7GMPky_Q/exec",
+  //         {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //           body: new URLSearchParams({
+  //             action: "getAllDescriptionsWithPartNumbers",
+  //           }),
+  //         }
+  //       );
+
+  //       const result = await res.json();
+  //       console.log(result);
+  //       if (result.success) {
+  //         setDescriptionList(result.items);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch descriptions:", err);
+  //     } finally {
+  //       setLoadingDescription(false);
+  //     }
+  //   };
+
+  //   fetchDescriptions();
+  // }, []);
+
+  // useEffect(() => {
+  //   const controller = new AbortController(); // to abort outdated requests
+  //   const debounceTimer = setTimeout(() => {
+  //     const fetchStockInHand = async () => {
+  //       const partNumber = inputRow.partNumber.trim();
+  //       if (!partNumber) return;
+
+  //       setFetchingData(true);
+  //       try {
+  //         const res = await fetch(
+  //           "https://script.google.com/macros/s/AKfycbxf-gDxhJvbpiC_qPYwonX3CpjIVQlZwsxG05JT_WLHppKdHImlyGLBfGEe9j7GMPky_Q/exec",
+  //           {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //             body: new URLSearchParams({
+  //               action: "getStockForPartNumber",
+  //               partNumber,
+  //               category: "", // or null if required
+  //             }),
+  //             signal: controller.signal, // Attach abort signal
+  //           }
+  //         );
+
+  //         const result = await res.json();
+
+  //         if (result.success) {
+  //           console.log("Fetched stock/unit:", result.stockInHand, result.unit);
+
+  //           setInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: result.stockInHand.toString(),
+  //             stockUnit: result.unit || "",
+  //           }));
+  //         } else {
+  //           setInputRow((prev) => ({
+  //             ...prev,
+  //             stockInHand: "0",
+  //             stockUnit: "",
+  //           }));
+  //         }
+  //       } catch (err) {
+  //         if (err.name !== "AbortError") {
+  //           console.error("Fetch stock error:", err);
+  //         }
+  //       } finally {
+  //         setFetchingData(false);
+  //       }
+  //     };
+
+  //     fetchStockInHand();
+  //   }, 400); // Wait 400ms after last change
+
+  //   return () => {
+  //     clearTimeout(debounceTimer); // Clear timer on partNumber change
+  //     controller.abort(); // Cancel previous fetch
+  //   };
+  // }, [inputRow.partNumber]);
+
+
+  // Replace the three separate useEffects for delivery number, customers, descriptions with:
+useEffect(() => {
+  const fetchInitialData = async () => {
+    try {
+      setLoadingDeliveryNumber(true);
+      setLoadingCustomerName(true);
+      setLoadingDescription(true);
+
+      const [deliveryRes, customerRes, descRes] = await Promise.all([
+        fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+        }),
+        fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "getCustomerDetails" }),
+        }),
+        fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "getAllDescriptionsWithPartNumbers" }),
+        }),
+      ]);
+
+      const [deliveryNum, customers, descriptions] = await Promise.all([
+        deliveryRes.json(),
+        customerRes.json(),
+        descRes.json(),
+      ]);
+
+      if (deliveryNum.success) {
+        form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
       }
-    };
+      if (customers.success) {
+        setCustomerList(customers.customers);
+      }
+      if (descriptions.success) {
+        setDescriptionList(descriptions.items);
+      }
+    } catch (err) {
+      console.error("Error fetching initial data:", err);
+    } finally {
+      setLoadingDeliveryNumber(false);
+      setLoadingCustomerName(false);
+      setLoadingDescription(false);
+    }
+  };
 
-    fetchDeliveryNumber();
-  }, []);
+  fetchInitialData();
+}, []);
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
+// Re-fetch descriptions when partNumber search changes
+useEffect(() => {
+  if (!inputRow.partNumber && !inputRow.itemDescription) return;
+
+  const controller = new AbortController();
+            setFetchingData(true);
+
+  const timer = setTimeout(async () => {
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "getAllDescriptionsWithPartNumbers",
+          query: inputRow.partNumber || inputRow.itemDescription || "",
+        }),
+        signal: controller.signal,
+      });
+      const result = await res.json();
+      if (result.success) {
+        setDescriptionList(result.items);
+        
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") console.error(err);
+    }
+    finally{
+                setFetchingData(false);
+
+    }
+  }, 300);
+
+  return () => {
+    clearTimeout(timer);
+    controller.abort();
+  };
+}, [inputRow.partNumber, inputRow.itemDescription]);
+
+useEffect(() => {
+  if (!inputRow.partNumber) return; 
+
+  const controller = new AbortController();
+  const debounceTimer = setTimeout(() => {
+    const fetchStockInHand = async () => {
+setStockLoading(true);
       try {
-        setLoadingCustomerName(true);
-
-        const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ action: "getCustomerDetails" }),
-          }
-        );
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "getStockForPartNumber",
+            partNumber: inputRow.partNumber,
+            category: "" // update if needed
+          }),
+          signal: controller.signal
+        });
 
         const result = await res.json();
         if (result.success) {
-          setCustomerList(result.customers);
-          console.log("Fetched Customers:");
-          result.customers.forEach((cust, index) => {
-            console.log(
-              `${index + 1}. Name: ${cust.customername}, Address: ${
-                cust.address
-              }`
-            );
-          });
+          setInputRow((prev) => ({
+            ...prev,
+            stockInHand: result.stockInHand?.toString() || "0",
+            stockUnit: result.unit || ""
+          }));
+        } else {
+          setInputRow((prev) => ({
+            ...prev,
+            stockInHand: "0",
+            stockUnit: ""
+          }));
         }
       } catch (err) {
-        console.error("Failed to fetch customer details:", err);
-      } finally {
-        setLoadingCustomerName(false);
-      }
-    };
-
-    fetchCustomers();
-  }, []);
-
-  useEffect(() => {
-    const fetchDescriptions = async () => {
-      try {
-        setLoadingDescription(true);
-        const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              action: "getAllDescriptionsWithPartNumbers",
-            }),
-          }
-        );
-
-        const result = await res.json();
-        console.log(result);
-        if (result.success) {
-          setDescriptionList(result.items);
+        if (err.name !== "AbortError") {
+          console.error("Fetch stock error:", err);
         }
-      } catch (err) {
-        console.error("Failed to fetch descriptions:", err);
       } finally {
-        setLoadingDescription(false);
-      }
+        setStockLoading(false);
+       }
     };
 
-    fetchDescriptions();
-  }, []);
+    fetchStockInHand();
+  }, 400);
 
-  useEffect(() => {
-    const controller = new AbortController(); // to abort outdated requests
-    const debounceTimer = setTimeout(() => {
-      const fetchStockInHand = async () => {
-        const partNumber = inputRow.partNumber.trim();
-        if (!partNumber) return;
-
-        setFetchingData(true);
-        try {
-          const res = await fetch(
-            "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams({
-                action: "getStockForPartNumber",
-                partNumber,
-                category: "", // or null if required
-              }),
-              signal: controller.signal, // Attach abort signal
-            }
-          );
-
-          const result = await res.json();
-
-          if (result.success) {
-            console.log("Fetched stock/unit:", result.stockInHand, result.unit);
-
-            setInputRow((prev) => ({
-              ...prev,
-              stockInHand: result.stockInHand.toString(),
-              stockUnit: result.unit || "",
-            }));
-          } else {
-            setInputRow((prev) => ({
-              ...prev,
-              stockInHand: "0",
-              stockUnit: "",
-            }));
-          }
-        } catch (err) {
-          if (err.name !== "AbortError") {
-            console.error("Fetch stock error:", err);
-          }
-        } finally {
-          setFetchingData(false);
-        }
-      };
-
-      fetchStockInHand();
-    }, 400); // Wait 400ms after last change
-
-    return () => {
-      clearTimeout(debounceTimer); // Clear timer on partNumber change
-      controller.abort(); // Cancel previous fetch
-    };
-  }, [inputRow.partNumber]);
+  return () => {
+    clearTimeout(debounceTimer);
+    controller.abort();
+  };
+}, [inputRow.partNumber]);
 
   const columns = [
     {
@@ -371,15 +516,27 @@ export default function DeliveryNote({ username }) {
                           value === "0.0" ||
                           value === ".0" ||
                           isNaN(num) ||
-                          num === 0)
+                          num === 0) 
                       ) {
                         notification.error({
                           message: "Invalid Quantity",
                           description: "Quantity must be greater than 0.",
                         });
                         setInputRow((prev) => ({ ...prev, quantity: "" }));
+                        return;
                       } 
-                    }, 3000);
+                            // Unit check - get latest from record or inputRow
+              const unit = ((record.unit || inputRow.unit) || "").toLowerCase();
+              if ((unit === "set" || unit === "piece") && !Number.isInteger(num)) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: `Quantity for unit "${record.unit || inputRow.unit}" must be a whole number.`,
+                });
+                setInputRow((prev) => ({ ...prev, quantity: "" }));
+                return;
+              }
+
+                    }, 300);
                   }}
                 />
               </Tooltip>
@@ -389,49 +546,117 @@ export default function DeliveryNote({ username }) {
               </Tooltip>
             ),
         },
+    // {
+    //   title: "Unit",
+    //   dataIndex: "unit",
+    //   ellipsis: true,
+    //   width: 200,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input value={inputRow.unit ? inputRow.unit : " "} readOnly />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={inputRow.unit}>
+    //         <span>{record.unit ? record.unit : "-"}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
     {
-      title: "Unit",
-      dataIndex: "unit",
-      ellipsis: true,
-      width: 200,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input value={inputRow.unit ? inputRow.unit : " "} readOnly />
-          </Tooltip>
-        ) : (
-          <Tooltip title={inputRow.unit}>
-            <span>{record.unit ? record.unit : "-"}</span>
-          </Tooltip>
-        ),
-    },
+  title: "Unit",
+  dataIndex: "unit",
+  ellipsis: true,
+  width: 200,
+  render: (_, record) =>
+    record.isInput ? (
+      <Tooltip>
+        <Input
+          value={
+            stockLoading
+              ? ""
+              : inputRow.unit || ""
+          }
+          placeholder={
+            stockLoading
+              ? "Fetching unit..."
+              : inputRow.unit || "-"
+          }
+          readOnly
+        />
+      </Tooltip>
+    ) : (
+      <Tooltip title={record.unit}>
+        <span>{record.unit || "-"}</span>
+      </Tooltip>
+    ),
+},
+
+
+    // {
+    //   title: "Stock In Hand",
+    //   dataIndex: "stockInHand",
+    //   width: 200,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           value={
+    //             inputRow.stockInHand
+    //               ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
+    //               : "0"
+    //           }
+    //           readOnly
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+    //         <span>
+    //           {record.stockInHand
+    //             ? `${record.stockInHand} ${record.stockUnit || ""}`
+    //             : "-"}
+    //         </span>
+    //       </Tooltip>
+    //     ),
+    // },
     {
-      title: "Stock In Hand",
-      dataIndex: "stockInHand",
-      width: 200,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              value={
-                inputRow.stockInHand
-                  ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
-                  : "0"
-              }
-              readOnly
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
-            <span>
-              {record.stockInHand
-                ? `${record.stockInHand} ${record.stockUnit || ""}`
-                : "-"}
-            </span>
-          </Tooltip>
-        ),
-    },
+  title: "Stock In Hand",
+  dataIndex: "stockInHand",
+  width: 200,
+  ellipsis: true,
+  render: (_, record) =>
+    record.isInput ? (
+      <Tooltip>
+        <Input
+          value={
+            stockLoading
+              ? "" // leave value blank while loading
+              : inputRow.stockInHand
+              ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
+              : "0"
+          }
+          placeholder={
+            stockLoading
+              ? "Fetching stock in hand..."
+              : inputRow.stockInHand
+              ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
+              : "-"
+          }
+          readOnly
+        />
+      </Tooltip>
+    ) : (
+      <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+        <span>
+          {record.stockInHand
+            ? `${record.stockInHand} ${record.stockUnit || ""}`
+            : "-"}
+        </span>
+      </Tooltip>
+    ),
+},
+
     {
       title: "Action",
       width: 120,
@@ -613,7 +838,7 @@ export default function DeliveryNote({ username }) {
       );
 
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
+        GAS_URL,
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -653,7 +878,7 @@ export default function DeliveryNote({ username }) {
         });
         // Fetch new delivery number
         const nextRes = await fetch(
-          "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
+          GAS_URL,
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },

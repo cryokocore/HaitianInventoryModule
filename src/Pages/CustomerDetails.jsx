@@ -29,6 +29,7 @@ export default function CustomerDetails({ username }) {
   const [ownerLoading, setOwnerLoading] = useState(false);
 
   const [ownerOptions, setOwnerOptions] = useState([]);
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyELES1dYaCII-ILiHab9ejO2_dp-jmVQkGjfHkCTwpWfE9Oa_w40rBNncbBCyy2yy7jA/exec"
 
   useEffect(() => {
     fetchCustomerOwners();
@@ -37,7 +38,7 @@ export default function CustomerDetails({ username }) {
     setOwnerLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
+        GAS_URL,
         {
           method: "POST",
           body: new URLSearchParams({ action: "getCustomerOwners" }),
@@ -62,7 +63,7 @@ export default function CustomerDetails({ username }) {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec",
+        GAS_URL,
         {
           method: "POST",
           body: new URLSearchParams({

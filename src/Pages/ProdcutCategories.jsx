@@ -130,7 +130,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbxWmqajWK9jlPZk0LY9TpbkfpgzJ8ZGJoqYwH8bqXmEORX6ZJwO9JlIbUWgjKx-RiPSaQ/exec";
+    "https://script.google.com/macros/s/AKfycbyELES1dYaCII-ILiHab9ejO2_dp-jmVQkGjfHkCTwpWfE9Oa_w40rBNncbBCyy2yy7jA/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -1514,6 +1514,8 @@ useEffect(() => {
                 setInputRow({
                   ...inputRow,
                   partNumber: e.target.value.toUpperCase(),
+                  quantity:"",
+
                 })
               }
             />
@@ -1830,9 +1832,11 @@ useEffect(() => {
         record.isInput ? (
           <Tooltip>
             <Input
-              placeholder="Enter quantity"
+              placeholder="Enter Quantity"
               type="number"
               min={1}
+              disabled={spareUnitLoading}
+
               value={inputRow.quantity}
               onChange={(e) => {
                 const value = e.target.value.trim();
@@ -1841,27 +1845,63 @@ useEffect(() => {
                 clearTimeout(window.quantityDebounce);
                 window.quantityDebounce = setTimeout(() => {
                   const num = parseFloat(value);
-                  if (
-                    value !== "" &&
-                    (value === "0" ||
-                      value === "0.0" ||
-                      value === ".0" ||
-                      isNaN(num) ||
-                      num === 0)
-                  ) {
-                    notification.error({
-                      message: "Invalid Quantity",
-                      description: "Quantity must be greater than 0.",
-                    });
-                    setInputRow((prev) => ({ ...prev, quantity: "" }));
-                  } else {
-                    const { totalPrice } = updateTotalPrice(
-                      inputRow.purchaseCost,
-                      inputRow.addOnCost,
-                      value
-                    );
-                    setInputRow((prev) => ({ ...prev, totalPrice }));
-                  }
+                  // if (
+                  //   value !== "" &&
+                  //   (value === "0" ||
+                  //     value === "0.0" ||
+                  //     value === ".0" ||
+                  //     isNaN(num) ||
+                  //     num === 0)
+                  // ) {
+                  //   notification.error({
+                  //     message: "Invalid Quantity",
+                  //     description: "Quantity must be greater than 0.",
+                  //   });
+                  //   setInputRow((prev) => ({ ...prev, quantity: "" }));
+                  // } else {
+                  //   const { totalPrice } = updateTotalPrice(
+                  //     inputRow.purchaseCost,
+                  //     inputRow.addOnCost,
+                  //     value
+                  //   );
+                  //   setInputRow((prev) => ({ ...prev, totalPrice }));
+                  // }
+
+                      // Basic invalid checks
+              if (
+                value !== "" &&
+                (value === "0" ||
+                  value === "0.0" ||
+                  value === ".0" ||
+                  isNaN(num) ||
+                  num === 0)
+              ) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: "Quantity must be greater than 0.",
+                });
+                setInputRow((prev) => ({ ...prev, quantity: "" }));
+                return;
+              }
+
+              // Extra check for Set / Piece units - must be whole number
+              const unit = (inputRow.unit || "").toLowerCase();
+              if ((unit === "set" || unit === "piece") && !Number.isInteger(num)) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: `Quantity for unit "${inputRow.unit}" must be a whole number.`,
+                });
+                setInputRow((prev) => ({ ...prev,  quantity: "", unit: "", }));
+                return;
+              }
+
+              // Update total price if all checks pass
+              const { totalPrice } = updateTotalPrice(
+                inputRow.purchaseCost,
+                inputRow.addOnCost,
+                value
+              );
+              setInputRow((prev) => ({ ...prev, totalPrice }));
                 }, 3000);
               }}
             />
@@ -1873,31 +1913,84 @@ useEffect(() => {
         ),
     },
 
+    // {
+    //   title: "Unit",
+    //   dataIndex: "unit",
+    //   width: 250,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Select
+    //         className="w-100"
+    //         value={inputRow.unit}
+    //         onChange={(value) => {
+      
+    //             const unit = (inputRow.unit || "").toLowerCase();
+    //             const num = inputRow.quantity 
+    //           if ((unit === "set" || unit === "piece") && !Number.isInteger(num)) {
+    //             notification.error({
+    //               message: "Invalid Quantity",
+    //               description: `Quantity for unit "${inputRow.unit}" must be a whole number.`,
+    //             });
+    //             setInputRow((prev) => ({ ...prev, unit:"" }));
+    //             return;
+    //           }
+    //           setInputRow((prev) => ({ ...prev, unit: value }))}
+    //         }
+    //         options={spareUnitOptions.map((u) => ({ value: u, label: u }))}
+    //         loading={spareUnitLoading}
+    //         placeholder={spareUnitLoading ? "Fetching unit..." : "Select Unit"}
+    //         notFoundContent={
+    //           spareUnitLoading ? "Fetching unit..." : "No units found"
+    //         }
+    //         // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
+    //       />
+    //     ) : (
+    //       record.unit || ""
+    //     ),
+    // },
     {
-      title: "Unit",
-      dataIndex: "unit",
-      width: 250,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Select
-            className="w-100"
-            value={inputRow.unit}
-            onChange={(value) =>
-              setInputRow((prev) => ({ ...prev, unit: value }))
+  title: "Unit",
+  dataIndex: "unit",
+  width: 250,
+  ellipsis: true,
+  render: (_, record) =>
+    record.isInput ? (
+      <Select
+        className="w-100"
+        value={inputRow.unit}
+        onChange={(selectedUnit) => {
+          clearTimeout(window.unitDebounce);
+          window.unitDebounce = setTimeout(() => {
+            const unitLower = (selectedUnit || "").toLowerCase();
+            const num = parseFloat(inputRow.quantity);
+
+            // Check if quantity must be whole number
+            if ((unitLower === "set" || unitLower === "piece") && !Number.isInteger(num)) {
+              notification.error({
+                message: "Invalid Quantity",
+                description: `Quantity for unit "${selectedUnit}" must be a whole number and should not be empty.`,
+              });
+              setInputRow((prev) => ({ ...prev, unit: "", quantity: "" }));
+              return;
             }
-            options={spareUnitOptions.map((u) => ({ value: u, label: u }))}
-            loading={spareUnitLoading}
-            placeholder={spareUnitLoading ? "Fetching unit..." : "Select Unit"}
-            notFoundContent={
-              spareUnitLoading ? "Fetching unit..." : "No units found"
-            }
-            // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
-          />
-        ) : (
-          record.unit || ""
-        ),
-    },
+
+            // If valid, update the unit
+            setInputRow((prev) => ({ ...prev, unit: selectedUnit }));
+          }, 300);
+        }}
+        options={spareUnitOptions.map((u) => ({ value: u, label: u }))}
+        loading={spareUnitLoading}
+        placeholder={spareUnitLoading ? "Fetching unit..." : "Select Unit"}
+        notFoundContent={
+          spareUnitLoading ? "Fetching unit..." : "No units found"
+        }
+      />
+    ) : (
+      record.unit || ""
+    ),
+},
+
 
     {
       title: "Stock In Hand",
@@ -2141,6 +2234,7 @@ useEffect(() => {
                 setAuxiliariesInputRow({
                   ...auxiliariesInputRow,
                   partNumber: e.target.value.toUpperCase(),
+                  quantity:""
                 })
               }
             />
@@ -2443,90 +2537,214 @@ useEffect(() => {
         ),
     },
 
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      width: 200,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              placeholder="Quantity"
-              type="number"
-              min={1}
-              value={auxiliariesInputRow.quantity}
-              onChange={(e) => {
-                const value = e.target.value.trim();
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   width: 200,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Quantity"
+    //           type="number"
+    //           min={1}
+    //           value={auxiliariesInputRow.quantity}
+    //           onChange={(e) => {
+    //             const value = e.target.value.trim();
+    //             setAuxiliariesInputRow((prev) => ({
+    //               ...prev,
+    //               quantity: value,
+    //             }));
+
+    //             clearTimeout(window.auxQuantityDebounce);
+    //             window.auxQuantityDebounce = setTimeout(() => {
+    //               const num = parseFloat(value);
+    //               if (
+    //                 value !== "" &&
+    //                 (value === "0" ||
+    //                   value === "0.0" ||
+    //                   value === ".0" ||
+    //                   isNaN(num) ||
+    //                   num === 0)
+    //               ) {
+    //                 notification.error({
+    //                   message: "Invalid Quantity",
+    //                   description: "Quantity must be greater than 0.",
+    //                 });
+    //                 setAuxiliariesInputRow((prev) => ({
+    //                   ...prev,
+    //                   quantity: "",
+    //                 }));
+    //                 return;
+    //               }
+
+    //               const { totalPrice } = updateTotalPrice(
+    //                 auxiliariesInputRow.purchaseCost,
+    //                 auxiliariesInputRow.addOnCost,
+    //                 value
+    //               );
+    //               setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
+    //             }, 3000);
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.quantity}>
+    //         <span>{record.quantity}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+
+    // {
+    //   title: "Unit",
+    //   dataIndex: "unit",
+    //   width: 250,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Select
+    //         className="w-100"
+    //         value={auxiliariesInputRow.unit}
+    //         onChange={(value) =>
+    //           setAuxiliariesInputRow((prev) => ({ ...prev, unit: value }))
+    //         }
+    //         options={auxiliariesUnitOptions.map((u) => ({ value: u, label: u }))}
+    //         loading={auxiliariesUnitLoading}
+    //         placeholder={auxiliariesUnitLoading ? "Fetching unit..." : "Select Unit"}
+    //         notFoundContent={
+    //           auxiliariesUnitLoading ? "Fetching unit..." : "No units found"
+    //         }
+    //         // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
+    //       />
+    //     ) : (
+    //       record.unit || ""
+    //     ),
+    // },
+
+{
+  title: "Quantity",
+  dataIndex: "quantity",
+  width: 200,
+  ellipsis: true,
+  render: (_, record) =>
+    record.isInput ? (
+      <Tooltip>
+        <Input
+          placeholder="Enter Quantity"
+          type="number"
+          min={1}
+          disabled={auxiliariesUnitLoading}
+          value={auxiliariesInputRow.quantity}
+          onChange={(e) => {
+            const value = e.target.value.trim();
+            setAuxiliariesInputRow((prev) => ({
+              ...prev,
+              quantity: value,
+            }));
+
+            clearTimeout(window.auxQuantityDebounce);
+            window.auxQuantityDebounce = setTimeout(() => {
+              const num = parseFloat(value);
+
+              // Basic >0 check
+              if (
+                value !== "" &&
+                (value === "0" ||
+                  value === "0.0" ||
+                  value === ".0" ||
+                  isNaN(num) ||
+                  num === 0)
+              ) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: "Quantity must be greater than 0.",
+                });
                 setAuxiliariesInputRow((prev) => ({
                   ...prev,
-                  quantity: value,
+                  quantity: "",
                 }));
+                return;
+              }
 
-                clearTimeout(window.auxQuantityDebounce);
-                window.auxQuantityDebounce = setTimeout(() => {
-                  const num = parseFloat(value);
-                  if (
-                    value !== "" &&
-                    (value === "0" ||
-                      value === "0.0" ||
-                      value === ".0" ||
-                      isNaN(num) ||
-                      num === 0)
-                  ) {
-                    notification.error({
-                      message: "Invalid Quantity",
-                      description: "Quantity must be greater than 0.",
-                    });
-                    setAuxiliariesInputRow((prev) => ({
-                      ...prev,
-                      quantity: "",
-                    }));
-                    return;
-                  }
+              // Whole number check for Set/Piece
+              const unit = (auxiliariesInputRow.unit || "").toLowerCase();
+              if ((unit === "set" || unit === "piece") && !Number.isInteger(num)) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: `Quantity for unit "${auxiliariesInputRow.unit}" must be a whole number.`,
+                });
+                setAuxiliariesInputRow((prev) => ({
+                  ...prev,
+                  quantity: "",
+                  unit: "",
+                }));
+                return;
+              }
 
-                  const { totalPrice } = updateTotalPrice(
-                    auxiliariesInputRow.purchaseCost,
-                    auxiliariesInputRow.addOnCost,
-                    value
-                  );
-                  setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
-                }, 3000);
-              }}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.quantity}>
-            <span>{record.quantity}</span>
-          </Tooltip>
-        ),
-    },
+              // Update total price
+              const { totalPrice } = updateTotalPrice(
+                auxiliariesInputRow.purchaseCost,
+                auxiliariesInputRow.addOnCost,
+                value
+              );
+              setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
+            }, 3000);
+          }}
+        />
+      </Tooltip>
+    ) : (
+      <Tooltip title={record.quantity}>
+        <span>{record.quantity}</span>
+      </Tooltip>
+    ),
+},
+{
+  title: "Unit",
+  dataIndex: "unit",
+  width: 250,
+  ellipsis: true,
+  render: (_, record) =>
+    record.isInput ? (
+      <Select
+        className="w-100"
+        value={auxiliariesInputRow.unit}
+        onChange={(selectedUnit) => {
+          clearTimeout(window.auxUnitDebounce);
+          window.auxUnitDebounce = setTimeout(() => {
+            const unitLower = (selectedUnit || "").toLowerCase();
+            const num = parseFloat(auxiliariesInputRow.quantity);
 
-    {
-      title: "Unit",
-      dataIndex: "unit",
-      width: 250,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Select
-            className="w-100"
-            value={auxiliariesInputRow.unit}
-            onChange={(value) =>
-              setAuxiliariesInputRow((prev) => ({ ...prev, unit: value }))
+            // Whole number check for Set/Piece
+            if ((unitLower === "set" || unitLower === "piece") && !Number.isInteger(num)) {
+              notification.error({
+                message: "Invalid Quantity",
+                description: `Quantity for unit "${selectedUnit}" must be a whole number and should not be empty.`,
+              });
+              setAuxiliariesInputRow((prev) => ({
+                ...prev,
+                unit: "",
+                quantity: "",
+              }));
+              return;
             }
-            options={auxiliariesUnitOptions.map((u) => ({ value: u, label: u }))}
-            loading={auxiliariesUnitLoading}
-            placeholder={auxiliariesUnitLoading ? "Fetching unit..." : "Select Unit"}
-            notFoundContent={
-              auxiliariesUnitLoading ? "Fetching unit..." : "No units found"
-            }
-            // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
-          />
-        ) : (
-          record.unit || ""
-        ),
-    },
+
+            // If valid, update unit
+            setAuxiliariesInputRow((prev) => ({ ...prev, unit: selectedUnit }));
+          }, 300);
+        }}
+        options={auxiliariesUnitOptions.map((u) => ({ value: u, label: u }))}
+        loading={auxiliariesUnitLoading}
+        placeholder={auxiliariesUnitLoading ? "Fetching unit..." : "Select Unit"}
+        notFoundContent={
+          auxiliariesUnitLoading ? "Fetching unit..." : "No units found"
+        }
+      />
+    ) : (
+      record.unit || ""
+    ),
+},
+
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
@@ -2757,6 +2975,8 @@ useEffect(() => {
                 setAssetsInputRow({
                   ...assetsInputRow,
                   partNumber: e.target.value.toUpperCase(),
+                  quantity:""
+
                 })
               }
             />
@@ -3099,93 +3319,222 @@ useEffect(() => {
     //     ),
     // },
 
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      width: 200,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              placeholder="Enter Quantity"
-              type="number"
-              min={1}
-              value={assetsInputRow.quantity}
-              onChange={(e) => {
-                const value = e.target.value.trim();
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   width: 200,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Tooltip>
+    //         <Input
+    //           placeholder="Enter Quantity"
+    //           type="number"
+    //           min={1}
+    //           value={assetsInputRow.quantity}
+    //           onChange={(e) => {
+    //             const value = e.target.value.trim();
 
+    //             setAssetsInputRow((prev) => ({
+    //               ...prev,
+    //               quantity: value,
+    //             }));
+
+    //             clearTimeout(window.quantityDebounce);
+    //             window.quantityDebounce = setTimeout(() => {
+    //               const num = parseFloat(value);
+
+    //               if (
+    //                 value !== "" &&
+    //                 (value === "0" ||
+    //                   value === "0.0" ||
+    //                   value === ".0" ||
+    //                   isNaN(num) ||
+    //                   num === 0)
+    //               ) {
+    //                 notification.error({
+    //                   message: "Invalid Quantity",
+    //                   description: "Quantity must be greater than 0.",
+    //                 });
+    //                 setAssetsInputRow((prev) => ({
+    //                   ...prev,
+    //                   quantity: "",
+    //                 }));
+    //               } else {
+    //                 const { totalPrice } = updateTotalPrice(
+    //                   assetsInputRow.purchaseCost,
+    //                   assetsInputRow.addOnCost,
+    //                   value
+    //                 );
+    //                 setAssetsInputRow((prev) => ({
+    //                   ...prev,
+    //                   totalPrice,
+    //                 }));
+    //               }
+    //             }, 3000);
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     ) : (
+    //       <Tooltip title={record.quantity}>
+    //         <span>{record.quantity}</span>
+    //       </Tooltip>
+    //     ),
+    // },
+    // {
+    //   title: "Unit",
+    //   dataIndex: "unit",
+    //   width: 250,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Select
+    //         className="w-100"
+    //         value={assetsInputRow.unit}
+    //         onChange={(value) =>
+    //           setAssetsInputRow((prev) => ({ ...prev, unit: value }))
+    //         }
+    //         options={assetsUnitOptions.map((u) => ({ value: u, label: u }))}
+    //         loading={assetsUnitLoading}
+    //         placeholder={assetsUnitLoading ? "Fetching unit..." : "Select Unit"}
+    //         notFoundContent={
+    //           assetsUnitLoading ? "Fetching unit..." : "No units found"
+    //         }
+    //         // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
+    //       />
+    //     ) : (
+    //       record.unit || ""
+    //     ),
+    // },
+
+    {
+  title: "Quantity",
+  dataIndex: "quantity",
+  width: 200,
+  ellipsis: true,
+  render: (_, record) =>
+    record.isInput ? (
+      <Tooltip>
+        <Input
+          placeholder="Enter Quantity"
+          type="number"
+          min={1}
+                        disabled={assetsUnitLoading}
+
+          value={assetsInputRow.quantity}
+          onChange={(e) => {
+            const value = e.target.value.trim();
+
+            setAssetsInputRow((prev) => ({
+              ...prev,
+              quantity: value,
+            }));
+
+            clearTimeout(window.assetsQuantityDebounce);
+            window.assetsQuantityDebounce = setTimeout(() => {
+              const num = parseFloat(value);
+
+              // Basic checks
+              if (
+                value !== "" &&
+                (value === "0" ||
+                  value === "0.0" ||
+                  value === ".0" ||
+                  isNaN(num) ||
+                  num === 0)
+              ) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: "Quantity must be greater than 0.",
+                });
                 setAssetsInputRow((prev) => ({
                   ...prev,
-                  quantity: value,
+                  quantity: "",
                 }));
+                return;
+              }
 
-                clearTimeout(window.quantityDebounce);
-                window.quantityDebounce = setTimeout(() => {
-                  const num = parseFloat(value);
+              // Check for Set / Piece unit requirement
+              const unit = (assetsInputRow.unit || "").toLowerCase();
+              if ((unit === "set" || unit === "piece") && !Number.isInteger(num)) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: `Quantity for unit "${assetsInputRow.unit}" must be a whole number.`,
+                });
+                setAssetsInputRow((prev) => ({
+                  ...prev,
+                  quantity: "",
+                  unit: "",
+                }));
+                return;
+              }
 
-                  if (
-                    value !== "" &&
-                    (value === "0" ||
-                      value === "0.0" ||
-                      value === ".0" ||
-                      isNaN(num) ||
-                      num === 0)
-                  ) {
-                    notification.error({
-                      message: "Invalid Quantity",
-                      description: "Quantity must be greater than 0.",
-                    });
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      quantity: "",
-                    }));
-                  } else {
-                    const { totalPrice } = updateTotalPrice(
-                      assetsInputRow.purchaseCost,
-                      assetsInputRow.addOnCost,
-                      value
-                    );
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      totalPrice,
-                    }));
-                  }
-                }, 3000);
-              }}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.quantity}>
-            <span>{record.quantity}</span>
-          </Tooltip>
-        ),
-    },
-    {
-      title: "Unit",
-      dataIndex: "unit",
-      width: 250,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Select
-            className="w-100"
-            value={assetsInputRow.unit}
-            onChange={(value) =>
-              setAssetsInputRow((prev) => ({ ...prev, unit: value }))
+              // Update total price
+              const { totalPrice } = updateTotalPrice(
+                assetsInputRow.purchaseCost,
+                assetsInputRow.addOnCost,
+                value
+              );
+              setAssetsInputRow((prev) => ({
+                ...prev,
+                totalPrice,
+              }));
+            }, 3000);
+          }}
+        />
+      </Tooltip>
+    ) : (
+      <Tooltip title={record.quantity}>
+        <span>{record.quantity}</span>
+      </Tooltip>
+    ),
+},
+{
+  title: "Unit",
+  dataIndex: "unit",
+  width: 250,
+  ellipsis: true,
+  render: (_, record) =>
+    record.isInput ? (
+      <Select
+        className="w-100"
+        value={assetsInputRow.unit}
+        onChange={(selectedUnit) => {
+          clearTimeout(window.assetsUnitDebounce);
+          window.assetsUnitDebounce = setTimeout(() => {
+            const unitLower = (selectedUnit || "").toLowerCase();
+            const num = parseFloat(assetsInputRow.quantity);
+
+            // Check if quantity must be whole number
+            if ((unitLower === "set" || unitLower === "piece") && !Number.isInteger(num)) {
+              notification.error({
+                message: "Invalid Quantity",
+                description: `Quantity for unit "${selectedUnit}" must be a whole number and should not be empty.`,
+              });
+              setAssetsInputRow((prev) => ({
+                ...prev,
+                unit: "",
+                quantity: "",
+              }));
+              return;
             }
-            options={assetsUnitOptions.map((u) => ({ value: u, label: u }))}
-            loading={assetsUnitLoading}
-            placeholder={assetsUnitLoading ? "Fetching unit..." : "Select Unit"}
-            notFoundContent={
-              assetsUnitLoading ? "Fetching unit..." : "No units found"
-            }
-            // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
-          />
-        ) : (
-          record.unit || ""
-        ),
-    },
+
+            // If valid, update the unit
+            setAssetsInputRow((prev) => ({ ...prev, unit: selectedUnit }));
+          }, 300);
+        }}
+        options={assetsUnitOptions.map((u) => ({ value: u, label: u }))}
+        loading={assetsUnitLoading}
+        placeholder={assetsUnitLoading ? "Fetching unit..." : "Select Unit"}
+        notFoundContent={
+          assetsUnitLoading ? "Fetching unit..." : "No units found"
+        }
+      />
+    ) : (
+      record.unit || ""
+    ),
+},
+
     {
       title: "Stock In Hand",
       dataIndex: "stockInHand",
@@ -3410,6 +3759,7 @@ useEffect(() => {
                 setMachineInputRow({
                   ...machineinputRow,
                   partNumber: e.target.value.toUpperCase(),
+                  quantity:""
                 })
               }
             />
@@ -3798,10 +4148,11 @@ useEffect(() => {
         record.isInput ? (
           <Tooltip>
             <Input
-              placeholder="Enter quantity"
+              placeholder="Enter Quantity"
               type="number"
               min={1}
               value={machineinputRow.quantity}
+              disabled={machineUnitLoading}
               onChange={(e) => {
                 const value = e.target.value.trim();
 
@@ -3813,33 +4164,72 @@ useEffect(() => {
                 clearTimeout(window.machineQuantityDebounce);
                 window.machineQuantityDebounce = setTimeout(() => {
                   const num = parseFloat(value);
-                  if (
-                    value !== "" &&
-                    (value === "0" ||
-                      value === "0.0" ||
-                      value === ".0" ||
-                      isNaN(num) ||
-                      num === 0)
-                  ) {
-                    notification.error({
-                      message: "Invalid Quantity",
-                      description: "Quantity must be greater than 0.",
-                    });
-                    setMachineInputRow((prev) => ({
-                      ...prev,
-                      quantity: "",
-                    }));
-                  } else {
-                    const { totalPrice } = updateTotalPrice(
-                      machineinputRow.purchaseCost,
-                      machineinputRow.addOnCost,
-                      value
-                    );
-                    setMachineInputRow((prev) => ({
-                      ...prev,
-                      totalPrice,
-                    }));
-                  }
+                  // if (
+                  //   value !== "" &&
+                  //   (value === "0" ||
+                  //     value === "0.0" ||
+                  //     value === ".0" ||
+                  //     isNaN(num) ||
+                  //     num === 0)
+                  // ) {
+                  //   notification.error({
+                  //     message: "Invalid Quantity",
+                  //     description: "Quantity must be greater than 0.",
+                  //   });
+                  //   setMachineInputRow((prev) => ({
+                  //     ...prev,
+                  //     quantity: "",
+                  //   }));
+                  // } else {
+                  //   const { totalPrice } = updateTotalPrice(
+                  //     machineinputRow.purchaseCost,
+                  //     machineinputRow.addOnCost,
+                  //     value
+                  //   );
+                  //   setMachineInputRow((prev) => ({
+                  //     ...prev,
+                  //     totalPrice,
+                  //   }));
+                  // }
+
+                   // Basic invalid checks
+              if (
+                value !== "" &&
+                (value === "0" ||
+                  value === "0.0" ||
+                  value === ".0" ||
+                  isNaN(num) ||
+                  num === 0)
+              ) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: "Quantity must be greater than 0.",
+                });
+                setMachineInputRow((prev) => ({ ...prev, quantity: "" }));
+                return;
+              }
+
+              // Extra check for Set / Piece units
+              const unit = (machineinputRow.unit || "").toLowerCase();
+              if ((unit === "set" || unit === "piece") && !Number.isInteger(num)) {
+                notification.error({
+                  message: "Invalid Quantity",
+                  description: `Quantity for unit "${machineinputRow.unit}" must be a whole number.`,
+                });
+                setMachineInputRow((prev) => ({ ...prev, quantity: "", unit: "" }));
+                return;
+              }
+
+              // Update total price if all checks pass
+              const { totalPrice } = updateTotalPrice(
+                machineinputRow.purchaseCost,
+                machineinputRow.addOnCost,
+                value
+              );
+              setMachineInputRow((prev) => ({ ...prev, totalPrice }));
+
+
+
                 }, 3000);
               }}
             />
@@ -3878,31 +4268,73 @@ useEffect(() => {
     //       record.unit || ""
     //     ),
     // },
+    // {
+    //   title: "Unit",
+    //   dataIndex: "unit",
+    //   width: 250,
+    //   ellipsis: true,
+    //   render: (_, record) =>
+    //     record.isInput ? (
+    //       <Select
+    //         className="w-100"
+    //         value={machineinputRow.unit}
+    //         onChange={(value) =>
+    //           setMachineInputRow((prev) => ({ ...prev, unit: value }))
+    //         }
+    //         options={machineUnitOptions.map((u) => ({ value: u, label: u }))}
+    //         loading={machineUnitLoading}
+    //         placeholder={machineUnitLoading ? "Fetching unit..." : "Select Unit"}
+    //         notFoundContent={
+    //           machineUnitLoading ? "Fetching unit..." : "No units found"
+    //         }
+    //         // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
+    //       />
+    //     ) : (
+    //       record.unit || ""
+    //     ),
+    // },
+
     {
-      title: "Unit",
-      dataIndex: "unit",
-      width: 250,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Select
-            className="w-100"
-            value={machineinputRow.unit}
-            onChange={(value) =>
-              setMachineInputRow((prev) => ({ ...prev, unit: value }))
+  title: "Unit",
+  dataIndex: "unit",
+  width: 250,
+  ellipsis: true,
+  render: (_, record) =>
+    record.isInput ? (
+      <Select
+        className="w-100"
+        value={machineinputRow.unit}
+        onChange={(selectedUnit) => {
+          clearTimeout(window.machineUnitDebounce);
+          window.machineUnitDebounce = setTimeout(() => {
+            const unitLower = (selectedUnit || "").toLowerCase();
+            const num = parseFloat(machineinputRow.quantity);
+
+            // Check if quantity must be whole number
+            if ((unitLower === "set" || unitLower === "piece") && !Number.isInteger(num)) {
+              notification.error({
+                message: "Invalid Quantity",
+                description: `Quantity for unit "${selectedUnit}" must be a whole number and should not be empty.`,
+              });
+              setMachineInputRow((prev) => ({ ...prev, unit: "", quantity: "" }));
+              return;
             }
-            options={machineUnitOptions.map((u) => ({ value: u, label: u }))}
-            loading={machineUnitLoading}
-            placeholder={machineUnitLoading ? "Fetching unit..." : "Select Unit"}
-            notFoundContent={
-              machineUnitLoading ? "Fetching unit..." : "No units found"
-            }
-            // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
-          />
-        ) : (
-          record.unit || ""
-        ),
-    },
+
+            // If valid, update the unit
+            setMachineInputRow((prev) => ({ ...prev, unit: selectedUnit }));
+          }, 300);
+        }}
+        options={machineUnitOptions.map((u) => ({ value: u, label: u }))}
+        loading={machineUnitLoading}
+        placeholder={machineUnitLoading ? "Fetching unit..." : "Select Unit"}
+        notFoundContent={
+          machineUnitLoading ? "Fetching unit..." : "No units found"
+        }
+      />
+    ) : (
+      record.unit || ""
+    ),
+},
 
 
     {
