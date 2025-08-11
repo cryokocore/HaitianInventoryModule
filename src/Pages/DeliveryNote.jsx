@@ -46,7 +46,7 @@ export default function DeliveryNote({ username }) {
   });
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyELES1dYaCII-ILiHab9ejO2_dp-jmVQkGjfHkCTwpWfE9Oa_w40rBNncbBCyy2yy7jA/exec"
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxk3c4kk17jLsbwWtqCKaQ8-dH8K807QdOqMg90uhu0PFEnYSh-i9EntctYAXqFXd5-g/exec"
 
   // useEffect(() => {
   //   const fetchDeliveryNumber = async () => {
