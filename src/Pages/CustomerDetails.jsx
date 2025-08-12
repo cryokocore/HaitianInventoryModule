@@ -29,7 +29,7 @@ export default function CustomerDetails({ username }) {
   const [ownerLoading, setOwnerLoading] = useState(false);
 
   const [ownerOptions, setOwnerOptions] = useState([]);
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxk3c4kk17jLsbwWtqCKaQ8-dH8K807QdOqMg90uhu0PFEnYSh-i9EntctYAXqFXd5-g/exec"
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyJzZ1Jet-m_GQzHTaBQqC3kVYHwUQx9CplS_DtdYgeHGntol7todbn_4OAhjc5PkUXrQ/exec"
 
   useEffect(() => {
     fetchCustomerOwners();

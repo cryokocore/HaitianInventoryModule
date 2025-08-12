@@ -15,7 +15,6 @@ import {
   Input,
   Select,
   Cascader,
-  message,
   Table,
   notification,
   Tooltip,
@@ -35,6 +34,13 @@ export default function DeliveryNote({ username }) {
   const [fetchingData, setFetchingData] = useState(false);
   const [descriptionList, setDescriptionList] = useState([]);
   const [stockLoading, setStockLoading] = useState(false);
+  const [deliveryNumber, setDeliveryNumber] = useState("");
+  const [fetchedData, setFetchedData] = useState([]);
+  const [loadingFetchedData, setLoadingFetchedData] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
   const [inputRow, setInputRow] = useState({
     serialNumber: "",
     partNumber: "",
@@ -42,304 +48,314 @@ export default function DeliveryNote({ username }) {
     quantity: "",
     stockInHand: "",
     unit: "",
-      stockUnit: "",
+    stockUnit: "",
   });
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyxk3c4kk17jLsbwWtqCKaQ8-dH8K807QdOqMg90uhu0PFEnYSh-i9EntctYAXqFXd5-g/exec"
+  const GAS_URL =
+    "https://script.google.com/macros/s/AKfycbyJzZ1Jet-m_GQzHTaBQqC3kVYHwUQx9CplS_DtdYgeHGntol7todbn_4OAhjc5PkUXrQ/exec";
 
-  // useEffect(() => {
-  //   const fetchDeliveryNumber = async () => {
-  //     try {
-  //       setLoadingDeliveryNumber(true);
-  //       const response = await fetch(
-  //         "https://script.google.com/macros/s/AKfycbyX0zO1CBzWD8nzyZBt7och2YiwRIpyQ1CANs8xf4YvzYyXPnO4VDhW9bl2sG2XnXw/exec",
-  //         {
-  //           method: "POST",
-  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //           body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-  //         }
-  //       );
-  //       const result = await response.json();
-  //       if (result.success) {
-  //         form.setFieldsValue({ deliveryNumber: result.deliveryNumber });
-  //       }
-  //     } catch (err) {
-  //       console.error("Error fetching delivery number:", err);
-  //     } finally {
-  //       setLoadingDeliveryNumber(false); // Done loading
-  //     }
-  //   };
-
-  //   fetchDeliveryNumber();
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchCustomers = async () => {
-  //     try {
-  //       setLoadingCustomerName(true);
-
-  //       const res = await fetch(
-  //         "https://script.google.com/macros/s/AKfycbxf-gDxhJvbpiC_qPYwonX3CpjIVQlZwsxG05JT_WLHppKdHImlyGLBfGEe9j7GMPky_Q/exec",
-  //         {
-  //           method: "POST",
-  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //           body: new URLSearchParams({ action: "getCustomerDetails" }),
-  //         }
-  //       );
-
-  //       const result = await res.json();
-  //       if (result.success) {
-  //         setCustomerList(result.customers);
-  //         console.log("Fetched Customers:");
-  //         result.customers.forEach((cust, index) => {
-  //           console.log(
-  //             `${index + 1}. Name: ${cust.customername}, Address: ${
-  //               cust.address
-  //             }`
-  //           );
-  //         });
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to fetch customer details:", err);
-  //     } finally {
-  //       setLoadingCustomerName(false);
-  //     }
-  //   };
-
-  //   fetchCustomers();
-  // }, []);
-
-  // useEffect(() => {
-  //   const fetchDescriptions = async () => {
-  //     try {
-  //       setLoadingDescription(true);
-  //       const res = await fetch(
-  //         "https://script.google.com/macros/s/AKfycbxf-gDxhJvbpiC_qPYwonX3CpjIVQlZwsxG05JT_WLHppKdHImlyGLBfGEe9j7GMPky_Q/exec",
-  //         {
-  //           method: "POST",
-  //           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //           body: new URLSearchParams({
-  //             action: "getAllDescriptionsWithPartNumbers",
-  //           }),
-  //         }
-  //       );
-
-  //       const result = await res.json();
-  //       console.log(result);
-  //       if (result.success) {
-  //         setDescriptionList(result.items);
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to fetch descriptions:", err);
-  //     } finally {
-  //       setLoadingDescription(false);
-  //     }
-  //   };
-
-  //   fetchDescriptions();
-  // }, []);
-
-  // useEffect(() => {
-  //   const controller = new AbortController(); // to abort outdated requests
-  //   const debounceTimer = setTimeout(() => {
-  //     const fetchStockInHand = async () => {
-  //       const partNumber = inputRow.partNumber.trim();
-  //       if (!partNumber) return;
-
-  //       setFetchingData(true);
+  //   useEffect(() => {
+  //     const fetchInitialData = async () => {
   //       try {
-  //         const res = await fetch(
-  //           "https://script.google.com/macros/s/AKfycbxf-gDxhJvbpiC_qPYwonX3CpjIVQlZwsxG05JT_WLHppKdHImlyGLBfGEe9j7GMPky_Q/exec",
-  //           {
+  //         setLoadingDeliveryNumber(true);
+  //         setLoadingCustomerName(true);
+  //         setLoadingDescription(true);
+
+  //         const [deliveryRes, customerRes, descRes] = await Promise.all([
+  //           fetch(GAS_URL, {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //             body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+  //           }),
+  //           fetch(GAS_URL, {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //             body: new URLSearchParams({ action: "getCustomerDetails" }),
+  //           }),
+  //           fetch(GAS_URL, {
   //             method: "POST",
   //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
   //             body: new URLSearchParams({
-  //               action: "getStockForPartNumber",
-  //               partNumber,
-  //               category: "", // or null if required
+  //               action: "getAllDescriptionsWithPartNumbers",
   //             }),
-  //             signal: controller.signal, // Attach abort signal
-  //           }
-  //         );
+  //           }),
+  //         ]);
 
-  //         const result = await res.json();
+  //         const [deliveryNum, customers, descriptions] = await Promise.all([
+  //           deliveryRes.json(),
+  //           customerRes.json(),
+  //           descRes.json(),
+  //         ]);
 
-  //         if (result.success) {
-  //           console.log("Fetched stock/unit:", result.stockInHand, result.unit);
-
-  //           setInputRow((prev) => ({
-  //             ...prev,
-  //             stockInHand: result.stockInHand.toString(),
-  //             stockUnit: result.unit || "",
-  //           }));
-  //         } else {
-  //           setInputRow((prev) => ({
-  //             ...prev,
-  //             stockInHand: "0",
-  //             stockUnit: "",
-  //           }));
+  //         // if (deliveryNum.success) {
+  //         //   form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
+  //         // }
+  //         if (deliveryNum.success) {
+  //   setDeliveryNumber(deliveryNum.deliveryNumber);
+  //   form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
+  // }
+  //         if (customers.success) {
+  //           setCustomerList(customers.customers);
+  //         }
+  //         if (descriptions.success) {
+  //           setDescriptionList(descriptions.items);
   //         }
   //       } catch (err) {
-  //         if (err.name !== "AbortError") {
-  //           console.error("Fetch stock error:", err);
-  //         }
+  //         console.error("Error fetching initial data:", err);
   //       } finally {
-  //         setFetchingData(false);
+  //         setLoadingDeliveryNumber(false);
+  //         setLoadingCustomerName(false);
+  //         setLoadingDescription(false);
   //       }
   //     };
 
-  //     fetchStockInHand();
-  //   }, 400); // Wait 400ms after last change
+  //     fetchInitialData();
+  //   }, []);
 
-  //   return () => {
-  //     clearTimeout(debounceTimer); // Clear timer on partNumber change
-  //     controller.abort(); // Cancel previous fetch
+  // useEffect(() => {
+  //   const fetchInitialData = async () => {
+  //     try {
+  //       setLoadingDeliveryNumber(true);
+  //       setLoadingCustomerName(true);
+  //       setLoadingDescription(true);
+  //       setLoadingFetchedData(true); // loading for the table
+
+  //       const [deliveryRes, customerRes, descRes, notesRes] = await Promise.all(
+  //         [
+  //           fetch(GAS_URL, {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //             body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+  //           }),
+  //           fetch(GAS_URL, {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //             body: new URLSearchParams({ action: "getCustomerDetails" }),
+  //           }),
+  //           fetch(GAS_URL, {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //             body: new URLSearchParams({
+  //               action: "getAllDescriptionsWithPartNumbers",
+  //             }),
+  //           }),
+  //           fetch(GAS_URL, {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //             body: new URLSearchParams({ action: "getDeliveryNotes" }), 
+  //           }),
+  //         ]
+  //       );
+
+  //       const [deliveryNum, customers, descriptions, notes] = await Promise.all(
+  //         [
+  //           deliveryRes.json(),
+  //           customerRes.json(),
+  //           descRes.json(),
+  //           notesRes.json(),
+  //         ]
+  //       );
+
+  //       if (deliveryNum.success) {
+  //         setDeliveryNumber(deliveryNum.deliveryNumber);
+  //         form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
+  //       }
+  //       if (customers.success) {
+  //         setCustomerList(customers.customers);
+  //       }
+  //       if (descriptions.success) {
+  //         setDescriptionList(descriptions.items);
+  //       }
+  //       if (notes.success) {
+  //         const cleaned = notes.data.map((row) => {
+  //           const newRow = {};
+  //           Object.keys(row).forEach((key) => {
+  //             newRow[key.trim()] = row[key]; // remove extra spaces
+  //           });
+  //           return newRow;
+  //         });
+
+  //         console.log("Cleaned Delivery Notes Data:", cleaned);
+  //         setFetchedData(cleaned);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error fetching initial data:", err);
+  //       notification.error({
+  //         message: "Error",
+  //         description: "Failed to fetch initial data",
+  //       });
+  //     } finally {
+  //       setLoadingDeliveryNumber(false);
+  //       setLoadingCustomerName(false);
+  //       setLoadingDescription(false);
+  //       setLoadingFetchedData(false);
+  //     }
   //   };
-  // }, [inputRow.partNumber]);
 
-
-  // Replace the three separate useEffects for delivery number, customers, descriptions with:
-useEffect(() => {
+  //   fetchInitialData();
+  // }, []);
   const fetchInitialData = async () => {
-    try {
-      setLoadingDeliveryNumber(true);
-      setLoadingCustomerName(true);
-      setLoadingDescription(true);
+  try {
+    setLoadingDeliveryNumber(true);
+    setLoadingCustomerName(true);
+    setLoadingDescription(true);
+    setLoadingFetchedData(true);
 
-      const [deliveryRes, customerRes, descRes] = await Promise.all([
-        fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-        }),
-        fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "getCustomerDetails" }),
-        }),
-        fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "getAllDescriptionsWithPartNumbers" }),
-        }),
-      ]);
+    const [deliveryRes, customerRes, descRes, notesRes] = await Promise.all([
+      fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+      }),
+      fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "getCustomerDetails" }),
+      }),
+      fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "getAllDescriptionsWithPartNumbers" }),
+      }),
+      fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "getDeliveryNotes" }),
+      }),
+    ]);
 
-      const [deliveryNum, customers, descriptions] = await Promise.all([
-        deliveryRes.json(),
-        customerRes.json(),
-        descRes.json(),
-      ]);
+    const [deliveryNum, customers, descriptions, notes] = await Promise.all([
+      deliveryRes.json(),
+      customerRes.json(),
+      descRes.json(),
+      notesRes.json(),
+    ]);
 
-      if (deliveryNum.success) {
-        form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
-      }
-      if (customers.success) {
-        setCustomerList(customers.customers);
-      }
-      if (descriptions.success) {
-        setDescriptionList(descriptions.items);
-      }
-    } catch (err) {
-      console.error("Error fetching initial data:", err);
-    } finally {
-      setLoadingDeliveryNumber(false);
-      setLoadingCustomerName(false);
-      setLoadingDescription(false);
+    if (deliveryNum.success) {
+      setDeliveryNumber(deliveryNum.deliveryNumber);
+      form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
     }
-  };
+    if (customers.success) {
+      setCustomerList(customers.customers);
+    }
+    if (descriptions.success) {
+      setDescriptionList(descriptions.items);
+    }
+    if (notes.success) {
+      const cleaned = notes.data.map((row) => {
+        const newRow = {};
+        Object.keys(row).forEach((key) => {
+          newRow[key.trim()] = row[key]; // remove extra spaces
+        });
+        return newRow;
+      });
+      setFetchedData(cleaned);
+    }
+  } catch (err) {
+    console.error("Error fetching initial data:", err);
+    notification.error({
+      message: "Error",
+      description: "Failed to fetch initial data",
+    });
+  } finally {
+    setLoadingDeliveryNumber(false);
+    setLoadingCustomerName(false);
+    setLoadingDescription(false);
+    setLoadingFetchedData(false);
+  }
+};
 
+useEffect(() => {
   fetchInitialData();
 }, []);
 
-// Re-fetch descriptions when partNumber search changes
-useEffect(() => {
-  if (!inputRow.partNumber && !inputRow.itemDescription) return;
 
-  const controller = new AbortController();
-            setFetchingData(true);
+  // Re-fetch descriptions when partNumber search changes
+  useEffect(() => {
+    if (!inputRow.partNumber && !inputRow.itemDescription) return;
 
-  const timer = setTimeout(async () => {
-    try {
-      const res = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "getAllDescriptionsWithPartNumbers",
-          query: inputRow.partNumber || inputRow.itemDescription || "",
-        }),
-        signal: controller.signal,
-      });
-      const result = await res.json();
-      if (result.success) {
-        setDescriptionList(result.items);
-        
-      }
-    } catch (err) {
-      if (err.name !== "AbortError") console.error(err);
-    }
-    finally{
-                setFetchingData(false);
+    const controller = new AbortController();
+    setFetchingData(true);
 
-    }
-  }, 300);
-
-  return () => {
-    clearTimeout(timer);
-    controller.abort();
-  };
-}, [inputRow.partNumber, inputRow.itemDescription]);
-
-useEffect(() => {
-  if (!inputRow.partNumber) return; 
-
-  const controller = new AbortController();
-  const debounceTimer = setTimeout(() => {
-    const fetchStockInHand = async () => {
-setStockLoading(true);
+    const timer = setTimeout(async () => {
       try {
         const res = await fetch(GAS_URL, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({
-            action: "getStockForPartNumber",
-            partNumber: inputRow.partNumber,
-            category: "" // update if needed
+            action: "getAllDescriptionsWithPartNumbers",
+            query: inputRow.partNumber || inputRow.itemDescription || "",
           }),
-          signal: controller.signal
+          signal: controller.signal,
         });
-
         const result = await res.json();
         if (result.success) {
-          setInputRow((prev) => ({
-            ...prev,
-            stockInHand: result.stockInHand?.toString() || "0",
-            stockUnit: result.unit || ""
-          }));
-        } else {
-          setInputRow((prev) => ({
-            ...prev,
-            stockInHand: "0",
-            stockUnit: ""
-          }));
+          setDescriptionList(result.items);
         }
       } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Fetch stock error:", err);
-        }
+        if (err.name !== "AbortError") console.error(err);
       } finally {
-        setStockLoading(false);
-       }
+        setFetchingData(false);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
     };
+  }, [inputRow.partNumber, inputRow.itemDescription]);
 
-    fetchStockInHand();
-  }, 400);
+  useEffect(() => {
+    if (!inputRow.partNumber) return;
 
-  return () => {
-    clearTimeout(debounceTimer);
-    controller.abort();
-  };
-}, [inputRow.partNumber]);
+    const controller = new AbortController();
+    const debounceTimer = setTimeout(() => {
+      const fetchStockInHand = async () => {
+        setStockLoading(true);
+        try {
+          const res = await fetch(GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              action: "getStockForPartNumber",
+              partNumber: inputRow.partNumber,
+              category: "", // update if needed
+            }),
+            signal: controller.signal,
+          });
+
+          const result = await res.json();
+          if (result.success) {
+            setInputRow((prev) => ({
+              ...prev,
+              stockInHand: result.stockInHand?.toString() || "0",
+              stockUnit: result.unit || "",
+            }));
+          } else {
+            setInputRow((prev) => ({
+              ...prev,
+              stockInHand: "0",
+              stockUnit: "",
+            }));
+          }
+        } catch (err) {
+          if (err.name !== "AbortError") {
+            console.error("Fetch stock error:", err);
+          }
+        } finally {
+          setStockLoading(false);
+        }
+      };
+
+      fetchStockInHand();
+    }, 400);
+
+    return () => {
+      clearTimeout(debounceTimer);
+      controller.abort();
+    };
+  }, [inputRow.partNumber, inputRow.itemDescription]);
 
   const columns = [
     {
@@ -368,9 +384,10 @@ setStockLoading(true);
           <Tooltip>
             <Select
               showSearch
-              placeholder="Enter part number"
-              value={inputRow.partNumber}
-              loading={loadingDescription} // shows spinner
+              placeholder="Select or enter part number"
+              value={inputRow.partNumber || undefined}
+              loading={loadingDescription}
+              disabled={loadingDescription}
               notFoundContent={
                 loadingDescription ? "Fetching..." : "No results found"
               }
@@ -386,8 +403,7 @@ setStockLoading(true);
                   partNumber: value,
                   itemDescription:
                     selected?.description || prev.itemDescription,
-                    unit: selected?.unit || "", 
-
+                  unit: selected?.unit || "",
                 }));
               }}
               onSearch={(value) => {
@@ -423,12 +439,14 @@ setStockLoading(true);
           <Tooltip>
             <Select
               showSearch
-              value={inputRow.itemDescription}
+              // value={inputRow.itemDescription}
+              value={inputRow.itemDescription || undefined}
               loading={loadingDescription}
+              disabled={loadingDescription}
               notFoundContent={
                 loadingDescription ? "Fetching..." : "No results found"
               }
-              placeholder="Select or type description"
+              placeholder="Select or enter description"
               filterOption={(input, option) =>
                 option.children.toLowerCase().includes(input.toLowerCase())
               }
@@ -440,6 +458,7 @@ setStockLoading(true);
                   ...prev,
                   itemDescription: value,
                   partNumber: selected?.partNumber || prev.partNumber,
+                  unit: selected?.unit || "",
                 }));
               }}
               style={{ width: "100%" }}
@@ -490,62 +509,70 @@ setStockLoading(true);
     //       </Tooltip>
     //     ),
     // },
-        {
-          title: "Quantity",
-          dataIndex: "quantity",
-          ellipsis: true,
-          width: 200,
-          render: (_, record) =>
-            record.isInput ? (
-              <Tooltip>
-                <Input
-                  placeholder="Enter quantity"
-                  type="number"
-                  min={1}
-                  value={inputRow.quantity}
-                  onChange={(e) => {
-                    const value = e.target.value.trim();
-                    setInputRow((prev) => ({ ...prev, quantity: value }));
-    
-                    clearTimeout(window.quantityDebounce);
-                    window.quantityDebounce = setTimeout(() => {
-                      const num = parseFloat(value);
-                      if (
-                        value !== "" &&
-                        (value === "0" ||
-                          value === "0.0" ||
-                          value === ".0" ||
-                          isNaN(num) ||
-                          num === 0) 
-                      ) {
-                        notification.error({
-                          message: "Invalid Quantity",
-                          description: "Quantity must be greater than 0.",
-                        });
-                        setInputRow((prev) => ({ ...prev, quantity: "" }));
-                        return;
-                      } 
-                            // Unit check - get latest from record or inputRow
-              const unit = ((record.unit || inputRow.unit) || "").toLowerCase();
-              if ((unit === "set" || unit === "piece") && !Number.isInteger(num)) {
-                notification.error({
-                  message: "Invalid Quantity",
-                  description: `Quantity for unit "${record.unit || inputRow.unit}" must be a whole number.`,
-                });
-                setInputRow((prev) => ({ ...prev, quantity: "" }));
-                return;
-              }
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      ellipsis: true,
+      width: 200,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input
+              placeholder="Enter quantity"
+              type="number"
+              min={1}
+              value={inputRow.quantity}
+              onChange={(e) => {
+                const value = e.target.value.trim();
+                setInputRow((prev) => ({ ...prev, quantity: value }));
 
-                    }, 300);
-                  }}
-                />
-              </Tooltip>
-            ) : (
-              <Tooltip title={record.quantity}>
-                <span>{record.quantity}</span>
-              </Tooltip>
-            ),
-        },
+                clearTimeout(window.quantityDebounce);
+                window.quantityDebounce = setTimeout(() => {
+                  const num = parseFloat(value);
+                  if (
+                    value !== "" &&
+                    (value === "0" ||
+                      value === "0.0" ||
+                      value === ".0" ||
+                      isNaN(num) ||
+                      num === 0)
+                  ) {
+                    notification.error({
+                      message: "Invalid Quantity",
+                      description: "Quantity must be greater than 0.",
+                    });
+                    setInputRow((prev) => ({ ...prev, quantity: "" }));
+                    return;
+                  }
+                  // Unit check - get latest from record or inputRow
+                  const unit = (
+                    record.unit ||
+                    inputRow.unit ||
+                    ""
+                  ).toLowerCase();
+                  if (
+                    (unit === "set" || unit === "piece") &&
+                    !Number.isInteger(num)
+                  ) {
+                    notification.error({
+                      message: "Invalid Quantity",
+                      description: `Quantity for unit "${
+                        record.unit || inputRow.unit
+                      }" must be a whole number.`,
+                    });
+                    setInputRow((prev) => ({ ...prev, quantity: "" }));
+                    return;
+                  }
+                }, 300);
+              }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.quantity}>
+            <span>{record.quantity}</span>
+          </Tooltip>
+        ),
+    },
     // {
     //   title: "Unit",
     //   dataIndex: "unit",
@@ -564,34 +591,27 @@ setStockLoading(true);
     // },
 
     {
-  title: "Unit",
-  dataIndex: "unit",
-  ellipsis: true,
-  width: 200,
-  render: (_, record) =>
-    record.isInput ? (
-      <Tooltip>
-        <Input
-          value={
-            stockLoading
-              ? ""
-              : inputRow.unit || ""
-          }
-          placeholder={
-            stockLoading
-              ? "Fetching unit..."
-              : inputRow.unit || "-"
-          }
-          readOnly
-        />
-      </Tooltip>
-    ) : (
-      <Tooltip title={record.unit}>
-        <span>{record.unit || "-"}</span>
-      </Tooltip>
-    ),
-},
-
+      title: "Unit",
+      dataIndex: "unit",
+      ellipsis: true,
+      width: 200,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input
+              value={stockLoading ? "" : inputRow.unit || ""}
+              placeholder={
+                stockLoading ? "Fetching unit..." : inputRow.unit || "-"
+              }
+              readOnly
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={record.unit}>
+            <span>{record.unit || "-"}</span>
+          </Tooltip>
+        ),
+    },
 
     // {
     //   title: "Stock In Hand",
@@ -621,41 +641,41 @@ setStockLoading(true);
     //     ),
     // },
     {
-  title: "Stock In Hand",
-  dataIndex: "stockInHand",
-  width: 200,
-  ellipsis: true,
-  render: (_, record) =>
-    record.isInput ? (
-      <Tooltip>
-        <Input
-          value={
-            stockLoading
-              ? "" // leave value blank while loading
-              : inputRow.stockInHand
-              ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
-              : "0"
-          }
-          placeholder={
-            stockLoading
-              ? "Fetching stock in hand..."
-              : inputRow.stockInHand
-              ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
-              : "-"
-          }
-          readOnly
-        />
-      </Tooltip>
-    ) : (
-      <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
-        <span>
-          {record.stockInHand
-            ? `${record.stockInHand} ${record.stockUnit || ""}`
-            : "-"}
-        </span>
-      </Tooltip>
-    ),
-},
+      title: "Stock In Hand",
+      dataIndex: "stockInHand",
+      width: 200,
+      ellipsis: true,
+      render: (_, record) =>
+        record.isInput ? (
+          <Tooltip>
+            <Input
+              value={
+                stockLoading
+                  ? "" // leave value blank while loading
+                  : inputRow.stockInHand
+                  ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
+                  : "0"
+              }
+              placeholder={
+                stockLoading
+                  ? "Fetching stock in hand..."
+                  : inputRow.stockInHand
+                  ? `${inputRow.stockInHand} ${inputRow.stockUnit || ""}`
+                  : "-"
+              }
+              readOnly
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+            <span>
+              {record.stockInHand
+                ? `${record.stockInHand} ${record.stockUnit || ""}`
+                : "-"}
+            </span>
+          </Tooltip>
+        ),
+    },
 
     {
       title: "Action",
@@ -784,7 +804,7 @@ setStockLoading(true);
       quantity,
       stockInHand: inputRow.stockInHand || "0",
       unit: inputRow.unit || "",
-        stockUnit: inputRow.stockUnit || "",
+      stockUnit: inputRow.stockUnit || "",
     };
 
     const updatedData = [...dataSource, newData].map((item, index) => ({
@@ -802,6 +822,8 @@ setStockLoading(true);
       unit: "",
     });
   };
+
+  
 
   const handleDelete = (key) => {
     const updatedData = dataSource
@@ -837,30 +859,27 @@ setStockLoading(true);
         dayjs(values.date).format("DD-MM-YYYY")
       );
 
-      const response = await fetch(
-        GAS_URL,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "addDeliveryNote",
-            deliveryNumber: values.deliveryNumber,
-            // date: values.date,
-            // date: values.date ? dayjs(values.date).format("DD-MM-YYYY") : "",
-            date:
-              username === "Admin"
-                ? dayjs(values.date).format("DD-MM-YYYY")
-                : deliveryDate,
+      const response = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "addDeliveryNote",
+          deliveryNumber: values.deliveryNumber,
+          // date: values.date,
+          // date: values.date ? dayjs(values.date).format("DD-MM-YYYY") : "",
+          date:
+            username === "Admin"
+              ? dayjs(values.date).format("DD-MM-YYYY")
+              : deliveryDate,
 
-            customername: values.customername,
-            address: values.address,
-            modeOfDelivery: values.modeOfDelivery,
-            reference: values.reference,
-            items: JSON.stringify(dataSource),
-            userName: username || "-",
-          }),
-        }
-      );
+          customername: values.customername,
+          address: values.address,
+          modeOfDelivery: values.modeOfDelivery,
+          reference: values.reference,
+          items: JSON.stringify(dataSource),
+          userName: username || "-",
+        }),
+      });
       const result = await response.json();
       if (result.success) {
         notification.success({
@@ -873,18 +892,15 @@ setStockLoading(true);
           partNumber: "",
           itemDescription: "",
           quantity: "",
-          unit:"",
+          unit: "",
           stockInHand: "",
         });
         // Fetch new delivery number
-        const nextRes = await fetch(
-          GAS_URL,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-          }
-        );
+        const nextRes = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+        });
 
         const nextResult = await nextRes.json();
         if (nextResult.success) {
@@ -902,6 +918,7 @@ setStockLoading(true);
         if (username === "Admin") {
           // Admin gets dayjs object for DatePicker
           form.setFieldsValue({ date: dubaiDayjs });
+
         } else {
           // Non-admin gets formatted string for Input field
           form.setFieldsValue({ date: formatted });
@@ -914,6 +931,7 @@ setStockLoading(true);
         ]);
 
         console.log("deliveryDate for non-admin:", deliveryDate);
+          await fetchInitialData();
       } else {
         notification.error({
           message: "Error",
@@ -930,6 +948,50 @@ setStockLoading(true);
       setLoading(false);
     }
   };
+
+  const fetchedTablecolumns = [
+    { title: "Delivery Number", dataIndex: "Delivery Number", width: 140 },
+    {
+      title: "Date",
+      dataIndex: "Date",
+      width: 120,
+      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY") : ""),
+    },
+    { title: "Customer Name", dataIndex: "Customer Name", width: 150 },
+    { title: "Address", dataIndex: "Address", width: 250 },
+    { title: "Mode of delivery", dataIndex: "Mode of delivery", width: 150 },
+    { title: "Reference", dataIndex: "Reference", width: 150 },
+    { title: "Serial Number", dataIndex: "Serial Number", width: 130 },
+    { title: "Part Number", dataIndex: "Part Number", width: 130 },
+    { title: "Item Description", dataIndex: "Item Description", width: 150 },
+    { title: "Quantity", dataIndex: "Quantity", width: 100 },
+    { title: "Unit", dataIndex: "Unit", width: 100 },
+    { title: "Stock In Hand", dataIndex: "Stock In Hand", width: 130 },
+    { title: "Modified User", dataIndex: "Modified User", width: 150 },
+    {
+      title: "Modified Date & Time",
+      dataIndex: "Modified Date & Time",
+      width: 180,
+      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY HH:mm:ss") : ""),
+    },
+  ];
+
+  const filteredData = fetchedData.filter(item => {
+  const matchesSearch =
+    searchText === "" ||
+    Object.values(item).some(val =>
+      String(val).toLowerCase().includes(searchText.toLowerCase())
+    );
+
+  const itemDate = item.Date ? dayjs(item.Date) : null;
+  const matchesStart =
+    !startDate || (itemDate && itemDate.isSameOrAfter(startDate, "day"));
+  const matchesEnd =
+    !endDate || (itemDate && itemDate.isSameOrBefore(endDate, "day"));
+
+  return matchesSearch && matchesStart && matchesEnd;
+});
+
 
   const styl = `.ant-form-item .ant-form-item-explain-error {
     color: #ff4d4f;
@@ -1097,7 +1159,7 @@ setStockLoading(true);
                         >
                           <div>
                             <Input
-                              placeholder="Delivery Number"
+                              placeholder="Delivery number"
                               readOnly
                               value={
                                 loadingDeliveryNumber
@@ -1138,7 +1200,7 @@ setStockLoading(true);
                             />
                           ) : (
                             <Input
-                              placeholder="Delivery Date"
+                              placeholder="Delivery date"
                               value={deliveryDate}
                               readOnly
                             />
@@ -1159,8 +1221,9 @@ setStockLoading(true);
                     >
                       <Select
                         showSearch
-                        placeholder="Search Customer Name"
+                        placeholder="Search customer name"
                         loading={loadingCustomerName}
+                        disabled={loadingCustomerName}
                         notFoundContent={
                           loadingCustomerName
                             ? "Fetching..."
@@ -1171,12 +1234,25 @@ setStockLoading(true);
                             .toLowerCase()
                             .includes(input.toLowerCase())
                         }
+                        // onChange={(value) => {
+                        //   const customer = customerList.find(
+                        //     (c) => c.customername === value
+                        //   );
+                        //   if (customer) {
+                        //     form.setFieldsValue({ address: customer.address });
+                        //   }
+                        // }}
+
                         onChange={(value) => {
                           const customer = customerList.find(
-                            (c) => c.customername === value
+                            (c) =>
+                              c.customername?.trim().toLowerCase() ===
+                              value.trim().toLowerCase()
                           );
                           if (customer) {
                             form.setFieldsValue({ address: customer.address });
+                          } else {
+                            form.setFieldsValue({ address: "" });
                           }
                         }}
                       >
@@ -1202,7 +1278,7 @@ setStockLoading(true);
                         },
                       ]}
                     >
-                      <Input.TextArea placeholder="Enter Address" rows={6} />
+                      <Input.TextArea placeholder="Enter address" rows={6} />
                     </Form.Item>
                     <div className="row m-0 p-0">
                       <div className="col-6">
@@ -1217,7 +1293,7 @@ setStockLoading(true);
                             },
                           ]}
                         >
-                          <Input />
+                          <Input placeholder="Enter mode of delivery" />
                         </Form.Item>
                       </div>
                       <div className="col-6">
@@ -1232,7 +1308,7 @@ setStockLoading(true);
                             },
                           ]}
                         >
-                          <Input />
+                          <Input placeholder="Enter reference" />
                         </Form.Item>
                       </div>
                     </div>
@@ -1250,7 +1326,7 @@ setStockLoading(true);
                       />
                     </Form.Item>
 
-                    <div className="col-12 text-center mt-4 mb-3">
+                    <div className="col-12 text-center mt-3 mb-3">
                       <Button
                         htmlType="submit"
                         size="large"
@@ -1291,7 +1367,7 @@ setStockLoading(true);
                               partNumber: "",
                               itemDescription: "",
                               quantity: "",
-                              unit:"",
+                              unit: "",
                               stockInHand: "",
                             });
                             form.setFields([
@@ -1313,6 +1389,42 @@ setStockLoading(true);
                     </div>
                   </div>
                 </Form>
+                
+                <div className="mt-5">
+                  <div className="mb-3 flex gap-3">
+  <Input
+    placeholder="Search..."
+    value={searchText}
+    onChange={e => setSearchText(e.target.value)}
+    style={{ width: 250 }}
+  />
+  <DatePicker
+    placeholder="Start Date"
+    value={startDate}
+    onChange={setStartDate}
+    format="DD-MM-YYYY"
+  />
+  <DatePicker
+    placeholder="End Date"
+    value={endDate}
+    onChange={setEndDate}
+    format="DD-MM-YYYY"
+  />
+  <Button onClick={() => { setSearchText(""); setStartDate(null); setEndDate(null); }}>
+    Reset
+  </Button>
+</div>
+
+                <Table
+  columns={fetchedTablecolumns}
+  dataSource={filteredData.map((item, index) => ({ key: index, ...item }))}
+  loading={loadingFetchedData}
+  pagination={{ pageSize: 10 }}
+  scroll={{ x: 'max-content' }}
+  bordered
+/>
+
+                </div>
               </div>
             </div>
           </div>

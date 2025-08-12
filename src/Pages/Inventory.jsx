@@ -40,10 +40,13 @@ export default function Inventory() {
         description: values.description || "",
       });
 
-      const res = await fetch("https://script.google.com/macros/s/AKfycbyxk3c4kk17jLsbwWtqCKaQ8-dH8K807QdOqMg90uhu0PFEnYSh-i9EntctYAXqFXd5-g/exec", {
-        method: "POST",
-        body: params,
-      });
+      const res = await fetch(
+        "https://script.google.com/macros/s/AKfycbyJzZ1Jet-m_GQzHTaBQqC3kVYHwUQx9CplS_DtdYgeHGntol7todbn_4OAhjc5PkUXrQ/exec",
+        {
+          method: "POST",
+          body: params,
+        }
+      );
 
       const data = await res.json();
       if (data.success) {
@@ -192,62 +195,68 @@ export default function Inventory() {
 
                 <div className="border border-1"></div>
 
-            <Form
-  form={form}
-  layout="vertical"
-  className="mt-2"
->
-  <Form.Item
-    label={<span style={{ color: "#0D3884", fontWeight: "bold" }}>Part Number</span>}
-    name="partNumber"
-  >
-    <Input placeholder="Enter Part Number" />
-  </Form.Item>
+                <Form form={form} layout="vertical" className="mt-2">
+                  <Form.Item
+                    label={
+                      <span style={{ color: "#0D3884", fontWeight: "bold" }}>
+                        Part Number
+                      </span>
+                    }
+                    name="partNumber"
+                  >
+                    <Input placeholder="Enter Part Number" />
+                  </Form.Item>
 
-  <Form.Item
-    label={<span style={{ color: "#0D3884", fontWeight: "bold" }}>Description</span>}
-    name="description"
-  >
-    <Input placeholder="Enter Description" />
-  </Form.Item>
+                  <Form.Item
+                    label={
+                      <span style={{ color: "#0D3884", fontWeight: "bold" }}>
+                        Description
+                      </span>
+                    }
+                    name="description"
+                  >
+                    <Input placeholder="Enter Description" />
+                  </Form.Item>
 
-  <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }} className="col-8 m-auto">
-    <Button
-      type="primary"
-      size="large"
-   className="submitButton"
-      onClick={handleSearch}
-    >
-      Search Inventory Data
-    </Button>
+                  <div
+                    style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}
+                    className="col-8 m-auto"
+                  >
+                    <Button
+                      type="primary"
+                      size="large"
+                      className="submitButton"
+                      onClick={handleSearch}
+                    >
+                      Search Inventory Data
+                    </Button>
 
-    <Button
-      size="large"
-     className="clearButton"
-      onClick={() => {
-        form.resetFields();
-        fetchInventory();
-      }}
-    >
-      Clear Search
-    </Button>
-  </div>
-</Form>
+                    <Button
+                      size="large"
+                      className="clearButton"
+                      onClick={() => {
+                        form.resetFields();
+                        fetchInventory();
+                      }}
+                    >
+                      Clear Search
+                    </Button>
+                  </div>
+                </Form>
 
-
-        <Table
-          className="mt-5"
-          columns={columns}
-          dataSource={tableDataSource}
-            pagination={{
-                          pageSize: 10,
-                        }}
-                        scroll={{ x: "max-content" }}
-                        size="middle"
-                        bordered
-          loading={loading}
-          rowKey={(record, idx) => idx}
-        />
+                <Table
+                  className="mt-5"
+                  columns={columns}
+                  dataSource={tableDataSource}
+                  pagination={{
+                    pageSize: 10,
+                  }}
+                  scroll={{ x: "max-content" }}
+                  size="middle"
+                  bordered
+                  loading={loading}
+                  rowKey={(record, idx) => idx}
+                />
               </div>
             </div>
           </div>

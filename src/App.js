@@ -348,7 +348,7 @@ const [animationClass, setAnimationClass] = useState("page-enter");
         //   setAnimationClass("page-enter");
         // }
          setAnimationClass("page-enter");
-        }, 400);
+        }, 300);
         return () => clearTimeout(timeout);
       }
     } else {
