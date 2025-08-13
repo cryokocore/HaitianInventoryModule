@@ -29,7 +29,7 @@ export default function CustomerDetails({ username }) {
   const [ownerLoading, setOwnerLoading] = useState(false);
 
   const [ownerOptions, setOwnerOptions] = useState([]);
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyJzZ1Jet-m_GQzHTaBQqC3kVYHwUQx9CplS_DtdYgeHGntol7todbn_4OAhjc5PkUXrQ/exec"
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyqSD58jDWAvjdyqAJIDk8gBYW_RypyxC_7TchL0jbexK42rurMsXxsO3HIrAWrXXOsUg/exec"
 
   useEffect(() => {
     fetchCustomerOwners();
@@ -713,7 +713,7 @@ export default function CustomerDetails({ username }) {
                       <Input placeholder="Enter Credit Limit" />
                     </Form.Item>
 
-                    <div className="col-12 text-center mt-5 pt-3 mb-3">
+                    <div className="col-7 text-center mt-5 pt-3 mb-3 d-flex m-auto">
                       <Button
                         htmlType="submit"
                         size="large"
@@ -750,7 +750,7 @@ export default function CustomerDetails({ username }) {
                           }
                         }}
                       >
-                        Clear
+                        Clear Input
                       </Button>
                     </div>
                   </div>

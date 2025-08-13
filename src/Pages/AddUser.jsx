@@ -73,7 +73,7 @@ export default function AddUser() {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbyJzZ1Jet-m_GQzHTaBQqC3kVYHwUQx9CplS_DtdYgeHGntol7todbn_4OAhjc5PkUXrQ/exec",
+        "https://script.google.com/macros/s/AKfycbyqSD58jDWAvjdyqAJIDk8gBYW_RypyxC_7TchL0jbexK42rurMsXxsO3HIrAWrXXOsUg/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -248,7 +248,7 @@ export default function AddUser() {
                       <Input.Password placeholder="Enter Conform Password" />
                     </Form.Item>
 
-                    <div className="col-12 text-center mt-4 mb-3">
+                    <div className="col-7 text-center mt-4 mb-3 d-flex m-auto">
                       <Button
                         htmlType="submit"
                         size="large"
@@ -285,7 +285,7 @@ export default function AddUser() {
                           }
                         }}
                       >
-                        Clear
+                        Clear Input
                       </Button>
                     </div>
                   </div>

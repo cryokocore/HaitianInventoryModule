@@ -69,7 +69,6 @@ body {
   font-size: 20px !important;
   border: 2px solid #0d3884 !important;
   transition: all 0.4s ease-in-out !important;
-  font-weight: 500 !important;
   will-change: transform;
   /* box-shadow: 0 6px 10px rgba(13, 56, 132, 0.3); */
 }
@@ -85,13 +84,13 @@ body {
 }
 
 .clearButton {
-  width: 20% !important;
+  width: 45% !important;
   background-color: #ff4d4f !important;
   color: white !important;
   font-size: 20px !important;
   border: 2px solid #ff4d4f !important;
   transition: all 0.4s ease-in-out !important;
-  font-weight: 500 !important;
+ 
   will-change: transform;
   /* box-shadow: 0 6px 10px rgba(255, 25, 25, 0.322); */
 }
@@ -111,15 +110,38 @@ body {
   border: 2px solid #0d3884 !important;
   transition: all 0.4s ease-in-out !important;
   box-shadow: 0 2px 4px rgba(13, 56, 132, 0.3);
-  font-weight: 600 !important;
 }
 .addButton:hover {
   color: #0d3884 !important;
   background-color: white !important;
   border: 2px solid #0d3884 !important;
   font-size: 16px !important;
-  font-weight: 600 !important;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.082);
+}
+
+.exportButton {
+  background-color: #0d3884 !important;
+  color: white !important;
+  font-size: 18px !important;
+  border: 2px solid #0d3884 !important;
+   transition: all 0.4s ease-in-out !important;
+ 
+  will-change: transform;
+}
+.exportButton:hover {
+  transform: scale(1.02);
+}
+.resetButton {
+  background-color: #ff4d4f !important;
+  color: white !important;
+  font-size: 18px !important;
+  border: 2px solid #ff4d4f !important;
+   transition: all 0.4s ease-in-out !important;
+ 
+  will-change: transform;
+}
+.resetButton:hover {
+  transform: scale(1.02);
 }
 
 .deleteButton {
@@ -129,17 +151,16 @@ body {
   border: 2px solid #ff4d4f !important;
   transition: all 0.4s ease-in-out !important;
   box-shadow: 0 1px 3px #ff4d4f;
-  font-weight: 600 !important;
 }
 .deleteButton:hover {
   color: #ff4d4f !important;
   background-color: white !important;
   border: 2px solid #ff4d4f !important;
   font-size: 16px !important;
-  font-weight: 600 !important;
   box-shadow: 0 4px 8px 0 rgba(255, 0, 0, 0.2),
     0 6px 20px 0 rgba(255, 2, 2, 0.2);
 }
+
 
 /* .loginButton {
   width: 100% !important;
@@ -165,7 +186,6 @@ body {
   color: white !important;
   font-size: 20px !important;
   border: none !important;
-  font-weight: 500 !important;
   border-radius: 6px;
   padding: 12px 0;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -203,12 +223,26 @@ body {
   border: 2px solid #ff4d4f !important;
   font-size: 16px !important;
   transition: all 0.3s ease-in-out !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.08);
   border-radius: 8px;
   will-change: transform;
 }
 
 .logoutButton:hover {
+  transform: scale(1.02); /* Slight enlarge */
+}
+
+.closeModalButton {
+  width: 45% !important;
+  background-color: #ff4d4f !important;
+  color: white !important;
+  border: 2px solid #ff4d4f !important;
+  font-size: 20px !important;
+  transition: all 0.3s ease-in-out !important;
+  border-radius: 8px;
+  will-change: transform;
+}
+
+.closeModalButton:hover {
   transform: scale(1.02); /* Slight enlarge */
 }
 
@@ -227,6 +261,12 @@ body {
   .submitButton {
     width: 100% !important;
   }
+  .clearButton{
+    width: 100% !important;
+  }
+    .closeModalButon {
+    width: 100% !important;
+  }
 }
 
 @media screen and (min-width: 375px) {
@@ -234,6 +274,12 @@ body {
     width: 50% !important;
   }
   .submitButton {
+    width: 100% !important;
+  }
+  .clearButton{
+    width: 100% !important;
+  }
+    .closeModalButon {
     width: 100% !important;
   }
 }
@@ -245,6 +291,12 @@ body {
   .submitButton {
     width: 100% !important;
   }
+    .closeModalButon {
+    width: 100% !important;
+  }
+    .clearButton{
+    width: 100% !important;
+  }
 }
 
 @media screen and (min-width: 768px) {
@@ -252,6 +304,12 @@ body {
     width: 35% !important;
   }
   .submitButton {
+    width: 100% !important;
+  }
+    .closeModalButon {
+    width: 100% !important;
+  }
+    .clearButton{
     width: 100% !important;
   }
   .haitianInventoryText {
@@ -269,6 +327,12 @@ body {
   .submitButton {
     width: 50% !important;
   }
+    .closeModalButon {
+    width: 50% !important;
+  }
+    .clearButton{
+    width: 50% !important;
+  }
   .haitianInventoryText {
     font-size: 30px !important;
   }
@@ -284,6 +348,12 @@ body {
   .submitButton {
     width: 50% !important;
   }
+    .clearButton{
+    width: 50% !important;
+  }
+    .closeModalButon {
+    width: 50% !important;
+  }
   .haitianInventoryText {
     font-size: 30px !important;
   }
@@ -297,6 +367,12 @@ body {
     width: 26% !important;
   }
   .submitButton {
+    width: 50% !important;
+  }
+    .clearButton{
+    width: 50% !important;
+  }
+    .closeModalButon {
     width: 50% !important;
   }
   .haitianInventoryText {
@@ -318,7 +394,7 @@ body {
 .profile-box {
   /* background-color: rgba(255, 255, 255, 0.04); */
   /* background-color: #0A50CB; */
-  border: 1px solid rgba(255, 255, 255, 0.797);
+  border: 2px solid #6e6e6e;
   border-radius: 8px;
   padding: 20px;
   margin: 10px auto 0;

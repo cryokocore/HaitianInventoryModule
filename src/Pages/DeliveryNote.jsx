@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faListCheck } from "@fortawesome/free-solid-svg-icons";
+import { faListCheck, faTable, faEye } from "@fortawesome/free-solid-svg-icons";
+import {
+  ExportOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import HaitianLogo from "../Images/Haitian.png";
 import dayjs from "dayjs";
-
 import {
   faCircleUser,
   faLock,
@@ -19,11 +24,57 @@ import {
   notification,
   Tooltip,
   DatePicker,
+  Modal,
+  Row,
+  Col,
 } from "antd";
 import "../App.css";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import XLSX from "xlsx-js-style";
+
+dayjs.extend(customParseFormat);
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
+
+// Try multiple common formats from Apps Script / Sheets / JSON
+const DATE_INPUT_FORMATS = [
+  "DD-MM-YYYY",
+  "D-M-YYYY",
+  "DD/MM/YYYY",
+  "D/M/YYYY",
+  "YYYY-MM-DD",
+  "YYYY/MM/DD",
+  "DD-MM-YYYY HH:mm:ss",
+  "YYYY-MM-DDTHH:mm:ssZ",
+  "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ",
+  "ddd MMM DD YYYY HH:mm:ss [GMT]ZZ (z)",
+];
+
+function parseToDayjs(value) {
+  if (!value) return null;
+  if (dayjs.isDayjs(value)) return value;
+  if (value instanceof Date) return dayjs(value);
+
+  // Excel/Sheets serial day number (rough heuristic)
+  if (typeof value === "number" && value > 25000 && value < 100000) {
+    const excelEpoch = dayjs("1899-12-30"); // Google Sheets epoch
+    return excelEpoch.add(value, "day");
+  }
+
+  const s = String(value).trim();
+  for (const fmt of DATE_INPUT_FORMATS) {
+    const d = dayjs(s, fmt, true);
+    if (d.isValid()) return d;
+  }
+  const d = dayjs(s);
+  return d.isValid() ? d : null;
+}
 
 export default function DeliveryNote({ username }) {
   const [form] = Form.useForm();
+  const [viewForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [dataSource, setDataSource] = useState([]);
   const [deliveryDate, setDeliveryDate] = useState("");
@@ -40,7 +91,8 @@ export default function DeliveryNote({ username }) {
   const [searchText, setSearchText] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
   const [inputRow, setInputRow] = useState({
     serialNumber: "",
     partNumber: "",
@@ -53,223 +105,142 @@ export default function DeliveryNote({ username }) {
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbyJzZ1Jet-m_GQzHTaBQqC3kVYHwUQx9CplS_DtdYgeHGntol7todbn_4OAhjc5PkUXrQ/exec";
+    "https://script.google.com/macros/s/AKfycbyqSD58jDWAvjdyqAJIDk8gBYW_RypyxC_7TchL0jbexK42rurMsXxsO3HIrAWrXXOsUg/exec";
 
-  //   useEffect(() => {
-  //     const fetchInitialData = async () => {
-  //       try {
-  //         setLoadingDeliveryNumber(true);
-  //         setLoadingCustomerName(true);
-  //         setLoadingDescription(true);
+  // const fetchInitialData = async () => {
+  //   try {
+  //     setLoadingDeliveryNumber(true);
+  //     setLoadingCustomerName(true);
+  //     setLoadingDescription(true);
+  //     setLoadingFetchedData(true);
 
-  //         const [deliveryRes, customerRes, descRes] = await Promise.all([
-  //           fetch(GAS_URL, {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //             body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-  //           }),
-  //           fetch(GAS_URL, {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //             body: new URLSearchParams({ action: "getCustomerDetails" }),
-  //           }),
-  //           fetch(GAS_URL, {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //             body: new URLSearchParams({
-  //               action: "getAllDescriptionsWithPartNumbers",
-  //             }),
-  //           }),
-  //         ]);
+  //     const [deliveryRes, customerRes, descRes, notesRes] = await Promise.all([
+  //       fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+  //       }),
+  //       fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({ action: "getCustomerDetails" }),
+  //       }),
+  //       fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({
+  //           action: "getAllDescriptionsWithPartNumbers",
+  //         }),
+  //       }),
+  //       fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({ action: "getDeliveryNotes" }),
+  //       }),
+  //     ]);
 
-  //         const [deliveryNum, customers, descriptions] = await Promise.all([
-  //           deliveryRes.json(),
-  //           customerRes.json(),
-  //           descRes.json(),
-  //         ]);
+  //     const [deliveryNum, customers, descriptions, notes] = await Promise.all([
+  //       deliveryRes.json(),
+  //       customerRes.json(),
+  //       descRes.json(),
+  //       notesRes.json(),
+  //     ]);
 
-  //         // if (deliveryNum.success) {
-  //         //   form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
-  //         // }
-  //         if (deliveryNum.success) {
-  //   setDeliveryNumber(deliveryNum.deliveryNumber);
-  //   form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
-  // }
-  //         if (customers.success) {
-  //           setCustomerList(customers.customers);
-  //         }
-  //         if (descriptions.success) {
-  //           setDescriptionList(descriptions.items);
-  //         }
-  //       } catch (err) {
-  //         console.error("Error fetching initial data:", err);
-  //       } finally {
-  //         setLoadingDeliveryNumber(false);
-  //         setLoadingCustomerName(false);
-  //         setLoadingDescription(false);
-  //       }
-  //     };
-
-  //     fetchInitialData();
-  //   }, []);
-
-  // useEffect(() => {
-  //   const fetchInitialData = async () => {
-  //     try {
-  //       setLoadingDeliveryNumber(true);
-  //       setLoadingCustomerName(true);
-  //       setLoadingDescription(true);
-  //       setLoadingFetchedData(true); // loading for the table
-
-  //       const [deliveryRes, customerRes, descRes, notesRes] = await Promise.all(
-  //         [
-  //           fetch(GAS_URL, {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //             body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-  //           }),
-  //           fetch(GAS_URL, {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //             body: new URLSearchParams({ action: "getCustomerDetails" }),
-  //           }),
-  //           fetch(GAS_URL, {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //             body: new URLSearchParams({
-  //               action: "getAllDescriptionsWithPartNumbers",
-  //             }),
-  //           }),
-  //           fetch(GAS_URL, {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //             body: new URLSearchParams({ action: "getDeliveryNotes" }), 
-  //           }),
-  //         ]
-  //       );
-
-  //       const [deliveryNum, customers, descriptions, notes] = await Promise.all(
-  //         [
-  //           deliveryRes.json(),
-  //           customerRes.json(),
-  //           descRes.json(),
-  //           notesRes.json(),
-  //         ]
-  //       );
-
-  //       if (deliveryNum.success) {
-  //         setDeliveryNumber(deliveryNum.deliveryNumber);
-  //         form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
-  //       }
-  //       if (customers.success) {
-  //         setCustomerList(customers.customers);
-  //       }
-  //       if (descriptions.success) {
-  //         setDescriptionList(descriptions.items);
-  //       }
-  //       if (notes.success) {
-  //         const cleaned = notes.data.map((row) => {
-  //           const newRow = {};
-  //           Object.keys(row).forEach((key) => {
-  //             newRow[key.trim()] = row[key]; // remove extra spaces
-  //           });
-  //           return newRow;
-  //         });
-
-  //         console.log("Cleaned Delivery Notes Data:", cleaned);
-  //         setFetchedData(cleaned);
-  //       }
-  //     } catch (err) {
-  //       console.error("Error fetching initial data:", err);
-  //       notification.error({
-  //         message: "Error",
-  //         description: "Failed to fetch initial data",
-  //       });
-  //     } finally {
-  //       setLoadingDeliveryNumber(false);
-  //       setLoadingCustomerName(false);
-  //       setLoadingDescription(false);
-  //       setLoadingFetchedData(false);
+  //     if (deliveryNum.success) {
+  //       setDeliveryNumber(deliveryNum.deliveryNumber);
+  //       form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
   //     }
-  //   };
+  //     if (customers.success) {
+  //       setCustomerList(customers.customers);
+  //     }
+  //     if (descriptions.success) {
+  //       setDescriptionList(descriptions.items);
+  //     }
+  //     if (notes.success) {
+  //       const cleaned = notes.data.map((row) => {
+  //         const newRow = {};
+  //         Object.keys(row).forEach((key) => {
+  //           newRow[key.trim()] = row[key];
+  //         });
+  //         return newRow;
+  //       });
+  //       setFetchedData(cleaned);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching initial data:", err);
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Failed to fetch initial data",
+  //     });
+  //   } finally {
+  //     setLoadingDeliveryNumber(false);
+  //     setLoadingCustomerName(false);
+  //     setLoadingDescription(false);
+  //     setLoadingFetchedData(false);
+  //   }
+  // };
 
-  //   fetchInitialData();
-  // }, []);
   const fetchInitialData = async () => {
-  try {
-    setLoadingDeliveryNumber(true);
-    setLoadingCustomerName(true);
-    setLoadingDescription(true);
-    setLoadingFetchedData(true);
+    try {
+      setLoadingDeliveryNumber(true);
+      setLoadingCustomerName(true);
+      setLoadingDescription(true);
 
-    const [deliveryRes, customerRes, descRes, notesRes] = await Promise.all([
-      fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-      }),
-      fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "getCustomerDetails" }),
-      }),
-      fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "getAllDescriptionsWithPartNumbers" }),
-      }),
-      fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "getDeliveryNotes" }),
-      }),
-    ]);
+      const [deliveryRes, customerRes, descRes] = await Promise.all([
+        fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+        }),
+        fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ action: "getCustomerDetails" }),
+        }),
+        fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: "getAllDescriptionsWithPartNumbers",
+          }),
+        }),
+      ]);
 
-    const [deliveryNum, customers, descriptions, notes] = await Promise.all([
-      deliveryRes.json(),
-      customerRes.json(),
-      descRes.json(),
-      notesRes.json(),
-    ]);
+      const [deliveryNum, customers, descriptions] = await Promise.all([
+        deliveryRes.json(),
+        customerRes.json(),
+        descRes.json(),
+      ]);
 
-    if (deliveryNum.success) {
-      setDeliveryNumber(deliveryNum.deliveryNumber);
-      form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
-    }
-    if (customers.success) {
-      setCustomerList(customers.customers);
-    }
-    if (descriptions.success) {
-      setDescriptionList(descriptions.items);
-    }
-    if (notes.success) {
-      const cleaned = notes.data.map((row) => {
-        const newRow = {};
-        Object.keys(row).forEach((key) => {
-          newRow[key.trim()] = row[key]; // remove extra spaces
-        });
-        return newRow;
+      if (deliveryNum.success) {
+        setDeliveryNumber(deliveryNum.deliveryNumber);
+        form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
+      }
+      if (customers.success) {
+        setCustomerList(customers.customers);
+      }
+      if (descriptions.success) {
+        setDescriptionList(descriptions.items);
+      }
+
+      // ✅ Fetch delivery notes separately
+      await fetchDeliveryNotesData();
+    } catch (err) {
+      console.error("Error fetching initial data:", err);
+      notification.error({
+        message: "Error",
+        description: "Failed to fetch initial data",
       });
-      setFetchedData(cleaned);
+    } finally {
+      setLoadingDeliveryNumber(false);
+      setLoadingCustomerName(false);
+      setLoadingDescription(false);
     }
-  } catch (err) {
-    console.error("Error fetching initial data:", err);
-    notification.error({
-      message: "Error",
-      description: "Failed to fetch initial data",
-    });
-  } finally {
-    setLoadingDeliveryNumber(false);
-    setLoadingCustomerName(false);
-    setLoadingDescription(false);
-    setLoadingFetchedData(false);
-  }
-};
+  };
 
-useEffect(() => {
-  fetchInitialData();
-}, []);
-
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
 
   // Re-fetch descriptions when partNumber search changes
   useEffect(() => {
@@ -703,38 +674,34 @@ useEffect(() => {
     },
   ];
 
-  // useEffect(() => {
-  //   const nowUTC = new Date();
-  //   const dubaiOffset = 4 * 60;
-  //   const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-
-  //   const dubaiDayjs = dayjs(dubaiTime);
-  //   const formatted = dubaiDayjs.format("DD-MM-YYYY");
-
-  //   setDeliveryDate(formatted);
-
-  //   if (username === "Admin") {
-  //     // Only set for form field if admin (since it binds to form)
-  //     form.setFieldsValue({ date: dubaiDayjs });
-  //   } else {
-  //     // form.setFieldsValue({ date: dayjs(dubaiTime).format("DD-MM-YYYY") });
-  //        form.setFieldsValue({ date: formatted });
-  //     console.log(form.date);
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   const nowUTC = new Date();
-  //   const dubaiOffset = 4 * 60;
-  //   const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-  //   const dubaiDayjs = dayjs(dubaiTime);
-  //     const formatted = dubaiDayjs.format("DD-MM-YYYY");
-
-  //   setDeliveryDate(formatted);
-  //       console.log("Non-admin deliveryDate:", formatted); // ✅ Add this line
-
-  //   form.setFieldsValue({ date: dubaiDayjs });
-  // }, []);
+  const modalColumns = [
+    {
+      title: "Serial Number",
+      dataIndex: "Serial Number", // must match your actual key
+      render: (text) => <span>{text}</span>,
+    },
+    {
+      title: "Part Number",
+      dataIndex: "Part Number",
+      render: (text) => <span>{text}</span>,
+    },
+    {
+      title: "Item Description",
+      dataIndex: "Item Description",
+      render: (text) => <span>{text}</span>,
+    },
+    {
+      title: "Quantity",
+      dataIndex: "Quantity",
+      render: (text) => <span>{text}</span>,
+    },
+    { title: "Unit", dataIndex: "Unit", render: (text) => <span>{text}</span> },
+    {
+      title: "Stock In Hand",
+      dataIndex: "Stock In Hand",
+      render: (text) => <span>{text}</span>,
+    },
+  ];
 
   useEffect(() => {
     const nowUTC = new Date();
@@ -822,8 +789,6 @@ useEffect(() => {
       unit: "",
     });
   };
-
-  
 
   const handleDelete = (key) => {
     const updatedData = dataSource
@@ -918,7 +883,6 @@ useEffect(() => {
         if (username === "Admin") {
           // Admin gets dayjs object for DatePicker
           form.setFieldsValue({ date: dubaiDayjs });
-
         } else {
           // Non-admin gets formatted string for Input field
           form.setFieldsValue({ date: formatted });
@@ -931,7 +895,7 @@ useEffect(() => {
         ]);
 
         console.log("deliveryDate for non-admin:", deliveryDate);
-          await fetchInitialData();
+        await fetchInitialData();
       } else {
         notification.error({
           message: "Error",
@@ -950,48 +914,331 @@ useEffect(() => {
   };
 
   const fetchedTablecolumns = [
-    { title: "Delivery Number", dataIndex: "Delivery Number", width: 140 },
+    {
+      title: "Delivery Number",
+      dataIndex: "Delivery Number",
+      width: 200,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
     {
       title: "Date",
       dataIndex: "Date",
       width: 120,
-      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY") : ""),
+      render: (date) => {
+        const d = parseToDayjs(date);
+        const formatted = d ? d.format("DD-MM-YYYY") : "";
+        return (
+          <Tooltip title={formatted || ""}>
+            <span>{formatted || ""}</span>
+          </Tooltip>
+        );
+      },
     },
-    { title: "Customer Name", dataIndex: "Customer Name", width: 150 },
-    { title: "Address", dataIndex: "Address", width: 250 },
-    { title: "Mode of delivery", dataIndex: "Mode of delivery", width: 150 },
-    { title: "Reference", dataIndex: "Reference", width: 150 },
-    { title: "Serial Number", dataIndex: "Serial Number", width: 130 },
-    { title: "Part Number", dataIndex: "Part Number", width: 130 },
-    { title: "Item Description", dataIndex: "Item Description", width: 150 },
-    { title: "Quantity", dataIndex: "Quantity", width: 100 },
-    { title: "Unit", dataIndex: "Unit", width: 100 },
-    { title: "Stock In Hand", dataIndex: "Stock In Hand", width: 130 },
-    { title: "Modified User", dataIndex: "Modified User", width: 150 },
+    {
+      title: "Customer Name",
+      dataIndex: "Customer Name",
+      width: 250,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Address",
+      dataIndex: "Address",
+      width: 300,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Mode of delivery",
+      dataIndex: "Mode of delivery",
+      width: 200,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Reference",
+      dataIndex: "Reference",
+      width: 200,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Serial Number",
+      dataIndex: "Serial Number",
+      width: 130,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Part Number",
+      dataIndex: "Part Number",
+      width: 130,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Item Description",
+      dataIndex: "Item Description",
+      width: 300,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Quantity",
+      dataIndex: "Quantity",
+      width: 100,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Unit",
+      dataIndex: "Unit",
+      width: 100,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Stock In Hand",
+      dataIndex: "Stock In Hand",
+      width: 130,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Modified User",
+      dataIndex: "Modified User",
+      width: 200,
+      render: (text) => (
+        <Tooltip title={text || ""}>
+          <span>{text || ""}</span>
+        </Tooltip>
+      ),
+    },
     {
       title: "Modified Date & Time",
       dataIndex: "Modified Date & Time",
       width: 180,
-      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY HH:mm:ss") : ""),
+      render: (date) => {
+        const d = parseToDayjs(date);
+        const formatted = d ? d.format("DD-MM-YYYY HH:mm:ss") : "";
+        return (
+          <Tooltip title={formatted || "-"}>
+            <span>{formatted || "-"}</span>
+          </Tooltip>
+        );
+      },
+    },
+    {
+      title: "Action",
+      width: 110,
+      fixed: "right",
+      align: "center",
+      render: (_, record) => (
+        <Button
+          className="addButton"
+          onClick={() => {
+            // Fill form
+            viewForm.setFieldsValue(record);
+
+            // Keep the full partsUsed array from groupedData
+            setSelectedRow(record);
+
+            setIsModalVisible(true);
+          }}
+        >
+          View
+        </Button>
+      ),
     },
   ];
 
-  const filteredData = fetchedData.filter(item => {
-  const matchesSearch =
-    searchText === "" ||
-    Object.values(item).some(val =>
-      String(val).toLowerCase().includes(searchText.toLowerCase())
-    );
+  const filteredData = fetchedData.filter((item) => {
+    const matchesSearch =
+      searchText === "" ||
+      Object.values(item).some((val) =>
+        String(val).toLowerCase().includes(searchText.toLowerCase())
+      );
 
-  const itemDate = item.Date ? dayjs(item.Date) : null;
-  const matchesStart =
-    !startDate || (itemDate && itemDate.isSameOrAfter(startDate, "day"));
-  const matchesEnd =
-    !endDate || (itemDate && itemDate.isSameOrBefore(endDate, "day"));
+    const itemDate = parseToDayjs(item.Date);
+    const matchesStart =
+      !startDate || (itemDate && itemDate.isSameOrAfter(startDate, "day"));
+    const matchesEnd =
+      !endDate || (itemDate && itemDate.isSameOrBefore(endDate, "day"));
 
-  return matchesSearch && matchesStart && matchesEnd;
-});
+    return matchesSearch && matchesStart && matchesEnd;
+  });
 
+  const groupedData = Object.values(
+    filteredData.reduce((acc, item) => {
+      const deliveryNo = item["Delivery Number"];
+      if (!acc[deliveryNo]) {
+        acc[deliveryNo] = {
+          ...item,
+          partsUsed: [],
+        };
+      }
+      acc[deliveryNo].partsUsed.push({
+        "Serial Number": item["Serial Number"],
+        "Part Number": item["Part Number"],
+        "Item Description": item["Item Description"],
+        Quantity: item["Quantity"],
+        Unit: item["Unit"],
+        "Stock In Hand": item["Stock In Hand"],
+      });
+      return acc;
+    }, {})
+  );
+
+  const handleExport = () => {
+    const now = dayjs().format("DD-MM-YYYY_HH-mm-ss");
+    const fileName = `Delivery_Note_Report_${now}.xlsx`;
+
+    const headerStyle = {
+      font: { bold: true, sz: 12 },
+      alignment: { horizontal: "center", vertical: "center", wrapText: true },
+      border: getAllBorders(),
+      fill: { patternType: "solid", fgColor: { rgb: "FFFF00" } }, // Yellow background
+    };
+
+    const header = [
+      { v: "Delivery Number", t: "s", s: headerStyle },
+      { v: "Date", t: "s", s: headerStyle },
+      { v: "Customer Name", t: "s", s: headerStyle },
+      { v: "Address", t: "s", s: headerStyle },
+      { v: "Mode of delivery", t: "s", s: headerStyle },
+      { v: "Reference", t: "s", s: headerStyle },
+      { v: "Serial Number", t: "s", s: headerStyle },
+      { v: "Part Number", t: "s", s: headerStyle },
+      { v: "Item Description", t: "s", s: headerStyle },
+      { v: "Quantity", t: "s", s: headerStyle },
+      { v: "Unit", t: "s", s: headerStyle },
+      { v: "Stock In Hand", t: "s", s: headerStyle },
+      { v: "Modified User", t: "s", s: headerStyle },
+      { v: "Modified Date & Time", t: "s", s: headerStyle },
+    ];
+
+    const data = [];
+    groupedData.forEach((item) => {
+      (item.partsUsed || []).forEach((part) => {
+        data.push([
+          { v: item["Delivery Number"], s: { border: getAllBorders() } },
+          { v: item["Date"], s: { border: getAllBorders() } },
+          { v: item["Customer Name"], s: { border: getAllBorders() } },
+          { v: item["Address"], s: { border: getAllBorders() } },
+          { v: item["Mode of delivery"], s: { border: getAllBorders() } },
+          { v: item["Reference"], s: { border: getAllBorders() } },
+          { v: part["Serial Number"], s: { border: getAllBorders() } },
+          { v: part["Part Number"], s: { border: getAllBorders() } },
+          { v: part["Item Description"], s: { border: getAllBorders() } },
+          { v: part["Quantity"], s: { border: getAllBorders() } },
+          { v: part["Unit"], s: { border: getAllBorders() } },
+          { v: part["Stock In Hand"], s: { border: getAllBorders() } },
+          { v: item["Modified User"], s: { border: getAllBorders() } },
+          { v: item["Modified Date & Time"], s: { border: getAllBorders() } },
+        ]);
+      });
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
+
+    // Auto column width
+    const colWidths = header.map((_, colIndex) => {
+      let maxLength = 0;
+      [header, ...data].forEach((row) => {
+        const cell = row[colIndex];
+        const value = cell && cell.v != null ? String(cell.v) : "";
+        maxLength = Math.max(maxLength, value.length);
+      });
+      return { wch: Math.min(maxLength * 2, 60) }; // double width, max 60
+    });
+    ws["!cols"] = colWidths;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Delivery Note");
+
+    XLSX.writeFile(wb, fileName);
+
+    notification.success({
+      message: "Export Successful",
+      description: `File has been downloaded successfully.`,
+      placement: "bottomRight",
+    });
+  };
+
+  // Border helper
+  const getAllBorders = () => ({
+    top: { style: "thin", color: { rgb: "000000" } },
+    bottom: { style: "thin", color: { rgb: "000000" } },
+    left: { style: "thin", color: { rgb: "000000" } },
+    right: { style: "thin", color: { rgb: "000000" } },
+  });
+
+  const fetchDeliveryNotesData = async () => {
+    try {
+      setLoadingFetchedData(true);
+
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "getDeliveryNotes" }),
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        const cleaned = result.data.map((row) => {
+          const newRow = {};
+          Object.keys(row).forEach((key) => {
+            newRow[key.trim()] = row[key];
+          });
+          return newRow;
+        });
+        setFetchedData(cleaned);
+      }
+    } catch (err) {
+      console.error("Error fetching delivery notes:", err);
+      notification.error({
+        message: "Error",
+        description: "Failed to fetch delivery notes",
+        placement: "bottomRight",
+      });
+    } finally {
+      setLoadingFetchedData(false);
+    }
+  };
 
   const styl = `.ant-form-item .ant-form-item-explain-error {
     color: #ff4d4f;
@@ -1018,7 +1265,6 @@ useEffect(() => {
     max-width: 100%;
     height: 32px;
     color: #0D3884;
-    font-size: 14px;
 }
 .ant-form-item .ant-form-item-explain-error {
     color: #ff4d4f;
@@ -1052,6 +1298,16 @@ useEffect(() => {
     transition: background 0.2s ease;
   
 }
+    .ant-modal-root .ant-modal {
+    width: var(--ant-modal-xs-width);
+    width: 100% !important;
+}
+    
+.ant-form-vertical .ant-form-item:not(.ant-form-item-horizontal) .ant-form-item-label >label, .ant-form-vertical .ant-form-item:not(.ant-form-item-horizontal) .ant-col-24.ant-form-item-label >label, .ant-form-vertical .ant-form-item:not(.ant-form-item-horizontal) .ant-col-xl-24.ant-form-item-label >label {
+    margin: 0;
+    font-size: 14px;
+        font-weight: 700;
+
   
   `;
   return (
@@ -1326,11 +1582,11 @@ useEffect(() => {
                       />
                     </Form.Item>
 
-                    <div className="col-12 text-center mt-3 mb-3">
+                    <div className="col-7 text-center m-auto d-flex">
                       <Button
                         htmlType="submit"
                         size="large"
-                        className="submitButton mt-2"
+                        className="submitButton "
                         loading={loading}
                       >
                         {loading
@@ -1340,7 +1596,7 @@ useEffect(() => {
                       <Button
                         htmlType="button"
                         size="large"
-                        className="clearButton mt-2 ms-3"
+                        className="clearButton  ms-3"
                         onClick={() => {
                           const values = form.getFieldsValue();
                           const isEmpty = Object.values(values).every(
@@ -1384,47 +1640,304 @@ useEffect(() => {
                           }
                         }}
                       >
-                        Clear
+                        Clear Input
                       </Button>
                     </div>
                   </div>
                 </Form>
-                
-                <div className="mt-5">
-                  <div className="mb-3 flex gap-3">
-  <Input
-    placeholder="Search..."
-    value={searchText}
-    onChange={e => setSearchText(e.target.value)}
-    style={{ width: 250 }}
-  />
-  <DatePicker
-    placeholder="Start Date"
-    value={startDate}
-    onChange={setStartDate}
-    format="DD-MM-YYYY"
-  />
-  <DatePicker
-    placeholder="End Date"
-    value={endDate}
-    onChange={setEndDate}
-    format="DD-MM-YYYY"
-  />
-  <Button onClick={() => { setSearchText(""); setStartDate(null); setEndDate(null); }}>
-    Reset
-  </Button>
-</div>
 
-                <Table
-  columns={fetchedTablecolumns}
-  dataSource={filteredData.map((item, index) => ({ key: index, ...item }))}
-  loading={loadingFetchedData}
-  pagination={{ pageSize: 10 }}
-  scroll={{ x: 'max-content' }}
-  bordered
-/>
 
+                <div className="d-flex align-items-center gap-2 mb-1 mt-5 pt-2">
+                  <div
+                    className="d-flex align-items-center justify-content-center"
+                    style={{
+                      backgroundColor: "#e8f0fe",
+                      borderRadius: "12px",
+                      width: "40px",
+                      height: "40px",
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      icon={faTable}
+                      size="lg"
+                      style={{ color: "#0D3884" }}
+                    />
+                  </div>
+                  <div>
+                    <div
+                      className="fw-bold m-0 p-0"
+                      style={{ fontSize: "20px", color: "#0D3884" }}
+                    >
+                      Delivery note table
+                    </div>
+                    <div
+                      className="m-0 p-0"
+                      style={{ fontSize: "14px", color: "#0D3884" }}
+                    >
+                      Search or filter data and view delivery note information
+                    </div>
+                  </div>
                 </div>
+
+                <div className="border border-1"></div>
+
+                <div className="mt-3">
+                  <div className="mb-3 d-flex gap-1">
+                    <Input
+                      placeholder="Please provide search input"
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      style={{ width: 1300 }}
+                      suffix={<SearchOutlined />}
+                    />
+
+                    <DatePicker
+                      placeholder="Start Date"
+                      value={startDate}
+                      style={{ width: 400 }}
+                      className="ms-3"
+                      onChange={(date) => {
+                        if (endDate && date && date.isAfter(endDate, "day")) {
+                          notification.error({
+                            message: "Invalid Date Range",
+                            description:
+                              "Start date cannot be after the end date.",
+                            placement: "bottomRight",
+                          });
+                          return;
+                        }
+                        setStartDate(date);
+                      }}
+                      format="DD-MM-YYYY"
+                      allowClear
+                    />
+
+                    <DatePicker
+                      placeholder="End Date"
+                      value={endDate}
+                      style={{ width: 400 }}
+                      onChange={(date) => {
+                        if (
+                          startDate &&
+                          date &&
+                          date.isBefore(startDate, "day")
+                        ) {
+                          notification.error({
+                            message: "Invalid Date Range",
+                            description:
+                              "End date cannot be before the start date.",
+                            placement: "bottomRight",
+                          });
+                          return;
+                        }
+                        setEndDate(date);
+                      }}
+                      format="DD-MM-YYYY"
+                      allowClear
+                    />
+
+                    <Button
+                      icon={<ReloadOutlined />}
+                      onClick={() => {
+                        setSearchText("");
+                        setStartDate(null);
+                        setEndDate(null);
+                        fetchDeliveryNotesData();
+                        notification.info({
+                          message: "Filters Reset",
+                          description: "Data has been refreshed.",
+                          placement: "bottomRight",
+                        });
+                      }}
+                      size="large"
+                      className="resetButton ms-2"
+                    >
+                      Reset
+                    </Button>
+
+                    <Button
+                      icon={<ExportOutlined />}
+                      onClick={handleExport}
+                      size="large"
+                      className="exportButton"
+                    >
+                      Export
+                    </Button>
+                  </div>
+
+                  <Table
+                    columns={fetchedTablecolumns}
+                    dataSource={groupedData.map((item, index) => ({
+                      key: index,
+                      ...item,
+                    }))} 
+                     loading={loadingFetchedData}
+                    pagination={{ pageSize: 10 }}
+                    scroll={{ x: "max-content" }}
+                    bordered
+                  />
+                </div>
+
+                <Modal
+                  open={isModalVisible}
+                  onCancel={() => setIsModalVisible(false)}
+                  footer={null}
+                  width={1200}
+                  style={{ top: "5px" }}
+                >
+                  <div className="col-12 col-lg-8 text-center m-auto">
+                    <img
+                      src={HaitianLogo}
+                      alt="HaitianLogo"
+                      className=" m-0 p-0"
+                      style={{ width: "30%" }}
+                    />
+                  </div>
+
+                  <div className="d-flex align-items-center gap-2 mb-1">
+                    <div
+                      className="d-flex align-items-center justify-content-center"
+                      style={{
+                        backgroundColor: "#e8f0fe",
+                        borderRadius: "12px",
+                        width: "40px",
+                        height: "40px",
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={faEye}
+                        size="lg"
+                        style={{ color: "#0D3884" }}
+                      />
+                    </div>
+                    <div>
+                      <div
+                        className="fw-bold m-0 p-0"
+                        style={{ fontSize: "20px", color: "#0D3884" }}
+                      >
+                        View delivery note information
+                      </div>
+                      <div
+                        className="m-0 p-0"
+                        style={{ fontSize: "14px", color: "#0D3884" }}
+                      >
+                        Details about delivery note for the selected record
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border border-1"></div>
+
+                  <Form form={viewForm} layout="vertical" className="mt-3">
+                    <div className="container-fluid">
+                      {/* Delivery Number & Date */}
+                      <div className="row">
+                        <div className="col-md-6">
+                          <Form.Item
+                            name="Delivery Number"
+                            label="Delivery Number"
+                          >
+                            <Input readOnly />
+                          </Form.Item>
+                        </div>
+                        <div className="col-md-6">
+                          <Form.Item name="Date" label="Date">
+                            <Input readOnly />
+                          </Form.Item>
+                        </div>
+                      </div>
+
+                      {/* Customer Name */}
+                      <div className="row">
+                        <div className="col-md-12">
+                          <Form.Item name="Customer Name" label="Customer Name">
+                            <Input readOnly />
+                          </Form.Item>
+                        </div>
+                      </div>
+
+                      {/* Address */}
+                      <div className="row">
+                        <div className="col-md-12">
+                          <Form.Item name="Address" label="Address">
+                            <Input.TextArea
+                              readOnly
+                              autoSize={{ minRows: 2, maxRows: 4 }}
+                            />
+                          </Form.Item>
+                        </div>
+                      </div>
+
+                      {/* Mode of delivery & Reference */}
+                      <div className="row">
+                        <div className="col-md-6">
+                          <Form.Item
+                            name="Mode of delivery"
+                            label="Mode of Delivery"
+                          >
+                            <Input readOnly />
+                          </Form.Item>
+                        </div>
+                        <div className="col-md-6">
+                          <Form.Item name="Reference" label="Reference">
+                            <Input readOnly />
+                          </Form.Item>
+                        </div>
+                      </div>
+
+                      <div className="row">
+                        <div className="col-md-6">
+                          <Form.Item
+                            name="Modified User"
+                            label="Modified User"
+                          >
+                            <Input readOnly />
+                          </Form.Item>
+                        </div>
+                        <div className="col-md-6">
+                          <Form.Item name="Modified Date & Time" label="Modified Date & Time">
+                            <Input readOnly />
+                          </Form.Item>
+                        </div>
+                      </div>
+                     
+                      {/* Parts Used Table */}
+                      <div className="row">
+                        <div className="col-md-12">
+                          <Table
+                            columns={modalColumns}
+                            dataSource={(selectedRow?.partsUsed || []).map(
+                              (part, idx) => ({
+                                key: idx,
+                                ...part,
+                              })
+                            )}
+                            rowKey="key"
+                            pagination={false}
+                            bordered
+                            scroll={{ x: "max-content" }}
+                            size="middle"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-5 mb-5 col-7 m-auto">
+                        <Button
+                          className="closeModalButton"
+                          size="large"
+                          onClick={() => {
+                            setIsModalVisible(false);
+                          }}
+                        >
+                          Close Form
+                        </Button>
+
+                        <Button className="submitButton ms-3" size="large">
+                          Dowload PDF
+                        </Button>
+                      </div>
+                    </div>
+                  </Form>
+                </Modal>
               </div>
             </div>
           </div>

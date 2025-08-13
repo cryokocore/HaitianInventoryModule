@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "antd/dist/reset.css";
-import { Button, Form, Input, Table } from "antd";
+import { Button, Form, Input, Table, Tooltip } from "antd";
 import { notification } from "antd";
 // import HaitianLogo from "../Images/HaitianLogo.jpeg";
 import "../App.css";
@@ -11,25 +11,99 @@ export default function Inventory() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [tableDataSource, setTableDataSource] = useState();
-  const columns = [
-    { title: "Serial Number", dataIndex: "Serial Number", key: "serial" },
-    { title: "Part Number", dataIndex: "Part Number", key: "partNumber" },
-    { title: "Description", dataIndex: "Description", key: "description" },
-    { title: "Quantity", dataIndex: "Quantity", key: "quantity" },
-    { title: "Unit", dataIndex: "Unit", key: "unit" },
-    {
-      title: "Total Price in AED",
-      dataIndex: "Total Price in AED",
-      key: "totalPrice",
-    },
-    {
-      title: "Purchase Cost(per item)",
-      dataIndex: "Purchase Cost(per item)",
-      key: "purchaseCost",
-    },
-    { title: "Add On Cost", dataIndex: "Add On Cost", key: "addOnCost" },
-    { title: "Selling Cost", dataIndex: "Selling Cost", key: "sellingCost" },
-  ];
+const columns = [
+  {
+    title: "Serial Number",
+    dataIndex: "Serial Number",
+    key: "serial",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Part Number",
+    dataIndex: "Part Number",
+    key: "partNumber",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Description",
+    dataIndex: "Description",
+    key: "description",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Quantity",
+    dataIndex: "Quantity",
+    key: "quantity",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Unit",
+    dataIndex: "Unit",
+    key: "unit",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Total Price in AED",
+    dataIndex: "Total Price in AED",
+    key: "totalPrice",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Purchase Cost(per item)",
+    dataIndex: "Purchase Cost(per item)",
+    key: "purchaseCost",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Add On Cost",
+    dataIndex: "Add On Cost",
+    key: "addOnCost",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Selling Cost",
+    dataIndex: "Selling Cost",
+    key: "sellingCost",
+    render: (text) => (
+      <Tooltip title={text}>
+        <span>{text}</span>
+      </Tooltip>
+    ),
+  },
+];
+
 
   const fetchInventory = async (values = {}) => {
     try {
@@ -41,7 +115,7 @@ export default function Inventory() {
       });
 
       const res = await fetch(
-        "https://script.google.com/macros/s/AKfycbyJzZ1Jet-m_GQzHTaBQqC3kVYHwUQx9CplS_DtdYgeHGntol7todbn_4OAhjc5PkUXrQ/exec",
+        "https://script.google.com/macros/s/AKfycbyqSD58jDWAvjdyqAJIDk8gBYW_RypyxC_7TchL0jbexK42rurMsXxsO3HIrAWrXXOsUg/exec",
         {
           method: "POST",
           body: params,

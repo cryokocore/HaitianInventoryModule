@@ -377,7 +377,7 @@ export default function SideNavBar({ onLogout, username }) {
     }
 
     .sidebar-divider {
-      border-top: 1px solid  #fcf8f8b0;
+      border-top: 2px solid  #6e6e6e;
       width:90%;
       margin: 0 auto;
   
@@ -385,7 +385,7 @@ export default function SideNavBar({ onLogout, username }) {
 
     .logout-container {
       padding: 10px;
-      border-top: 1px solid #fcf8f8b0;
+      border-top: 2px solid #6e6e6e;
     }
 
     .logout-button {

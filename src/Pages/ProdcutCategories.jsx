@@ -130,7 +130,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbyJzZ1Jet-m_GQzHTaBQqC3kVYHwUQx9CplS_DtdYgeHGntol7todbn_4OAhjc5PkUXrQ/exec";
+    "https://script.google.com/macros/s/AKfycbyqSD58jDWAvjdyqAJIDk8gBYW_RypyxC_7TchL0jbexK42rurMsXxsO3HIrAWrXXOsUg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -5055,7 +5055,7 @@ useEffect(() => {
                       </div>
                     )}
 
-                    <div className="col-12 text-center mt-4 mb-3">
+                    <div className="col-7 text-center mt-4 mb-3 d-flex m-auto">
                       <Button
                         htmlType="submit"
                         size="large"
@@ -5072,8 +5072,8 @@ useEffect(() => {
                         loading={loading}
                       >
                         {loading
-                          ? "Submitting Categories"
-                          : "Submit Categories"}
+                          ? "Submitting Categories Data"
+                          : "Submit Categories Data"}
                       </Button>
 
                       <Button
@@ -5167,7 +5167,7 @@ useEffect(() => {
                           });
                         }}
                       >
-                        Clear
+                        Clear Input
                       </Button>
                     </div>
                   </div>
