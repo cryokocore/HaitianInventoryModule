@@ -130,7 +130,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbyqSD58jDWAvjdyqAJIDk8gBYW_RypyxC_7TchL0jbexK42rurMsXxsO3HIrAWrXXOsUg/exec";
+    "https://script.google.com/macros/s/AKfycbzk9o5YbJ8w4UINlKf49uEFI2fiQVcrvyXfa8ln4HXl5d5qxHjwkeElSId3l6Qbdo64Hg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -1834,7 +1834,7 @@ useEffect(() => {
             <Input
               placeholder="Enter Quantity"
               type="number"
-              min={1}
+              // min={1}
               disabled={spareUnitLoading}
 
               value={inputRow.quantity}
@@ -2633,7 +2633,7 @@ useEffect(() => {
         <Input
           placeholder="Enter Quantity"
           type="number"
-          min={1}
+          // min={1}
           disabled={auxiliariesUnitLoading}
           value={auxiliariesInputRow.quantity}
           onChange={(e) => {
@@ -3418,7 +3418,7 @@ useEffect(() => {
         <Input
           placeholder="Enter Quantity"
           type="number"
-          min={1}
+          // min={1}
                         disabled={assetsUnitLoading}
 
           value={assetsInputRow.quantity}
@@ -4150,7 +4150,7 @@ useEffect(() => {
             <Input
               placeholder="Enter Quantity"
               type="number"
-              min={1}
+              // min={1}
               value={machineinputRow.quantity}
               disabled={machineUnitLoading}
               onChange={(e) => {

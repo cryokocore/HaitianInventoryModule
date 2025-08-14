@@ -33,6 +33,8 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import XLSX from "xlsx-js-style";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(isSameOrAfter);
@@ -105,7 +107,7 @@ export default function DeliveryNote({ username }) {
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbyqSD58jDWAvjdyqAJIDk8gBYW_RypyxC_7TchL0jbexK42rurMsXxsO3HIrAWrXXOsUg/exec";
+    "https://script.google.com/macros/s/AKfycbzk9o5YbJ8w4UINlKf49uEFI2fiQVcrvyXfa8ln4HXl5d5qxHjwkeElSId3l6Qbdo64Hg/exec";
 
   // const fetchInitialData = async () => {
   //   try {
@@ -491,7 +493,7 @@ export default function DeliveryNote({ username }) {
             <Input
               placeholder="Enter quantity"
               type="number"
-              min={1}
+              // min={0.1}
               value={inputRow.quantity}
               onChange={(e) => {
                 const value = e.target.value.trim();
@@ -721,7 +723,7 @@ export default function DeliveryNote({ username }) {
       form.setFieldsValue({ date: formatted });
     }
 
-    console.log("Non-admin deliveryDate:", formatted);
+    // console.log("Non-admin deliveryDate:", formatted);
   }, []);
 
   const handleAdd = () => {
@@ -781,13 +783,13 @@ export default function DeliveryNote({ username }) {
 
     setDataSource(updatedData);
 
-    setInputRow({
-      partNumber: "",
-      itemDescription: "",
-      quantity: "",
-      stockInHand: "",
-      unit: "",
-    });
+    // setInputRow({
+    //   partNumber: "",
+    //   itemDescription: "",
+    //   quantity: "",
+    //   stockInHand: "",
+    //   unit: "",
+    // });
   };
 
   const handleDelete = (key) => {
@@ -799,119 +801,258 @@ export default function DeliveryNote({ username }) {
       }));
     setDataSource(updatedData);
   };
+  
+
+  // const handleSubmit = async (values) => {
+  //   if (!navigator.onLine) {
+  //     notification.error({
+  //       message: "No Internet Connection",
+  //       description: "Please check your internet and try again.",
+  //     });
+  //     return;
+  //   }
+  //   if (dataSource.length === 0) {
+  //     notification.error({
+  //       message: "No Items",
+  //       description: "Please add at least one item to submit.",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoading(true);
+
+
+  //     const response = await fetch(GAS_URL, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //       body: new URLSearchParams({
+  //         action: "addDeliveryNote",
+  //         deliveryNumber: values.deliveryNumber,
+  //         // date: values.date,
+  //         // date: values.date ? dayjs(values.date).format("DD-MM-YYYY") : "",
+  //         date:
+  //           username === "Admin"
+  //             ? dayjs(values.date).format("DD-MM-YYYY")
+  //             : deliveryDate,
+
+  //         customername: values.customername,
+  //         address: values.address,
+  //         modeOfDelivery: values.modeOfDelivery,
+  //         reference: values.reference,
+  //         items: JSON.stringify(dataSource),
+  //         userName: username || "-",
+  //       }),
+  //     });
+  //     const result = await response.json();
+  //     if (result.success) {
+  //         generateDeliveryNotePDF(values, dataSource);
+
+  //       notification.success({
+  //         message: "Success",
+  //         description: result.message,
+  //       });
+  //       // form.resetFields();
+  //       setDataSource([]);
+  //       setInputRow({
+  //         partNumber: "",
+  //         itemDescription: "",
+  //         quantity: "",
+  //         unit: "",
+  //         stockInHand: "",
+  //       });
+  //       // Fetch new delivery number
+  //       const nextRes = await fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+  //       });
+
+  //       const nextResult = await nextRes.json();
+  //       if (nextResult.success) {
+  //         form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
+  //       }
+  //       const nowUTC = new Date();
+  //       const dubaiOffset = 4 * 60;
+  //       const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+
+  //       const dubaiDayjs = dayjs(dubaiTime);
+  //       const formatted = dubaiDayjs.format("DD-MM-YYYY");
+
+  //       setDeliveryDate(formatted);
+
+  //       if (username === "Admin") {
+  //         // Admin gets dayjs object for DatePicker
+  //         form.setFieldsValue({ date: dubaiDayjs });
+  //       } else {
+  //         // Non-admin gets formatted string for Input field
+  //         form.setFieldsValue({ date: formatted });
+  //       }
+  //       form.setFields([
+  //         { name: "customername", value: undefined },
+  //         { name: "address", value: undefined },
+  //         { name: "modeOfDelivery", value: undefined },
+  //         { name: "reference", value: undefined },
+  //       ]);
+
+  //       // console.log("deliveryDate for non-admin:", deliveryDate);
+  //       await fetchInitialData();
+  //     } else {
+  //       notification.error({
+  //         message: "Error",
+  //         description: result.message || "Failed to add delivery note",
+  //       });
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Something went wrong.",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleSubmit = async (values) => {
-    if (!navigator.onLine) {
-      notification.error({
-        message: "No Internet Connection",
-        description: "Please check your internet and try again.",
-      });
-      return;
-    }
-    if (dataSource.length === 0) {
-      notification.error({
-        message: "No Items",
-        description: "Please add at least one item to submit.",
-      });
-      return;
-    }
+  if (!navigator.onLine) {
+    notification.error({
+      message: "No Internet Connection",
+      description: "Please check your internet and try again.",
+    });
+    return;
+  }
+  if (dataSource.length === 0) {
+    notification.error({
+      message: "No Items",
+      description: "Please add at least one item to submit.",
+    });
+    return;
+  }
 
-    try {
-      setLoading(true);
-      console.log(
-        "Date sent to backend:",
-        values.date,
-        dayjs(values.date).format("DD-MM-YYYY")
+  try {
+    setLoading(true);
+
+    // 1️⃣ Save form data first
+    const response = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        action: "addDeliveryNote",
+        deliveryNumber: values.deliveryNumber,
+        date:
+          username === "Admin"
+            ? dayjs(values.date).format("DD-MM-YYYY")
+            : deliveryDate,
+        customername: values.customername,
+        address: values.address,
+        modeOfDelivery: values.modeOfDelivery,
+        reference: values.reference,
+        items: JSON.stringify(dataSource),
+        userName: username || "-",
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // 2️⃣ Generate PDF in memory (don't save locally)
+      const doc = generateDeliveryNotePDF(values, dataSource, false);
+
+      // Convert to base64
+      const pdfOutput = doc.output("arraybuffer");
+      const pdfBase64 = btoa(
+        new Uint8Array(pdfOutput).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ""
+        )
       );
 
-      const response = await fetch(GAS_URL, {
+      // 3️⃣ Upload to Google Drive
+      const uploadRes = await fetch(GAS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          action: "addDeliveryNote",
-          deliveryNumber: values.deliveryNumber,
-          // date: values.date,
-          // date: values.date ? dayjs(values.date).format("DD-MM-YYYY") : "",
-          date:
-            username === "Admin"
-              ? dayjs(values.date).format("DD-MM-YYYY")
-              : deliveryDate,
-
-          customername: values.customername,
-          address: values.address,
-          modeOfDelivery: values.modeOfDelivery,
-          reference: values.reference,
-          items: JSON.stringify(dataSource),
-          userName: username || "-",
+          action: "uploadDeliveryNotePDF",
+          pdfBase64,
+          fileName: `DeliveryNote_${values.deliveryNumber || "Unknown"}.pdf`,
         }),
       });
-      const result = await response.json();
-      if (result.success) {
-        notification.success({
-          message: "Success",
-          description: result.message,
-        });
-        // form.resetFields();
-        setDataSource([]);
-        setInputRow({
-          partNumber: "",
-          itemDescription: "",
-          quantity: "",
-          unit: "",
-          stockInHand: "",
-        });
-        // Fetch new delivery number
-        const nextRes = await fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-        });
 
-        const nextResult = await nextRes.json();
-        if (nextResult.success) {
-          form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
-        }
-        const nowUTC = new Date();
-        const dubaiOffset = 4 * 60;
-        const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-
-        const dubaiDayjs = dayjs(dubaiTime);
-        const formatted = dubaiDayjs.format("DD-MM-YYYY");
-
-        setDeliveryDate(formatted);
-
-        if (username === "Admin") {
-          // Admin gets dayjs object for DatePicker
-          form.setFieldsValue({ date: dubaiDayjs });
-        } else {
-          // Non-admin gets formatted string for Input field
-          form.setFieldsValue({ date: formatted });
-        }
-        form.setFields([
-          { name: "customername", value: undefined },
-          { name: "address", value: undefined },
-          { name: "modeOfDelivery", value: undefined },
-          { name: "reference", value: undefined },
-        ]);
-
-        console.log("deliveryDate for non-admin:", deliveryDate);
-        await fetchInitialData();
+      const uploadResult = await uploadRes.json();
+      if (uploadResult.success) {
+        console.log("✅ PDF uploaded to Google Drive:", uploadResult.fileUrl);
       } else {
-        notification.error({
-          message: "Error",
-          description: result.message || "Failed to add delivery note",
-        });
+        console.error("❌ PDF upload failed:", uploadResult.message);
       }
-    } catch (err) {
-      console.error(err);
+console.log("Uploading PDF to Drive...");
+console.log("Base64 size:", pdfBase64.length);
+      notification.success({
+        message: "Success",
+        description: result.message,
+      });
+
+      // 4️⃣ Reset form state
+      setDataSource([]);
+      setInputRow({
+        partNumber: "",
+        itemDescription: "",
+        quantity: "",
+        unit: "",
+        stockInHand: "",
+      });
+
+      // Fetch new delivery number
+      const nextRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+      });
+
+      const nextResult = await nextRes.json();
+      if (nextResult.success) {
+        form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
+      }
+
+      // Reset date
+      const nowUTC = new Date();
+      const dubaiOffset = 4 * 60;
+      const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+      const dubaiDayjs = dayjs(dubaiTime);
+      const formatted = dubaiDayjs.format("DD-MM-YYYY");
+      setDeliveryDate(formatted);
+
+      if (username === "Admin") {
+        form.setFieldsValue({ date: dubaiDayjs });
+      } else {
+        form.setFieldsValue({ date: formatted });
+      }
+
+      form.setFields([
+        { name: "customername", value: undefined },
+        { name: "address", value: undefined },
+        { name: "modeOfDelivery", value: undefined },
+        { name: "reference", value: undefined },
+      ]);
+
+      await fetchInitialData();
+    } else {
       notification.error({
         message: "Error",
-        description: "Something went wrong",
+        description: result.message || "Failed to add delivery note",
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    notification.error({
+      message: "Error",
+      description: "Something went wrong.",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const fetchedTablecolumns = [
     {
@@ -1239,6 +1380,436 @@ export default function DeliveryNote({ username }) {
       setLoadingFetchedData(false);
     }
   };
+
+//Working code restrict 11-25 columns from page 2
+// const generateDeliveryNotePDF = (formValues, items = []) => {
+//   const doc = new jsPDF();
+
+//   const rowsFirstPage = 10;
+//   const rowsOtherPages = 15;
+
+//   // Manually chunk the items into pages
+//   const pagesData = [];
+//   if (items.length <= rowsFirstPage) {
+//     pagesData.push(items);
+//   } else {
+//     pagesData.push(items.slice(0, rowsFirstPage));
+//     let remaining = items.slice(rowsFirstPage);
+//     while (remaining.length > 0) {
+//       pagesData.push(remaining.slice(0, rowsOtherPages));
+//       remaining = remaining.slice(rowsOtherPages);
+//     }
+//   }
+
+//   const totalPages = pagesData.length;
+
+//   pagesData.forEach((pageItems, pageIndex) => {
+//     const currentPage = pageIndex + 1;
+//     if (currentPage > 1) doc.addPage();
+
+//     let tableStartY = 20;
+
+//     // First page header
+//     if (currentPage === 1) {
+//       doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+//       // Company Info
+//       doc.setFontSize(11);
+//       let leftY = 40;
+//       doc.text("Hamriyah Free Zone", 14, leftY);
+//       doc.text("Po Box:496, Sharjah, U.A.E", 14, leftY + 5);
+//       doc.text("Sharjah", 14, leftY + 10);
+//       doc.text("U.A.E", 14, leftY + 15);
+//       doc.text("TRN100008343400003", 14, leftY + 20);
+
+//       // Title & Note Info
+//       const rightX = 130;
+//       doc.setFontSize(30);
+//       doc.text("Delivery Note", rightX, 22);
+
+//       doc.setFontSize(12);
+//       doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
+//       doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+//       // Deliver To
+//       let yCursor = leftY + 30;
+//       doc.setFont("helvetica", "bold");
+//       doc.setFontSize(12);
+//       doc.text("Deliver To:", 14, yCursor);
+
+//       doc.setFont("helvetica", "normal");
+//       doc.setFontSize(10);
+//       yCursor += 6;
+//       doc.text(formValues.customername || "", 14, yCursor);
+//       yCursor += 5;
+//       doc.text(formValues.address || "", 14, yCursor);
+
+//       tableStartY = 100; // space for header
+//     }
+
+//     // Table for this page
+//     autoTable(doc, {
+//       startY: tableStartY,
+//       head: [["#", "Item & Description", "Qty"]],
+//       body: pageItems.map((item, idx) => [
+//         pageIndex === 0
+//           ? idx + 1
+//           : rowsFirstPage + (pageIndex - 1) * rowsOtherPages + idx + 1,
+//         `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//         item.quantity || ""
+//       ]),
+//       margin: { left: 14, right: 14 },
+//       styles: {
+//         fontSize: 10,
+//         cellPadding: 3,
+//         valign: "middle",
+//         textColor: [0, 0, 0],
+//       },
+//       headStyles: {
+//         fillColor: [40, 40, 40],
+//         textColor: [255, 255, 255],
+//         halign: "left",
+//       },
+//       bodyStyles: {
+//         textColor: [0, 0, 0],
+//       },
+//       alternateRowStyles: {
+//         fillColor: [245, 245, 245], // striped rows
+//       },
+//       columnStyles: {
+//         0: { halign: "center", cellWidth: 10 },
+//         1: { halign: "left", cellWidth: 152 },
+//         2: { halign: "center", cellWidth: 20 },
+//       },
+//       pageBreak: 'avoid', // prevent extra autoTable pages
+//     });
+
+//     // Footer: Page number
+//     const pageHeight = doc.internal.pageSize.height;
+//     doc.setFontSize(9);
+//     doc.text(
+//       `Page ${currentPage} of ${totalPages}`,
+//       doc.internal.pageSize.width / 2,
+//       pageHeight - 5,
+//       { align: "center" }
+//     );
+
+//     // Signature only on last page
+//     if (currentPage === totalPages) {
+//       doc.setLineDash([2, 2], 0);
+//       doc.line(14, pageHeight - 25, 80, pageHeight - 25);
+//       doc.setLineDash([]);
+//       doc.text("Authorized Signature", 14, pageHeight - 20);
+//     }
+//   });
+
+//   doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+// };
+
+// const generateDeliveryNotePDF = (formValues, items = []) => {
+//   const doc = new jsPDF();
+//   const pageHeight = doc.internal.pageSize.height;
+//   const bottomMargin = 30;
+//   const firstPageRowLimit = 10; // hard cap for first page
+//   const usableHeightFirstPage = pageHeight - bottomMargin - 100; // space after header
+//   const usableHeightOtherPages = pageHeight - bottomMargin - 20; // space after small margin
+
+//   const allPages = [];
+
+//   // Function to chunk items by height
+//   const chunkByHeight = (arr, startY, usableHeight) => {
+//     const chunk = [];
+//     let yCursor = startY;
+//     arr.forEach((item, idx) => {
+//       // Measure row height (approx)
+//       const textLines = doc.splitTextToSize(
+//         `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//         152
+//       );
+//       const rowHeight = textLines.length * 5 + 6; // padding included
+//       if (yCursor + rowHeight > startY + usableHeight && chunk.length > 0) {
+//         return; // stop adding more
+//       }
+//       chunk.push(item);
+//       yCursor += rowHeight;
+//     });
+//     return chunk;
+//   };
+
+//   // First page chunk (strict 10 rows max)
+//   const firstPageItems = items.slice(0, firstPageRowLimit);
+//   allPages.push(firstPageItems);
+
+//   // Remaining items chunked dynamically
+//   let remaining = items.slice(firstPageRowLimit);
+//   while (remaining.length > 0) {
+//     const pageItems = chunkByHeight(remaining, 20, usableHeightOtherPages);
+//     allPages.push(pageItems);
+//     remaining = remaining.slice(pageItems.length);
+//   }
+
+//   const totalPages = allPages.length;
+
+//   allPages.forEach((pageItems, pageIndex) => {
+//     const currentPage = pageIndex + 1;
+//     if (currentPage > 1) doc.addPage();
+
+//     let tableStartY = 20;
+
+//     // First page header
+//     if (currentPage === 1) {
+//       doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+//       // Company Info
+//       doc.setFontSize(11);
+//       let leftY = 40;
+//       doc.text("Hamriyah Free Zone", 14, leftY);
+//       doc.text("Po Box:496, Sharjah, U.A.E", 14, leftY + 5);
+//       doc.text("Sharjah", 14, leftY + 10);
+//       doc.text("U.A.E", 14, leftY + 15);
+//       doc.text("TRN100008343400003", 14, leftY + 20);
+
+//       // Title & Note Info
+//       const rightX = 130;
+//       doc.setFontSize(30);
+//       doc.text("Delivery Note", rightX, 22);
+
+//       doc.setFontSize(12);
+//       doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
+//       doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+//       // Deliver To
+//       let yCursor = leftY + 30;
+//       doc.setFont("helvetica", "bold");
+//       doc.setFontSize(12);
+//       doc.text("Deliver To:", 14, yCursor);
+
+//       doc.setFont("helvetica", "normal");
+//       doc.setFontSize(10);
+//       yCursor += 6;
+//       doc.text(formValues.customername || "", 14, yCursor);
+//       yCursor += 5;
+//       doc.text(formValues.address || "", 14, yCursor);
+
+//       tableStartY = 100; // space after header
+//     }
+
+//     // Table
+//     autoTable(doc, {
+//       startY: tableStartY,
+//       head: [["#", "Item & Description", "Qty"]],
+//       // body: pageItems.map((item, idx) => [
+//       //   pageIndex === 0
+//       //     ? idx + 1
+//       //     : firstPageRowLimit + (pageIndex - 1) * 999 + idx + 1, // numbering continues
+//       //   `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//       //   item.quantity || ""
+//       // ]),
+//       body: pageItems.map((item, idx) => {
+//   // Calculate row number based on all previous pages' lengths
+//   const previousRowsCount = allPages
+//     .slice(0, pageIndex)
+//     .reduce((sum, arr) => sum + arr.length, 0);
+  
+//   return [
+//     previousRowsCount + idx + 1,
+//     `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//     item.quantity || ""
+//   ];
+// }),
+
+//       margin: { left: 14, right: 14 },
+//       styles: {
+//         fontSize: 10,
+//         cellPadding: 3,
+//         valign: "middle",
+//         textColor: [0, 0, 0],
+//       },
+//       headStyles: {
+//         fillColor: [40, 40, 40],
+//         textColor: [255, 255, 255],
+//         halign: "left",
+//       },
+//       bodyStyles: {
+//         textColor: [0, 0, 0],
+//       },
+//       alternateRowStyles: {
+//         fillColor: [245, 245, 245], // striped rows
+//       },
+//       columnStyles: {
+//         0: { halign: "center", cellWidth: 10 },
+//         1: { halign: "left", cellWidth: 152 },
+//         2: { halign: "center", cellWidth: 20 },
+//       },
+//       pageBreak: 'avoid',
+//     });
+
+//     // Footer: Page number
+//     doc.setFontSize(9);
+//     doc.text(
+//       `Page ${currentPage} of ${totalPages}`,
+//       doc.internal.pageSize.width / 2,
+//       pageHeight - 5,
+//       { align: "center" }
+//     );
+
+//     // Signature only on last page
+//     if (currentPage === totalPages) {
+//       doc.setLineDash([2, 2], 0);
+//       doc.line(14, pageHeight - 25, 80, pageHeight - 25);
+//       doc.setLineDash([]);
+//       doc.text("Authorized Signature", 14, pageHeight - 20);
+//     }
+//   });
+
+//   doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+// };
+
+const generateDeliveryNotePDF = (formValues, items = [], saveLocally = true) => {
+  const doc = new jsPDF();
+  const pageHeight = doc.internal.pageSize.height;
+  const bottomMargin = 30;
+  const firstPageRowLimit = 10;
+  const usableHeightFirstPage = pageHeight - bottomMargin - 100;
+  const usableHeightOtherPages = pageHeight - bottomMargin - 20;
+
+  const allPages = [];
+
+  // Chunk items by height
+  const chunkByHeight = (arr, startY, usableHeight) => {
+    const chunk = [];
+    let yCursor = startY;
+    arr.forEach((item) => {
+      const textLines = doc.splitTextToSize(
+        `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+        152
+      );
+      const rowHeight = textLines.length * 5 + 6;
+      if (yCursor + rowHeight > startY + usableHeight && chunk.length > 0) {
+        return;
+      }
+      chunk.push(item);
+      yCursor += rowHeight;
+    });
+    return chunk;
+  };
+
+  const firstPageItems = items.slice(0, firstPageRowLimit);
+  allPages.push(firstPageItems);
+
+  let remaining = items.slice(firstPageRowLimit);
+  while (remaining.length > 0) {
+    const pageItems = chunkByHeight(remaining, 20, usableHeightOtherPages);
+    allPages.push(pageItems);
+    remaining = remaining.slice(pageItems.length);
+  }
+
+  const totalPages = allPages.length;
+
+  allPages.forEach((pageItems, pageIndex) => {
+    const currentPage = pageIndex + 1;
+    if (currentPage > 1) doc.addPage();
+    let tableStartY = 20;
+
+    if (currentPage === 1) {
+      doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+      doc.setFontSize(11);
+      let leftY = 40;
+      doc.text("Hamriyah Free Zone", 14, leftY);
+      doc.text("Po Box:496, Sharjah, U.A.E", 14, leftY + 5);
+      doc.text("Sharjah", 14, leftY + 10);
+      doc.text("U.A.E", 14, leftY + 15);
+      doc.text("TRN100008343400003", 14, leftY + 20);
+
+      const rightX = 130;
+      doc.setFontSize(30);
+      doc.text("Delivery Note", rightX, 22);
+      doc.setFontSize(12);
+      doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
+      doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+      let yCursor = leftY + 30;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Deliver To:", 14, yCursor);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      yCursor += 6;
+      doc.text(formValues.customername || "", 14, yCursor);
+      yCursor += 5;
+      doc.text(formValues.address || "", 14, yCursor);
+
+      tableStartY = 100;
+    }
+
+    autoTable(doc, {
+      startY: tableStartY,
+      head: [["#", "Item & Description", "Qty"]],
+      body: pageItems.map((item, idx) => {
+        const previousRowsCount = allPages
+          .slice(0, pageIndex)
+          .reduce((sum, arr) => sum + arr.length, 0);
+        return [
+          previousRowsCount + idx + 1,
+          `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+          item.quantity || ""
+        ];
+      }),
+      margin: { left: 14, right: 14 },
+      styles: {
+        fontSize: 10,
+        cellPadding: 3,
+        valign: "middle",
+        textColor: [0, 0, 0],
+      },
+      headStyles: {
+        fillColor: [40, 40, 40],
+        textColor: [255, 255, 255],
+        halign: "left",
+      },
+      bodyStyles: {
+        textColor: [0, 0, 0],
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      columnStyles: {
+        0: { halign: "center", cellWidth: 10 },
+        1: { halign: "left", cellWidth: 152 },
+        2: { halign: "center", cellWidth: 20 },
+      },
+      pageBreak: 'avoid',
+    });
+
+    doc.setFontSize(9);
+    doc.text(
+      `Page ${currentPage} of ${totalPages}`,
+      doc.internal.pageSize.width / 2,
+      pageHeight - 5,
+      { align: "center" }
+    );
+
+    if (currentPage === totalPages) {
+      doc.setLineDash([2, 2], 0);
+      doc.line(14, pageHeight - 25, 80, pageHeight - 25);
+      doc.setLineDash([]);
+      doc.text("Authorized Signature", 14, pageHeight - 20);
+    }
+  });
+
+  if (saveLocally) {
+    doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+  }
+
+  return doc; // ✅ return doc so .output() works
+};
+
+
+
+
+
+
 
   const styl = `.ant-form-item .ant-form-item-explain-error {
     color: #ff4d4f;
