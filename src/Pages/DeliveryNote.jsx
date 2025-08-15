@@ -95,6 +95,7 @@ export default function DeliveryNote({ username }) {
   const [endDate, setEndDate] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [paymentTerms, setPaymentTerms] = useState("");
   const [inputRow, setInputRow] = useState({
     serialNumber: "",
     partNumber: "",
@@ -107,7 +108,7 @@ export default function DeliveryNote({ username }) {
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbzk9o5YbJ8w4UINlKf49uEFI2fiQVcrvyXfa8ln4HXl5d5qxHjwkeElSId3l6Qbdo64Hg/exec";
+    "https://script.google.com/macros/s/AKfycbxnNHVE4G0TozBvRopATAxvbI2uU7nWyQdirsPgtiH9U1RY1pEEm_qvEdAwBx189bQKvg/exec";
 
   // const fetchInitialData = async () => {
   //   try {
@@ -508,7 +509,7 @@ export default function DeliveryNote({ username }) {
                       value === "0.0" ||
                       value === ".0" ||
                       isNaN(num) ||
-                      num === 0)
+                      num <= 0)
                   ) {
                     notification.error({
                       message: "Invalid Quantity",
@@ -957,7 +958,7 @@ export default function DeliveryNote({ username }) {
 
     if (result.success) {
       // 2️⃣ Generate PDF in memory (don't save locally)
-      const doc = generateDeliveryNotePDF(values, dataSource, false);
+      const doc = generateDeliveryNotePDF(  { ...values, paymentTerms }, dataSource, false);
 
       // Convert to base64
       const pdfOutput = doc.output("arraybuffer");
@@ -1665,150 +1666,640 @@ console.log("Base64 size:", pdfBase64.length);
 //   doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
 // };
 
+//Working code
+// const generateDeliveryNotePDF = (formValues, items = [], saveLocally = true) => {
+//   const doc = new jsPDF();
+//   const pageHeight = doc.internal.pageSize.height;
+//   const bottomMargin = 30;
+//   const firstPageRowLimit = 10;
+//   const usableHeightFirstPage = pageHeight - bottomMargin - 100;
+//   const usableHeightOtherPages = pageHeight - bottomMargin - 20;
+
+//   const allPages = [];
+
+//   // Chunk items by height
+//   const chunkByHeight = (arr, startY, usableHeight) => {
+//     const chunk = [];
+//     let yCursor = startY;
+//     arr.forEach((item) => {
+//       const textLines = doc.splitTextToSize(
+//         `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//         152
+//       );
+//       const rowHeight = textLines.length * 5 + 6;
+//       if (yCursor + rowHeight > startY + usableHeight && chunk.length > 0) {
+//         return;
+//       }
+//       chunk.push(item);
+//       yCursor += rowHeight;
+//     });
+//     return chunk;
+//   };
+
+//   const firstPageItems = items.slice(0, firstPageRowLimit);
+//   allPages.push(firstPageItems);
+
+//   let remaining = items.slice(firstPageRowLimit);
+//   while (remaining.length > 0) {
+//     const pageItems = chunkByHeight(remaining, 20, usableHeightOtherPages);
+//     allPages.push(pageItems);
+//     remaining = remaining.slice(pageItems.length);
+//   }
+
+//   const totalPages = allPages.length;
+
+//   allPages.forEach((pageItems, pageIndex) => {
+//     const currentPage = pageIndex + 1;
+//     if (currentPage > 1) doc.addPage();
+//     let tableStartY = 20;
+
+//     if (currentPage === 1) {
+//       doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+//       doc.setFontSize(11);
+//       let leftY = 40;
+//       doc.text("Haitian Middle East LLC", 14, leftY);
+//       doc.text("Umm El Thoub,", 14, leftY + 5);
+//       doc.text("Umm Al Quwain", 14, leftY + 10);
+//       doc.text("United Arab Emirates", 14, leftY + 15);
+//       doc.text("TRN100008343400003", 14, leftY + 20);
+
+//       const rightX = 130;
+//       doc.setFontSize(30);
+//       doc.text("Delivery Note", rightX, 22);
+//       doc.setFontSize(12);
+//       doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
+//       doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+//       let yCursor = leftY + 30;
+//       doc.setFont("helvetica", "bold");
+//       doc.setFontSize(12);
+//       doc.text("Deliver To:", 14, yCursor);
+
+//       doc.setFont("helvetica", "normal");
+//       doc.setFontSize(10);
+//       yCursor += 6;
+//       doc.text(formValues.customername || "", 14, yCursor);
+//       yCursor += 5;
+//       doc.text(formValues.address || "", 14, yCursor);
+
+//       tableStartY = 100;
+//     }
+
+//     autoTable(doc, {
+//       startY: tableStartY,
+//       head: [["#", "Item & Description", "Qty"]],
+//       body: pageItems.map((item, idx) => {
+//         const previousRowsCount = allPages
+//           .slice(0, pageIndex)
+//           .reduce((sum, arr) => sum + arr.length, 0);
+//         return [
+//           previousRowsCount + idx + 1,
+//           `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//           item.quantity || ""
+//         ];
+//       }),
+//       margin: { left: 14, right: 14 },
+//       styles: {
+//         fontSize: 10,
+//         cellPadding: 3,
+//         valign: "middle",
+//         textColor: [0, 0, 0],
+//       },
+//       headStyles: {
+//         fillColor: [40, 40, 40],
+//         textColor: [255, 255, 255],
+//         halign: "left",
+//       },
+//       bodyStyles: {
+//         textColor: [0, 0, 0],
+//       },
+//       alternateRowStyles: {
+//         fillColor: [245, 245, 245],
+//       },
+//       columnStyles: {
+//         0: { halign: "center", cellWidth: 10 },
+//         1: { halign: "left", cellWidth: 152 },
+//         2: { halign: "center", cellWidth: 20 },
+//       },
+//       pageBreak: 'avoid',
+//     });
+
+//     doc.setFontSize(9);
+//     doc.text(
+//       `Page ${currentPage} of ${totalPages}`,
+//       doc.internal.pageSize.width / 2,
+//       pageHeight - 5,
+//       { align: "center" }
+//     );
+
+//     if (currentPage === totalPages) {
+//       doc.setLineDash([2, 2], 0);
+//       doc.line(14, pageHeight - 25, 80, pageHeight - 25);
+//       doc.setLineDash([]);
+//       doc.text("Authorized Signature", 14, pageHeight - 20);
+//     }
+//   });
+
+//   if (saveLocally) {
+//     doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+//   }
+
+//   return doc; // ✅ return doc so .output() works
+// };
+
+// const generateDeliveryNotePDF = (formValues, items = [], saveLocally = true) => {
+//   const doc = new jsPDF();
+//   const pageWidth = doc.internal.pageSize.width;
+//   const pageHeight = doc.internal.pageSize.height;
+
+//   // --- Compute a safe header height (dynamic if address wraps)
+//   doc.setFont("helvetica", "normal");
+//   doc.setFontSize(10);
+//   const addressLines = doc.splitTextToSize(formValues.address || "", 90); // wrap to ~90mm
+//   const deliverToBlockHeight = 12 /*label + gap*/ + 5 /*name*/ + (addressLines.length * 5);
+//   const HEADER_HEIGHT = Math.max(100, 70 + deliverToBlockHeight); // ensure enough room
+//   const BOTTOM_MARGIN = 30;
+
+//   const drawHeader = () => {
+//     // Logo
+//     doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+//     // Company info (left)
+//     doc.setFontSize(11);
+//     let leftY = 40;
+//     doc.text("Haitian Middle East LLC", 14, leftY);
+//     doc.text("Umm El Thoub,", 14, leftY + 5);
+//     doc.text("Umm Al Quwain", 14, leftY + 10);
+//     doc.text("United Arab Emirates", 14, leftY + 15);
+//     doc.text("TRN100008343400003", 14, leftY + 20);
+
+//     // Title + meta (right)
+//     const rightX = 130;
+//     doc.setFontSize(30);
+//     doc.text("Delivery Note", rightX, 22);
+//     doc.setFontSize(12);
+//     doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
+//     doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+//     // Deliver To
+//     let yCursor = leftY + 30;
+//     doc.setFont("helvetica", "bold");
+//     doc.setFontSize(12);
+//     doc.text("Deliver To:", 14, yCursor);
+
+//     doc.setFont("helvetica", "normal");
+//     doc.setFontSize(10);
+//     yCursor += 6;
+//     const name = formValues.customername || "";
+//     doc.text(name, 14, yCursor);
+//     yCursor += 5;
+//     doc.text(addressLines, 14, yCursor); // wrapped lines
+//   };
+
+//   autoTable(doc, {
+//     head: [["#", "Item & Description", "Qty"]],
+//     body: items.map((item, idx) => [
+//       idx + 1,
+//       `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//       item.quantity || ""
+//     ]),
+//     // Reserve space for header/footer on *every* page:
+//     margin: { top: HEADER_HEIGHT + 6, bottom: BOTTOM_MARGIN, left: 14, right: 14 },
+//     styles: {
+//       fontSize: 10,
+//       cellPadding: 3,
+//       valign: "middle",
+//       textColor: [0, 0, 0],
+//     },
+//     headStyles: {
+//       fillColor: [40, 40, 40],
+//       textColor: [255, 255, 255],
+//       halign: "left",
+//     },
+//     alternateRowStyles: { fillColor: [245, 245, 245] },
+//     columnStyles: {
+//       0: { halign: "center", cellWidth: 10 },
+//       1: { halign: "left", cellWidth: 152 },
+//       2: { halign: "center", cellWidth: 20 },
+//     },
+//     pageBreak: "auto",
+//     // Draw header on every page (table will not overlap because of margin.top)
+//     didDrawPage: () => {
+//       drawHeader();
+//     },
+//   });
+
+//   // --- After the table is finished, add page numbers for all pages
+//   const total = doc.getNumberOfPages();
+//   for (let i = 1; i <= total; i++) {
+//     doc.setPage(i);
+//     doc.setFontSize(9);
+//     doc.text(`Page ${i} of ${total}`, pageWidth / 2, pageHeight - 5, { align: "center" });
+//   }
+
+//   // --- Signature only on the last page
+//   doc.setPage(total);
+//   doc.setLineDash([2, 2], 0);
+//   doc.line(14, pageHeight - 25, 80, pageHeight - 25);
+//   doc.setLineDash([]);
+//   doc.text("Authorized Signature", 14, pageHeight - 20);
+
+//   if (saveLocally) {
+//     doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+//   }
+//   return doc;
+// };
+
+// const generateDeliveryNotePDF = (formValues, items = [], saveLocally = true) => {
+//   const doc = new jsPDF();
+//   const pageWidth = doc.internal.pageSize.width;
+//   const pageHeight = doc.internal.pageSize.height;
+
+//   const BOTTOM_MARGIN = 45; // enough space for footer + signature
+
+//   // Prepare wrapped lines for "Deliver To"
+//   doc.setFontSize(10);
+//   const deliverToNameLines = doc.splitTextToSize(formValues.customername || "", pageWidth - 28);
+//   const deliverToAddressLines = doc.splitTextToSize(formValues.address || "", pageWidth - 28);
+//   const deliverToHeight =
+//     deliverToNameLines.length * 5 + deliverToAddressLines.length * 5 + 15; // padding included
+
+//   const HEADER_HEIGHT = 50 + deliverToHeight;
+
+//   // Draw header (customer info)
+//   const drawHeader = () => {
+//     // Logo
+//     doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+//     // Title & delivery info
+//     const rightX = 130;
+//     doc.setFontSize(30);
+//     doc.text("Delivery Note", rightX, 22);
+//     doc.setFontSize(12);
+//     doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
+//     doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+//     // Deliver To
+//     let yCursor = 50;
+//     doc.setFont("helvetica", "bold");
+//     doc.setFontSize(12);
+//     doc.text("Deliver To:", 14, yCursor);
+
+//     doc.setFont("helvetica", "normal");
+//     doc.setFontSize(10);
+//     yCursor += 3;
+//     doc.text(deliverToNameLines, 14, yCursor);
+//     yCursor += deliverToNameLines.length * 5;
+//     doc.text(deliverToAddressLines, 14, yCursor);
+//   };
+
+//   // Draw footer (company info + page number)
+//   const drawFooter = (pageNum, totalPages) => {
+//     doc.setFontSize(9);
+
+//     // Company info (now in footer)
+//     const companyLines = [
+//       "Haitian Middle East LLC",
+//       "Umm El Thoub,",
+//       "Umm Al Quwain",
+//       "United Arab Emirates",
+//       "TRN100008343400003"
+//     ];
+//     let footerY = pageHeight - 25;
+//     companyLines.forEach(line => {
+//       doc.text(line, 14, footerY);
+//       footerY += 4;
+//     });
+
+//     // Page number
+//     doc.text(
+//       `Page ${pageNum} of ${totalPages}`,
+//       pageWidth / 2,
+//       pageHeight - 5,
+//       { align: "center" }
+//     );
+
+//     // Signature only on last page
+//     if (pageNum === totalPages) {
+//       doc.setLineDash([2, 2], 0);
+//       doc.line(14, pageHeight - BOTTOM_MARGIN, 80, pageHeight - BOTTOM_MARGIN);
+//       doc.setLineDash([]);
+//       doc.text("Authorized Signature", 14, pageHeight - BOTTOM_MARGIN + 5);
+//     }
+//   };
+
+//   // Table
+//   autoTable(doc, {
+//     head: [["#", "Item & Description", "Qty"]],
+//     body: items.map((item, idx) => [
+//       idx + 1,
+//       `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//       item.quantity || ""
+//     ]),
+//     margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+//     styles: {
+//       fontSize: 10,
+//       cellPadding: 3,
+//       valign: "middle",
+//       textColor: [0, 0, 0],
+//     },
+//     headStyles: {
+//       fillColor: [40, 40, 40],
+//       textColor: [255, 255, 255],
+//       halign: "left",
+//     },
+//     alternateRowStyles: { fillColor: [245, 245, 245] },
+//     columnStyles: {
+//       0: { halign: "center", cellWidth: 10 },
+//       1: { halign: "left", cellWidth: 152 },
+//       2: { halign: "center", cellWidth: 20 },
+//     },
+//     pageBreak: "auto",
+//     didDrawPage: () => {
+//       drawHeader();
+//     }
+//   });
+
+//   // Add footer for all pages
+//   const totalPages = doc.getNumberOfPages();
+//   for (let i = 1; i <= totalPages; i++) {
+//     doc.setPage(i);
+//     drawFooter(i, totalPages);
+//   }
+
+//   if (saveLocally) {
+//     doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+//   }
+//   return doc;
+// };
+
+// const generateDeliveryNotePDF = (formValues, items = [], saveLocally = true) => {
+//   const doc = new jsPDF();
+//   const pageWidth = doc.internal.pageSize.width;
+//   const pageHeight = doc.internal.pageSize.height;
+
+//   const BOTTOM_MARGIN = 100; // enough space for footer + signature
+
+//   // Prepare wrapped lines for "Deliver To"
+//   doc.setFontSize(10);
+//   const deliverToNameLines = doc.splitTextToSize(formValues.customername || "", pageWidth - 28);
+//   const deliverToAddressLines = doc.splitTextToSize(formValues.address || "", pageWidth - 28);
+//   const paymentTermsLines = doc.splitTextToSize(formValues.paymentTerms || "", pageWidth - 28);
+
+//   const deliverToHeight = deliverToNameLines.length * 5 + deliverToAddressLines.length * 5 +  paymentTermsLines.length * 5  + 15; // padding included
+
+
+
+//   const HEADER_HEIGHT = 50 + deliverToHeight;
+
+//   // Draw header (customer info)
+//   const drawHeader = () => {
+//     // Logo
+//     doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+//     // Title & delivery info
+//     const rightX = 130;
+//     doc.setFontSize(30);
+//     doc.text("Delivery Note", rightX, 22);
+//     doc.setFontSize(12);
+//     doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
+//     doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+//     // Deliver To
+//     let yCursor = 50;
+//     doc.setFont("helvetica", "bold");
+//     doc.setFontSize(12);
+//     doc.text("Deliver To:", 14, yCursor);
+
+//     doc.setFont("helvetica", "normal"); 
+//     doc.setFontSize(10);
+//     yCursor += 6;
+//     doc.text(deliverToNameLines, 14, yCursor);
+//     yCursor += deliverToNameLines.length * 5;
+//     doc.text(deliverToAddressLines, 14, yCursor);
+
+//    doc.text(`Delivery Type: ${formValues.paymentTerms || ""}`, rightX, 50);
+
+//   };
+
+//   // Draw footer (company info + page number)
+// const drawFooter = (pageNum, totalPages) => {
+//   doc.setFontSize(12);
+
+//   // Horizontal black border line above footer
+//   const borderY = pageHeight - 30;
+//   doc.setDrawColor(0, 0, 0); // black
+//   doc.setLineWidth(0.5);
+//   doc.line(14, borderY, pageWidth - 14, borderY);
+
+//   // Authorized Signature - only on last page & just above border
+//   if (pageNum === totalPages) {
+//     const sigY = borderY - 10; // 10 units above border
+//     doc.setDrawColor(0, 0, 0);
+//     doc.setLineDash([2, 1], 0);
+//     doc.line(14, sigY, 80, sigY);
+//     doc.setLineDash([]);
+//     doc.text("Authorized Signature", 14, sigY + 5);
+//   }
+
+//   // Company info centered
+//   const companyInfo = [
+//     "Haitian Middle East LLC",
+//     "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
+//     "Phone: +971 656 222 38  Email: ask@haitianme.com   Web: www.haitianme.com",
+//   ];
+  
+//   let footerY = borderY + 6;
+//   companyInfo.forEach(line => {
+//     doc.text(line, pageWidth / 2, footerY, { align: "center" });
+//     footerY += 4;
+//   });
+
+//   // Page number
+//   doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: "center" });
+// };
+
+
+//   // Table
+//   autoTable(doc, {
+//     head: [["#", "Item & Description", "Qty"]],
+//     body: items.map((item, idx) => [
+//       idx + 1,
+//       `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//       item.quantity || ""
+//     ]),
+//     margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+//     styles: {
+//       fontSize: 10,
+//       cellPadding: 3,
+//       valign: "middle",
+//       textColor: [0, 0, 0],
+//     },
+//     headStyles: {
+//       fillColor: [40, 40, 40],
+//       textColor: [255, 255, 255],
+//       halign: "left",
+//     },
+//     alternateRowStyles: { fillColor: [245, 245, 245] },
+//     columnStyles: {
+//       0: { halign: "center", cellWidth: 10 },
+//       1: { halign: "left", cellWidth: 152 },
+//       2: { halign: "center", cellWidth: 20 },
+//     },
+//     pageBreak: "auto",
+//     didDrawPage: () => {
+//       drawHeader();
+//     }
+//   });
+
+//   // Add footer for all pages
+//   const totalPages = doc.getNumberOfPages();
+//   for (let i = 1; i <= totalPages; i++) {
+//     doc.setPage(i);
+//     drawFooter(i, totalPages);
+//   }
+
+//   if (saveLocally) {
+//     doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+//   }
+//   return doc;
+// };
+
 const generateDeliveryNotePDF = (formValues, items = [], saveLocally = true) => {
   const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
-  const bottomMargin = 30;
-  const firstPageRowLimit = 10;
-  const usableHeightFirstPage = pageHeight - bottomMargin - 100;
-  const usableHeightOtherPages = pageHeight - bottomMargin - 20;
+  const BOTTOM_MARGIN = 65;
+  const rightX = 130; // Right column start X
 
-  const allPages = [];
+  doc.setFontSize(10);
 
-  // Chunk items by height
-  const chunkByHeight = (arr, startY, usableHeight) => {
-    const chunk = [];
-    let yCursor = startY;
-    arr.forEach((item) => {
-      const textLines = doc.splitTextToSize(
-        `${item.itemDescription || ""}\n${item.partNumber || ""}`,
-        152
-      );
-      const rowHeight = textLines.length * 5 + 6;
-      if (yCursor + rowHeight > startY + usableHeight && chunk.length > 0) {
-        return;
-      }
-      chunk.push(item);
-      yCursor += rowHeight;
-    });
-    return chunk;
+  // Wrap Deliver To lines (left column)
+  const deliverToLines = [
+    ...(formValues.customername ? [formValues.customername] : []),
+    ...(formValues.address ? formValues.address.split("\n") : [])
+  ].flatMap(line => doc.splitTextToSize(line, 100));
+
+  // Wrap Delivery Type + Payment Terms together (right column)
+  const deliveryTypeFullText = `${formValues.paymentTerms || ""}`;
+  const deliveryTypeLines = doc.splitTextToSize(deliveryTypeFullText, pageWidth - rightX - 14);
+
+  // Calculate tallest column height
+  const leftHeight = deliverToLines.length * 5 + 6; 
+  const rightHeight = deliveryTypeLines.length * 5 + 6;
+  const HEADER_HEIGHT = 50 + Math.max(leftHeight, rightHeight);
+
+  // Draw header
+  const drawHeader = () => {
+    // Logo
+    doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+    // Title & delivery info
+    doc.setFontSize(30);
+    doc.text("Delivery Note", rightX, 22);
+    doc.setFontSize(13);
+    doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
+    doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+    const startY = 50;
+
+    // LEFT column (Deliver To)
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(13);
+    doc.text("Deliver To:", 14, startY);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(deliverToLines, 14, startY + 6);
+
+    // RIGHT column (Delivery Type + value wrapped together)
+    doc.setFont("helvetica", "normal");
+doc.setFontSize(13);
+doc.text("Delivery Type:", rightX, startY); 
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(deliveryTypeLines, rightX, startY + 6);
   };
 
-  const firstPageItems = items.slice(0, firstPageRowLimit);
-  allPages.push(firstPageItems);
+  // Draw footer
+  const drawFooter = (pageNum, totalPages) => {
+    doc.setFontSize(10);
+    const borderY = pageHeight - 30;
 
-  let remaining = items.slice(firstPageRowLimit);
-  while (remaining.length > 0) {
-    const pageItems = chunkByHeight(remaining, 20, usableHeightOtherPages);
-    allPages.push(pageItems);
-    remaining = remaining.slice(pageItems.length);
-  }
+    // Black border line
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(14, borderY, pageWidth - 14, borderY);
 
-  const totalPages = allPages.length;
-
-  allPages.forEach((pageItems, pageIndex) => {
-    const currentPage = pageIndex + 1;
-    if (currentPage > 1) doc.addPage();
-    let tableStartY = 20;
-
-    if (currentPage === 1) {
-      doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
-      doc.setFontSize(11);
-      let leftY = 40;
-      doc.text("Hamriyah Free Zone", 14, leftY);
-      doc.text("Po Box:496, Sharjah, U.A.E", 14, leftY + 5);
-      doc.text("Sharjah", 14, leftY + 10);
-      doc.text("U.A.E", 14, leftY + 15);
-      doc.text("TRN100008343400003", 14, leftY + 20);
-
-      const rightX = 130;
-      doc.setFontSize(30);
-      doc.text("Delivery Note", rightX, 22);
-      doc.setFontSize(12);
-      doc.text(`Delivery Note Number: ${formValues.deliveryNumber || ""}`, rightX, 30);
-      doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
-
-      let yCursor = leftY + 30;
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text("Deliver To:", 14, yCursor);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      yCursor += 6;
-      doc.text(formValues.customername || "", 14, yCursor);
-      yCursor += 5;
-      doc.text(formValues.address || "", 14, yCursor);
-
-      tableStartY = 100;
+    // Signature line
+    if (pageNum === totalPages) {
+      const sigY = borderY - 10;
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineDash([2, 1], 0);
+      doc.line(14, sigY, 80, sigY);
+      doc.setLineDash([]);
+      doc.text("Authorized Signature", 14, sigY + 5);
     }
 
-    autoTable(doc, {
-      startY: tableStartY,
-      head: [["#", "Item & Description", "Qty"]],
-      body: pageItems.map((item, idx) => {
-        const previousRowsCount = allPages
-          .slice(0, pageIndex)
-          .reduce((sum, arr) => sum + arr.length, 0);
-        return [
-          previousRowsCount + idx + 1,
-          `${item.itemDescription || ""}\n${item.partNumber || ""}`,
-          item.quantity || ""
-        ];
-      }),
-      margin: { left: 14, right: 14 },
-      styles: {
-        fontSize: 10,
-        cellPadding: 3,
-        valign: "middle",
-        textColor: [0, 0, 0],
-      },
-      headStyles: {
-        fillColor: [40, 40, 40],
-        textColor: [255, 255, 255],
-        halign: "left",
-      },
-      bodyStyles: {
-        textColor: [0, 0, 0],
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245],
-      },
-      columnStyles: {
-        0: { halign: "center", cellWidth: 10 },
-        1: { halign: "left", cellWidth: 152 },
-        2: { halign: "center", cellWidth: 20 },
-      },
-      pageBreak: 'avoid',
+    // Company info
+    const companyInfo = [
+      "Haitian Middle East LLC",
+      "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
+      "Phone: +971 656 222 38  Email: ask@haitianme.com   Web: www.haitianme.com",
+    ];
+    let footerY = borderY + 6;
+    companyInfo.forEach(line => {
+      doc.text(line, pageWidth / 2, footerY, { align: "center" });
+      footerY += 5;
     });
 
-    doc.setFontSize(9);
-    doc.text(
-      `Page ${currentPage} of ${totalPages}`,
-      doc.internal.pageSize.width / 2,
-      pageHeight - 5,
-      { align: "center" }
-    );
+    // Page number
+    doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: "center" });
+  };
 
-    if (currentPage === totalPages) {
-      doc.setLineDash([2, 2], 0);
-      doc.line(14, pageHeight - 25, 80, pageHeight - 25);
-      doc.setLineDash([]);
-      doc.text("Authorized Signature", 14, pageHeight - 20);
+  // Table
+  autoTable(doc, {
+    head: [["#", "Item & Description", "Qty"]],
+    body: items.map((item, idx) => [
+      idx + 1,
+      `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+      item.quantity || ""
+    ]),
+    margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+    styles: {
+      fontSize: 11,
+      cellPadding: 3,
+      valign: "middle",
+      textColor: [0, 0, 0],
+    },
+    headStyles: {
+      fillColor: [40, 40, 40],
+      textColor: [255, 255, 255],
+      halign: "left",
+    },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
+    columnStyles: {
+      0: { halign: "center", cellWidth: 10 },
+      1: { halign: "left", cellWidth: 152 },
+      2: { halign: "center", cellWidth: 20 },
+    },
+    pageBreak: "auto",
+    didDrawPage: () => {
+      drawHeader();
     }
   });
+
+  // Footer for all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    drawFooter(i, totalPages);
+  }
 
   if (saveLocally) {
     doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
   }
-
-  return doc; // ✅ return doc so .output() works
+  return doc;
 };
-
-
-
-
-
 
 
   const styl = `.ant-form-item .ant-form-item-explain-error {
@@ -2078,8 +2569,12 @@ const generateDeliveryNotePDF = (formValues, items = [], saveLocally = true) => 
                           );
                           if (customer) {
                             form.setFieldsValue({ address: customer.address });
+                              setPaymentTerms(customer.paymentTerms || "");
+
                           } else {
                             form.setFieldsValue({ address: "" });
+                              setPaymentTerms("");
+
                           }
                         }}
                       >

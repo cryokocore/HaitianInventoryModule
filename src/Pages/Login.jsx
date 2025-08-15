@@ -45,7 +45,7 @@ export default function Login({ onLoginSuccess }) {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzk9o5YbJ8w4UINlKf49uEFI2fiQVcrvyXfa8ln4HXl5d5qxHjwkeElSId3l6Qbdo64Hg/exec",
+        "https://script.google.com/macros/s/AKfycbxnNHVE4G0TozBvRopATAxvbI2uU7nWyQdirsPgtiH9U1RY1pEEm_qvEdAwBx189bQKvg/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -146,11 +146,12 @@ export default function Login({ onLoginSuccess }) {
             >
               <div className="row">
                 <div className="col-12">
-                  <div className="m-auto d-flex justify-content-center m-0 p-0 ">
+                  <div className="m-auto d-flex justify-content-center align-items-center m-0 p-0 ">
                     <img
                       src={HaitianLogo}
-                      className="w-50 m-0 p-0"
+                      className="m-0 p-0 m-auto "
                       alt="Haitian Logo"
+                      style={{ width: "70%" }}
                     />
                   </div>
                   <div>
