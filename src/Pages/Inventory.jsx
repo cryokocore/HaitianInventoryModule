@@ -115,7 +115,7 @@ const columns = [
       });
 
       const res = await fetch(
-        "https://script.google.com/macros/s/AKfycbxnNHVE4G0TozBvRopATAxvbI2uU7nWyQdirsPgtiH9U1RY1pEEm_qvEdAwBx189bQKvg/exec",
+        "https://script.google.com/macros/s/AKfycbxeRk3VmJksBioslkRwO5l2_ORCBp8TJrFMtOmJegwBZP4b0h8CdAR9cuKKSwXepn4ciA/exec",
         {
           method: "POST",
           body: params,
