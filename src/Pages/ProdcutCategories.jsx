@@ -39,6 +39,7 @@ export default function ProductCategories({ username }) {
   const [auxiliariesDataSource, setAuxiliariesDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
   const [inputRow, setInputRow] = useState({
     partNumber: "",
     description: "",
@@ -131,7 +132,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbxeRk3VmJksBioslkRwO5l2_ORCBp8TJrFMtOmJegwBZP4b0h8CdAR9cuKKSwXepn4ciA/exec";
+    "https://script.google.com/macros/s/AKfycby0-KbFm1fM94ni8YSC65F71yNJ1QD1N7CNMHkosI5J8Br1qnLufFNOPhhIvDoyMCWcSg/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -445,28 +446,28 @@ export default function ProductCategories({ username }) {
     },
   ];
 
-const fetchAllStock = async () => {
-  try {
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ action: "getAllStockData" }),
-    });
-    const result = await res.json();
-    if (result.success) {
-      setStockCache(result.data); // store { partNumber: { stockInHand, unit, categories } }
+  const fetchAllStock = async () => {
+    try {
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ action: "getAllStockData" }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setStockCache(result.data); // store { partNumber: { stockInHand, unit, categories } }
+      }
+    } catch (err) {
+      console.error("Error fetching all stock:", err);
+    } finally {
+      setLoadingStockCache(false);
     }
-  } catch (err) {
-    console.error("Error fetching all stock:", err);
-  } finally {
-    setLoadingStockCache(false);
-  }
-};
+  };
 
-// Fetch once on mount
-useEffect(() => {
-  fetchAllStock();
-}, []);
+  // Fetch once on mount
+  useEffect(() => {
+    fetchAllStock();
+  }, []);
 
   // useEffect(() => {
   //   const controller = new AbortController();
@@ -606,46 +607,41 @@ useEffect(() => {
   //   };
   // }, [machineinputRow.partNumber]);
 
-useEffect(() => {
-  const part = machineinputRow.partNumber?.trim();
-  if (!part) return;
+  useEffect(() => {
+    const part = machineinputRow.partNumber?.trim();
+    if (!part) return;
 
-  const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
-  const cached = stockCache[part];
-  let unit = "";
-  let stock = "0";
+    const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+    const cached = stockCache[part];
+    let unit = "";
+    let stock = "0";
 
-  if (cached) {
-    stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
+    if (cached) {
+      stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
 
-    // ✅ category check
-    // const belongsToCategory = cached.categories?.includes("Machine");
-    // if (belongsToCategory && cached.unit) {
-    //   unit = cached.unit.trim();
-    // }
-        unit = cached.unit?.trim() || "";
+      // ✅ category check
+      // const belongsToCategory = cached.categories?.includes("Machine");
+      // if (belongsToCategory && cached.unit) {
+      //   unit = cached.unit.trim();
+      // }
+      unit = cached.unit?.trim() || "";
+    }
 
-  }
+    setMachineInputRow((prev) => ({
+      ...prev,
+      stockInHand: stock,
+      unit,
+    }));
 
-  setMachineInputRow((prev) => ({
-    ...prev,
-    stockInHand: stock,
-    unit,
-  }));
-
-  // ✅ Update dropdown options
-  if (unit) {
-    setMachineUnitOptions(
-      userRole === "Admin"
-        ? [...new Set([unit, ...defaultUnits])]
-        : [unit]
-    );
-  } else {
-    setMachineUnitOptions([...defaultUnits]);
-  }
-}, [machineinputRow.partNumber, stockCache, userRole]);
-
-
+    // ✅ Update dropdown options
+    if (unit) {
+      setMachineUnitOptions(
+        userRole === "Admin" ? [...new Set([unit, ...defaultUnits])] : [unit]
+      );
+    } else {
+      setMachineUnitOptions([...defaultUnits]);
+    }
+  }, [machineinputRow.partNumber, stockCache, userRole]);
 
   // useEffect(() => {
   //   const controller = new AbortController();
@@ -692,8 +688,8 @@ useEffect(() => {
   //     controller.abort(); // Cancel previous fetch
   //   };
   // }, [auxiliariesInputRow.partNumber]);
-  
-//Working code before fetching stock and unit data
+
+  //Working code before fetching stock and unit data
   // useEffect(() => {
   //   const controller = new AbortController();
   //   const timer = setTimeout(async () => {
@@ -799,36 +795,33 @@ useEffect(() => {
   // }, [auxiliariesInputRow.partNumber]);
 
   useEffect(() => {
-  const part = auxiliariesInputRow.partNumber?.trim();
-  if (!part) return;
+    const part = auxiliariesInputRow.partNumber?.trim();
+    if (!part) return;
 
-  const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
-  const cached = stockCache[part];
-  let unit = "";
-  let stock = "0";
+    const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+    const cached = stockCache[part];
+    let unit = "";
+    let stock = "0";
 
-  if (cached) {
-    stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
-    unit = cached.unit?.trim() || "";
-  }
+    if (cached) {
+      stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
+      unit = cached.unit?.trim() || "";
+    }
 
-  setAuxiliariesInputRow((prev) => ({
-    ...prev,
-    stockInHand: stock,
-    unit,
-  }));
+    setAuxiliariesInputRow((prev) => ({
+      ...prev,
+      stockInHand: stock,
+      unit,
+    }));
 
-  if (unit) {
-    setAuxiliariesUnitOptions(
-      userRole === "Admin"
-        ? [...new Set([unit, ...defaultUnits])]
-        : [unit]
-    );
-  } else {
-    setAuxiliariesUnitOptions([...defaultUnits]);
-  }
-}, [auxiliariesInputRow.partNumber, stockCache, userRole]);
-
+    if (unit) {
+      setAuxiliariesUnitOptions(
+        userRole === "Admin" ? [...new Set([unit, ...defaultUnits])] : [unit]
+      );
+    } else {
+      setAuxiliariesUnitOptions([...defaultUnits]);
+    }
+  }, [auxiliariesInputRow.partNumber, stockCache, userRole]);
 
   // useEffect(() => {
   //   const controller = new AbortController();
@@ -877,7 +870,7 @@ useEffect(() => {
   //   };
   // }, [assetsInputRow.partNumber]);
 
-//Working code before fetching stock and unit data
+  //Working code before fetching stock and unit data
   // useEffect(() => {
   //   const controller = new AbortController();
   //   const timer = setTimeout(async () => {
@@ -983,36 +976,33 @@ useEffect(() => {
   // }, [assetsInputRow.partNumber]);
 
   useEffect(() => {
-  const part = assetsInputRow.partNumber?.trim();
-  if (!part) return;
+    const part = assetsInputRow.partNumber?.trim();
+    if (!part) return;
 
-  const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
-  const cached = stockCache[part];
-  let unit = "";
-  let stock = "0";
+    const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+    const cached = stockCache[part];
+    let unit = "";
+    let stock = "0";
 
-  if (cached) {
-    stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
-    unit = cached.unit?.trim() || "";
-  }
+    if (cached) {
+      stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
+      unit = cached.unit?.trim() || "";
+    }
 
-  setAssetsInputRow((prev) => ({
-    ...prev,
-    stockInHand: stock,
-    unit,
-  }));
+    setAssetsInputRow((prev) => ({
+      ...prev,
+      stockInHand: stock,
+      unit,
+    }));
 
-  if (unit) {
-    setAssetsUnitOptions(
-      userRole === "Admin"
-        ? [...new Set([unit, ...defaultUnits])]
-        : [unit]
-    );
-  } else {
-    setAssetsUnitOptions([...defaultUnits]);
-  }
-}, [assetsInputRow.partNumber, stockCache, userRole]);
-
+    if (unit) {
+      setAssetsUnitOptions(
+        userRole === "Admin" ? [...new Set([unit, ...defaultUnits])] : [unit]
+      );
+    } else {
+      setAssetsUnitOptions([...defaultUnits]);
+    }
+  }, [assetsInputRow.partNumber, stockCache, userRole]);
 
   // useEffect(() => {
   //   const controller = new AbortController();
@@ -1211,8 +1201,7 @@ useEffect(() => {
   //   };
   // }, [inputRow.partNumber]);
 
-
-//Working code before fetching stock and unit data
+  //Working code before fetching stock and unit data
   // useEffect(() => {
   //   const controller = new AbortController();
   //   const timer = setTimeout(async () => {
@@ -1315,62 +1304,60 @@ useEffect(() => {
   //   };
   // }, [inputRow.partNumber]);
 
-useEffect(() => {
-  const part = inputRow.partNumber?.trim();
-  if (!part) return;
+  useEffect(() => {
+    const part = inputRow.partNumber?.trim();
+    if (!part) return;
 
-  const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
-  const cached = stockCache[part];
-  let unit = "";
-  let stock = "0";
+    const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+    const cached = stockCache[part];
+    let unit = "";
+    let stock = "0";
 
-  setSparePartsFetching(true);
-  setSpareUnitLoading(true);
+    setSparePartsFetching(true);
+    setSpareUnitLoading(true);
 
-  try {
-    if (cached) {
-      stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
-      unit = cached.unit?.trim() || "";
-    }
+    try {
+      if (cached) {
+        stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
+        unit = cached.unit?.trim() || "";
+      }
 
-    setInputRow((prev) => ({
-      ...prev,
-      stockInHand: stock,
-      unit,
-      sparePartsUnitFetched: !!unit,
-    }));
+      setInputRow((prev) => ({
+        ...prev,
+        stockInHand: stock,
+        unit,
+        sparePartsUnitFetched: !!unit,
+      }));
 
-    // also update the AntD form field
-    form.setFieldsValue({ unit });
+      // also update the AntD form field
+      form.setFieldsValue({ unit });
 
-    // update dropdown options
-    setSpareUnitOptions(
-      userRole === "Admin"
-        ? unit
-          ? [...new Set([unit, ...defaultUnits])]
+      // update dropdown options
+      setSpareUnitOptions(
+        userRole === "Admin"
+          ? unit
+            ? [...new Set([unit, ...defaultUnits])]
+            : [...defaultUnits]
+          : unit
+          ? [unit]
           : [...defaultUnits]
-        : unit
-        ? [unit]
-        : [...defaultUnits]
-    );
-  } catch (err) {
-    console.error("❌ Error updating spare parts from cache:", err);
+      );
+    } catch (err) {
+      console.error("❌ Error updating spare parts from cache:", err);
 
-    setInputRow((prev) => ({
-      ...prev,
-      stockInHand: "0",
-      unit: "",
-      sparePartsUnitFetched: false,
-    }));
-    form.setFieldsValue({ unit: "" });
-    setSpareUnitOptions(defaultUnits);
-  } finally {
-    setSparePartsFetching(false);
-    setSpareUnitLoading(false);
-  }
-}, [inputRow.partNumber, stockCache, userRole]);
-
-
+      setInputRow((prev) => ({
+        ...prev,
+        stockInHand: "0",
+        unit: "",
+        sparePartsUnitFetched: false,
+      }));
+      form.setFieldsValue({ unit: "" });
+      setSpareUnitOptions(defaultUnits);
+    } finally {
+      setSparePartsFetching(false);
+      setSpareUnitLoading(false);
+    }
+  }, [inputRow.partNumber, stockCache, userRole]);
 
   const handleSubmit = async (values) => {
     if (!navigator.onLine) {
@@ -1568,8 +1555,7 @@ useEffect(() => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ action: "finalizeRowLock" }),
       });
-            await fetchAllStock();
-
+      await fetchAllStock();
 
       notification.success({
         message: "Succes",
@@ -1594,7 +1580,7 @@ useEffect(() => {
     }
   };
 
-  const handleSparePartsAdd = async() => {
+  const handleSparePartsAdd = async () => {
     const {
       partNumber,
       description,
@@ -1646,8 +1632,7 @@ useEffect(() => {
       totalPrice: "",
       note: "",
     });
-            await fetchAllStock();
-
+    await fetchAllStock();
   };
 
   const handleSparePartsDelete = (key) => {
@@ -1806,7 +1791,7 @@ useEffect(() => {
               onChange={(e) => {
                 const value = e.target.value.trim();
                 setInputRow((prev) => ({ ...prev, purchaseCost: value }));
-
+                setSparePartsFetching(true);
                 clearTimeout(window.purchaseCostDebounce);
                 window.purchaseCostDebounce = setTimeout(() => {
                   const num = parseFloat(value);
@@ -1831,6 +1816,7 @@ useEffect(() => {
                     );
                     setInputRow((prev) => ({ ...prev, totalPrice }));
                   }
+                  setSparePartsFetching(false);
                 }, 3000);
               }}
             />
@@ -1894,6 +1880,7 @@ useEffect(() => {
               onChange={(e) => {
                 const value = e.target.value.trim();
                 setInputRow((prev) => ({ ...prev, addOnCost: value }));
+                setSparePartsFetching(true);
 
                 clearTimeout(window.addOnCostDebounce);
                 window.addOnCostDebounce = setTimeout(() => {
@@ -1919,6 +1906,7 @@ useEffect(() => {
                     );
                     setInputRow((prev) => ({ ...prev, totalPrice }));
                   }
+                  setSparePartsFetching(false);
                 }, 3000);
               }}
             />
@@ -2028,6 +2016,7 @@ useEffect(() => {
               onChange={(e) => {
                 const value = e.target.value.trim();
                 setInputRow((prev) => ({ ...prev, quantity: value }));
+                setSparePartsFetching(true);
 
                 clearTimeout(window.quantityDebounce);
                 window.quantityDebounce = setTimeout(() => {
@@ -2068,6 +2057,8 @@ useEffect(() => {
                       description: "Quantity must be greater than 0.",
                     });
                     setInputRow((prev) => ({ ...prev, quantity: "" }));
+                    setSparePartsFetching(false);
+
                     return;
                   }
 
@@ -2086,6 +2077,8 @@ useEffect(() => {
                       quantity: "",
                       unit: "",
                     }));
+                    setSparePartsFetching(false);
+
                     return;
                   }
 
@@ -2096,6 +2089,7 @@ useEffect(() => {
                     value
                   );
                   setInputRow((prev) => ({ ...prev, totalPrice }));
+                  setSparePartsFetching(false);
                 }, 3000);
               }}
             />
@@ -2286,7 +2280,7 @@ useEffect(() => {
             disabled={sparePartsFetching}
             loading={sparePartsFetching}
           >
-            {sparePartsFetching ? "Fetching" : "Add"}
+            {sparePartsFetching ? "Loading" : "Add"}
           </Button>
         ) : (
           <Button
@@ -2306,7 +2300,7 @@ useEffect(() => {
     ...auxiliariesDataSource,
   ];
 
-  const handleAuxiliariesAdd = async() => {
+  const handleAuxiliariesAdd = async () => {
     const {
       partNumber,
       description,
@@ -2365,8 +2359,7 @@ useEffect(() => {
       totalPrice: "",
       note: "",
     });
-            await fetchAllStock();
-
+    await fetchAllStock();
   };
 
   const handleAuxiliariesDelete = (key) => {
@@ -2542,6 +2535,7 @@ useEffect(() => {
                   ...prev,
                   purchaseCost: value,
                 }));
+                setAuxiliariesFetching(true);
 
                 // debounce validation
                 clearTimeout(window.auxPurchaseCostDebounce);
@@ -2566,6 +2560,8 @@ useEffect(() => {
                       ...prev,
                       purchaseCost: "",
                     }));
+                    setAuxiliariesFetching(false);
+
                     return;
                   }
 
@@ -2576,6 +2572,7 @@ useEffect(() => {
                     auxiliariesInputRow.quantity
                   );
                   setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
+                  setAuxiliariesFetching(false);
                 }, 3000);
               }}
             />
@@ -2642,6 +2639,7 @@ useEffect(() => {
                   ...prev,
                   addOnCost: value,
                 }));
+                setAuxiliariesFetching(true);
 
                 clearTimeout(window.auxAddOnCostDebounce);
                 window.auxAddOnCostDebounce = setTimeout(() => {
@@ -2662,6 +2660,8 @@ useEffect(() => {
                       ...prev,
                       addOnCost: "",
                     }));
+                    setAuxiliariesFetching(false);
+
                     return;
                   }
 
@@ -2671,6 +2671,7 @@ useEffect(() => {
                     auxiliariesInputRow.quantity
                   );
                   setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
+                  setAuxiliariesFetching(false);
                 }, 3000);
               }}
             />
@@ -2840,6 +2841,7 @@ useEffect(() => {
                   ...prev,
                   quantity: value,
                 }));
+                setAuxiliariesFetching(true);
 
                 clearTimeout(window.auxQuantityDebounce);
                 window.auxQuantityDebounce = setTimeout(() => {
@@ -2862,6 +2864,8 @@ useEffect(() => {
                       ...prev,
                       quantity: "",
                     }));
+                    setAuxiliariesFetching(false);
+
                     return;
                   }
 
@@ -2880,6 +2884,8 @@ useEffect(() => {
                       quantity: "",
                       unit: "",
                     }));
+                    setAuxiliariesFetching(false);
+
                     return;
                   }
 
@@ -2890,6 +2896,7 @@ useEffect(() => {
                     value
                   );
                   setAuxiliariesInputRow((prev) => ({ ...prev, totalPrice }));
+                  setAuxiliariesFetching(false);
                 }, 3000);
               }}
             />
@@ -3060,7 +3067,7 @@ useEffect(() => {
             disabled={auxiliariesFetching}
             loading={auxiliariesFetching}
           >
-            {auxiliariesFetching ? "Fetching" : "Add"}
+            {auxiliariesFetching ? "Loading" : "Add"}
           </Button>
         ) : (
           <Button
@@ -3078,7 +3085,7 @@ useEffect(() => {
     ...assetsDataSource,
   ];
 
-  const handleAssetsAdd = async() => {
+  const handleAssetsAdd = async () => {
     const {
       partNumber,
       description,
@@ -3128,8 +3135,7 @@ useEffect(() => {
       totalPrice: "",
       note: "",
     });
-            await fetchAllStock();
-
+    await fetchAllStock();
   };
 
   const handleAssetsDelete = (key) => {
@@ -3298,6 +3304,7 @@ useEffect(() => {
                   ...prev,
                   purchaseCost: value,
                 }));
+                setAssetsFetching(true);
 
                 // Debounce validation
                 clearTimeout(window.purchaseCostDebounce);
@@ -3333,6 +3340,7 @@ useEffect(() => {
                       totalPrice,
                     }));
                   }
+                  setAssetsFetching(false);
                 }, 3000);
               }}
             />
@@ -3400,6 +3408,7 @@ useEffect(() => {
                   ...prev,
                   addOnCost: value,
                 }));
+                setAssetsFetching(true);
 
                 clearTimeout(window.addOnDebounce);
                 window.addOnDebounce = setTimeout(() => {
@@ -3432,6 +3441,7 @@ useEffect(() => {
                       totalPrice,
                     }));
                   }
+                  setAssetsFetching(false);
                 }, 3000);
               }}
             />
@@ -3641,6 +3651,7 @@ useEffect(() => {
                   ...prev,
                   quantity: value,
                 }));
+                setAssetsFetching(true);
 
                 clearTimeout(window.assetsQuantityDebounce);
                 window.assetsQuantityDebounce = setTimeout(() => {
@@ -3663,6 +3674,8 @@ useEffect(() => {
                       ...prev,
                       quantity: "",
                     }));
+                    setAssetsFetching(false);
+
                     return;
                   }
 
@@ -3681,6 +3694,8 @@ useEffect(() => {
                       quantity: "",
                       unit: "",
                     }));
+                    setAssetsFetching(false);
+
                     return;
                   }
 
@@ -3694,6 +3709,7 @@ useEffect(() => {
                     ...prev,
                     totalPrice,
                   }));
+                  setAssetsFetching(false);
                 }, 3000);
               }}
             />
@@ -3852,7 +3868,7 @@ useEffect(() => {
             disabled={assetsFetching}
             loading={assetsFetching}
           >
-            {assetsFetching ? "Fetching" : "Add"}
+            {assetsFetching ? "Loading" : "Add"}
           </Button>
         ) : (
           <Button
@@ -3870,7 +3886,7 @@ useEffect(() => {
     ...machineDataSource,
   ];
 
-  const handleMachineAdd = async() => {
+  const handleMachineAdd = async () => {
     const {
       partNumber,
       description,
@@ -3920,8 +3936,7 @@ useEffect(() => {
       note: "",
       stockUnit: "",
     });
-        await fetchAllStock();
-
+    await fetchAllStock();
   };
 
   const handleMachineDelete = (key) => {
@@ -4087,6 +4102,7 @@ useEffect(() => {
                   ...prev,
                   purchaseCost: value,
                 }));
+                setMachineFetching(true);
 
                 clearTimeout(window.machinePurchaseDebounce);
                 window.machinePurchaseDebounce = setTimeout(() => {
@@ -4118,6 +4134,7 @@ useEffect(() => {
                       totalPrice,
                     }));
                   }
+                  setMachineFetching(false);
                 }, 3000);
               }}
             />
@@ -4184,6 +4201,7 @@ useEffect(() => {
                   ...prev,
                   addOnCost: value,
                 }));
+                setMachineFetching(true);
 
                 clearTimeout(window.machineAddOnDebounce);
                 window.machineAddOnDebounce = setTimeout(() => {
@@ -4215,6 +4233,7 @@ useEffect(() => {
                       totalPrice,
                     }));
                   }
+                  setMachineFetching(false);
                 }, 3000);
               }}
             />
@@ -4380,6 +4399,7 @@ useEffect(() => {
                   ...prev,
                   quantity: value,
                 }));
+                setMachineFetching(true);
 
                 clearTimeout(window.machineQuantityDebounce);
                 window.machineQuantityDebounce = setTimeout(() => {
@@ -4426,6 +4446,8 @@ useEffect(() => {
                       description: "Quantity must be greater than 0.",
                     });
                     setMachineInputRow((prev) => ({ ...prev, quantity: "" }));
+                    setMachineFetching(false);
+
                     return;
                   }
 
@@ -4444,6 +4466,7 @@ useEffect(() => {
                       quantity: "",
                       unit: "",
                     }));
+                    setMachineFetching(false);
                     return;
                   }
 
@@ -4454,6 +4477,7 @@ useEffect(() => {
                     value
                   );
                   setMachineInputRow((prev) => ({ ...prev, totalPrice }));
+                  setMachineFetching(false);
                 }, 3000);
               }}
             />
@@ -4666,7 +4690,7 @@ useEffect(() => {
             disabled={machineFetching}
             loading={machineFetching}
           >
-            {machineFetching ? "Fetching" : "Add"}
+            {machineFetching ? "Loading" : "Add"}
           </Button>
         ) : (
           <Button

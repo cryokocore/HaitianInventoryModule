@@ -111,7 +111,7 @@ export default function DeliveryNote({ username }) {
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbxFCIlMjDWKS1YaZNHaNMgrFO6MHBCkBNdF0G7uBEXTm8u3TUd0Eb0OvqhOyaJ4Fji0pA/exec";
+    "https://script.google.com/macros/s/AKfycby0-KbFm1fM94ni8YSC65F71yNJ1QD1N7CNMHkosI5J8Br1qnLufFNOPhhIvDoyMCWcSg/exec";
 
   const fetchInitialData = async () => {
     try {
@@ -1120,40 +1120,389 @@ onChange={(value) => {
   //   }
   // };
 
+// const handleSubmit = async (values) => {
+//   if (!navigator.onLine) {
+//     notification.error({
+//       message: "No Internet Connection",
+//       description: "Please check your internet and try again.",
+//     });
+//     return;
+//   }
+
+//   if (dataSource.length === 0) {
+//     notification.error({
+//       message: "No Items",
+//       description: "Please add at least one item to submit.",
+//     });
+//     return;
+//   }
+
+//   if (loading) return; // ⛔ prevent duplicate submit
+//   setLoading(true);
+
+//   try {
+//     // Format date
+//     const formattedDate =
+//       username === "Admin"
+//         ? dayjs(values.date).format("DD-MM-YYYY")
+//         : deliveryDate;
+
+//     // 1️⃣ Save form data first
+//     const response = await fetch(GAS_URL, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({
+//         action: "addDeliveryNote",
+//         deliveryNumber: values.deliveryNumber,
+//         date: formattedDate,
+//         customername: values.customername,
+//         address: values.address,
+//         modeOfDelivery: values.modeOfDelivery,
+//         reference: values.reference,
+//         items: JSON.stringify(dataSource),
+//         userName: username || "-",
+//       }),
+//     });
+
+//     const result = await response.json();
+
+// if (!result.success) {
+//   if (result.message.includes("System is busy")) {
+//     notification.warning({
+//       message: "Please Retry",
+//       description: "Another user is submitting a delivery note. Please try again in a moment.",
+//     });
+//   } else {
+//     notification.error({
+//       message: "Form Submission Failed",
+//       description: result.message || "Failed to add delivery note.",
+//     });
+//   }
+//   setLoading(false);
+//   return;
+// }
+
+//     const confirmedDeliveryNumber = result.deliveryNumber;
+
+
+//     // ✅ Form saved successfully
+//     notification.success({
+//       message: "Form Submitted",
+//       description: "Delivery note saved successfully. Generating PDF...",
+//     });
+
+//     // 2️⃣ Generate PDF BEFORE resetting the table
+//     let doc;
+//     try {
+//       doc = generateDeliveryNotePDF(
+//         { ...values, paymentTerms, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
+//         dataSource,
+//         false
+//       );
+//     } catch (pdfErr) {
+//       console.error("PDF generation failed:", pdfErr);
+//       notification.warning({
+//         message: "PDF Generation Error",
+//         description: "Form was saved, but PDF generation failed.",
+//       });
+//        setLoading(false);
+//       return;
+//     }
+
+//     // 3️⃣ Upload PDF
+//     try {
+//       const pdfOutput = doc.output("arraybuffer");
+//       const pdfBase64 = btoa(
+//         new Uint8Array(pdfOutput).reduce(
+//           (data, byte) => data + String.fromCharCode(byte),
+//           ""
+//         )
+//       );
+
+//       const uploadRes = await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: new URLSearchParams({
+//           action: "uploadDeliveryNotePDF",
+//           pdfBase64,
+//       fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
+//         }),
+//       });
+
+//       const uploadResult = await uploadRes.json();
+
+//       if (uploadResult.success) {
+//         notification.success({
+//           message: "PDF Uploaded",
+//           description: "Delivery note PDF uploaded to Google Drive.",
+//         });
+//       } else {
+//         notification.warning({
+//           message: "PDF Upload Failed",
+//           description:
+//             uploadResult.message || "Form was saved, but PDF upload failed.",
+//         });
+//       }
+//     } catch (uploadErr) {
+//       console.error("PDF upload failed:", uploadErr);
+//       notification.warning({
+//         message: "PDF Upload Error",
+//         description: "Form was saved, but PDF upload failed.",
+//       });
+//       setLoading(false); 
+//         return;
+
+//     }
+
+//     // 4️⃣ Reset table + fetch next delivery number AFTER PDF is done
+//     setDataSource([]);
+//     setInputRow({
+//       partNumber: "",
+//       itemDescription: "",
+//       quantity: "",
+//       unit: "",
+//       stockInHand: "",
+//     });
+
+//     try {
+//       const nextRes = await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+//       });
+//       const nextResult = await nextRes.json();
+//       if (nextResult.success) {
+//         form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
+//       }
+//     } catch (numErr) {
+//       console.error("Failed to fetch next delivery number:", numErr);
+//     }
+
+//     // Reset date
+//     const nowUTC = new Date();
+//     const dubaiOffset = 4 * 60;
+//     const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+//     const dubaiDayjs = dayjs(dubaiTime);
+//     const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
+//     setDeliveryDate(todayFormatted);
+
+//     if (username === "Admin") {
+//       form.setFieldsValue({ date: dubaiDayjs });
+//     } else {
+//       form.setFieldsValue({ date: todayFormatted });
+//     }
+
+//     form.setFields([
+//       { name: "customername", value: undefined },
+//       { name: "address", value: undefined },
+//       { name: "modeOfDelivery", value: undefined },
+//       { name: "reference", value: undefined },
+//     ]);
+
+//     await fetchInitialData();
+//   } catch (err) {
+//     console.error("Submit error:", err);
+//     notification.error({
+//       message: "Unexpected Error",
+//       description: err.message || "Something went wrong while submitting the form.",
+//     });
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+// const handleSubmit = async (values) => {
+//   if (!navigator.onLine) {
+//     notification.error({
+//       message: "No Internet Connection",
+//       description: "Please check your internet and try again.",
+//     });
+//     return;
+//   }
+
+//   if (dataSource.length === 0) {
+//     notification.error({
+//       message: "No Items",
+//       description: "Please add at least one item to submit.",
+//     });
+//     return;
+//   }
+
+//   if (loading) return; // prevent duplicate submit
+//   setLoading(true);
+
+//   try {
+//     // Format date
+//     const formattedDate =
+//       username === "Admin"
+//         ? dayjs(values.date).format("DD-MM-YYYY")
+//         : deliveryDate;
+
+//     // 1️⃣ Save form data
+//     const response = await fetch(GAS_URL, {
+//       method: "POST",
+//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//       body: new URLSearchParams({
+//         action: "addDeliveryNote",
+//         deliveryNumber: values.deliveryNumber,
+//         date: formattedDate,
+//         customername: values.customername,
+//         address: values.address,
+//         modeOfDelivery: values.modeOfDelivery,
+//         reference: values.reference,
+//         items: JSON.stringify(dataSource),
+//         userName: username || "-",
+//       }),
+//     });
+
+//     const result = await response.json();
+
+//     if (!result.success) {
+//       if (result.message.includes("System is busy")) {
+//         throw new Error("System busy: another user is submitting a delivery note.");
+//       } else {
+//         throw new Error(result.message || "Failed to add delivery note.");
+//       }
+//     }
+
+//     const confirmedDeliveryNumber = result.deliveryNumber;
+
+//     notification.success({
+//       message: "Form Submitted",
+//       description: "Delivery note saved successfully. Generating PDF...",
+//     });
+
+//     // 2️⃣ Generate PDF
+//     let doc;
+//     // try {
+//     //   doc = generateDeliveryNotePDF(
+//     //     { ...values, paymentTerms, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
+//     //     dataSource,
+//     //     false
+//     //   );
+//     // } catch {
+//     //   throw new Error("Form saved, but PDF generation failed.");
+//     // }
+//     try {
+//   doc = generateDeliveryNotePDF(
+//     { ...values, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
+//     dataSource || [],
+//     false
+//   );
+//   if (!doc) throw new Error("PDF generation returned null");
+// } catch (pdfErr) {
+//   console.error("PDF generation failed:", pdfErr);
+//   throw new Error("Form saved, but PDF generation failed.");
+// }
+
+
+//     // 3️⃣ Upload PDF
+//     try {
+//       const pdfOutput = doc.output("arraybuffer");
+//       const pdfBase64 = btoa(
+//         new Uint8Array(pdfOutput).reduce(
+//           (data, byte) => data + String.fromCharCode(byte),
+//           ""
+//         )
+//       );
+
+//       const uploadRes = await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: new URLSearchParams({
+//           action: "uploadDeliveryNotePDF",
+//           pdfBase64,
+//           fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
+//         }),
+//       });
+
+//       const uploadResult = await uploadRes.json();
+//       if (!uploadResult.success) {
+//         throw new Error(uploadResult.message || "Form saved, but PDF upload failed.");
+//       }
+
+//       notification.success({
+//         message: "PDF Uploaded",
+//         description: "Delivery note PDF uploaded to Google Drive.",
+//       });
+//     } catch {
+//       throw new Error("Form saved, but PDF upload failed.");
+//     }
+
+//     // 4️⃣ Reset form and fetch next delivery number
+//     setDataSource([]);
+//     setInputRow({
+//       partNumber: "",
+//       itemDescription: "",
+//       quantity: "",
+//       unit: "",
+//       stockInHand: "",
+//     });
+
+//     try {
+//       const nextRes = await fetch(GAS_URL, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+//       });
+//       const nextResult = await nextRes.json();
+//       if (nextResult.success) {
+//         form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
+//       }
+//     } catch (numErr) {
+//       console.error("Failed to fetch next delivery number:", numErr);
+//     }
+
+//     // Reset date
+//     const nowUTC = new Date();
+//     const dubaiOffset = 4 * 60;
+//     const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+//     const dubaiDayjs = dayjs(dubaiTime);
+//     const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
+//     setDeliveryDate(todayFormatted);
+
+//     form.setFieldsValue({
+//       date: username === "Admin" ? dubaiDayjs : todayFormatted,
+//       customername: undefined,
+//       address: undefined,
+//       modeOfDelivery: undefined,
+//       reference: undefined,
+//     });
+
+//     await fetchInitialData();
+//   } catch (err) {
+//     console.error("Submit error:", err);
+//     notification.error({
+//       message: "Submission Error",
+//       description: err.message,
+//     });
+//   } finally {
+//     setLoading(false); // ✅ always runs
+//   }
+// };
+
 const handleSubmit = async (values) => {
   if (!navigator.onLine) {
-    notification.error({
-      message: "No Internet Connection",
-      description: "Please check your internet and try again.",
-    });
+    notification.error({ message: "No Internet", description: "Check connection." });
     return;
   }
-
   if (dataSource.length === 0) {
-    notification.error({
-      message: "No Items",
-      description: "Please add at least one item to submit.",
-    });
+    notification.error({ message: "No Items", description: "Please add at least one item." });
     return;
   }
-
-  if (loading) return; // ⛔ prevent duplicate submit
+  if (loading) return;
   setLoading(true);
 
   try {
-    // Format date
     const formattedDate =
-      username === "Admin"
-        ? dayjs(values.date).format("DD-MM-YYYY")
-        : deliveryDate;
+      username === "Admin" ? dayjs(values.date).format("DD-MM-YYYY") : deliveryDate;
 
-    // 1️⃣ Save form data first
+    // 1️⃣ Save form data only
     const response = await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         action: "addDeliveryNote",
-        deliveryNumber: values.deliveryNumber,
         date: formattedDate,
         customername: values.customername,
         address: values.address,
@@ -1165,138 +1514,83 @@ const handleSubmit = async (values) => {
     });
 
     const result = await response.json();
+    if (!result.success) throw new Error(result.message || "Failed to add delivery note.");
 
-    if (!result.success) {
-      notification.error({
-        message: "Form Submission Failed",
-        description: result.message || "Failed to add delivery note.",
-      });
-      return;
-    }
+    const confirmedDeliveryNumber = result.deliveryNumber;
 
-    // ✅ Form saved successfully
-    notification.success({
-      message: "Form Submitted",
-      description: "Delivery note saved successfully. Generating PDF...",
-    });
-
-    // 2️⃣ Generate PDF BEFORE resetting the table
+    // 2️⃣ Generate PDF with confirmed delivery number
     let doc;
     try {
       doc = generateDeliveryNotePDF(
-        { ...values, paymentTerms, date: formattedDate },
+        { ...values, date: formattedDate, paymentTerms, deliveryNumber: confirmedDeliveryNumber },
         dataSource,
         false
       );
     } catch (pdfErr) {
       console.error("PDF generation failed:", pdfErr);
-      notification.warning({
-        message: "PDF Generation Error",
-        description: "Form was saved, but PDF generation failed.",
-      });
-      return;
+      throw new Error("Form saved, but PDF generation failed.");
     }
 
-    // 3️⃣ Upload PDF
-    try {
-      const pdfOutput = doc.output("arraybuffer");
-      const pdfBase64 = btoa(
-        new Uint8Array(pdfOutput).reduce(
-          (data, byte) => data + String.fromCharCode(byte),
-          ""
-        )
-      );
+    const pdfOutput = doc.output("arraybuffer");
+    const pdfBase64 = btoa(
+      new Uint8Array(pdfOutput).reduce((data, byte) => data + String.fromCharCode(byte), "")
+    );
 
-      const uploadRes = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "uploadDeliveryNotePDF",
-          pdfBase64,
-          fileName: `DeliveryNote_${values.deliveryNumber || "Unknown"}.pdf`,
-        }),
-      });
-
-      const uploadResult = await uploadRes.json();
-
-      if (uploadResult.success) {
-        notification.success({
-          message: "PDF Uploaded",
-          description: "Delivery note PDF uploaded to Google Drive.",
-        });
-      } else {
-        notification.warning({
-          message: "PDF Upload Failed",
-          description:
-            uploadResult.message || "Form was saved, but PDF upload failed.",
-        });
-      }
-    } catch (uploadErr) {
-      console.error("PDF upload failed:", uploadErr);
-      notification.warning({
-        message: "PDF Upload Error",
-        description: "Form was saved, but PDF upload failed.",
-      });
-    }
-
-    // 4️⃣ Reset table + fetch next delivery number AFTER PDF is done
-    setDataSource([]);
-    setInputRow({
-      partNumber: "",
-      itemDescription: "",
-      quantity: "",
-      unit: "",
-      stockInHand: "",
+    // 3️⃣ Upload PDF separately
+    const uploadRes = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        action: "uploadDeliveryNotePDF",
+        pdfBase64,
+        fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
+      }),
     });
 
-    try {
-      const nextRes = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-      });
-      const nextResult = await nextRes.json();
-      if (nextResult.success) {
-        form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
-      }
-    } catch (numErr) {
-      console.error("Failed to fetch next delivery number:", numErr);
-    }
+    const uploadResult = await uploadRes.json();
+    if (!uploadResult.success) throw new Error(uploadResult.message || "PDF upload failed.");
 
-    // Reset date
-    const nowUTC = new Date();
-    const dubaiOffset = 4 * 60;
-    const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-    const dubaiDayjs = dayjs(dubaiTime);
-    const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
-    setDeliveryDate(todayFormatted);
+    notification.success({
+      message: "Success",
+      description: `Delivery Note ${confirmedDeliveryNumber} saved and PDF uploaded.`,
+    });
 
-    if (username === "Admin") {
-      form.setFieldsValue({ date: dubaiDayjs });
-    } else {
-      form.setFieldsValue({ date: todayFormatted });
-    }
+    // 4️⃣ Reset form (same as before)
+  // 4️⃣ Reset form fields + table
+setDataSource([]);
+setInputRow({ partNumber: "", itemDescription: "", quantity: "", unit: "", stockInHand: "" });
 
-    form.setFields([
-      { name: "customername", value: undefined },
-      { name: "address", value: undefined },
-      { name: "modeOfDelivery", value: undefined },
-      { name: "reference", value: undefined },
-    ]);
+// Reset AntD form fields
+form.resetFields();
 
-    await fetchInitialData();
+// Reset delivery date
+const nowUTC = new Date();
+const dubaiOffset = 4 * 60; // UTC+4
+const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+const dubaiDayjs = dayjs(dubaiTime);
+const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
+setDeliveryDate(todayFormatted);
+
+// Admin vs Non-Admin reset
+form.setFieldsValue({
+  date: username === "Admin" ? dubaiDayjs : todayFormatted,
+  customername: undefined,
+  address: undefined,
+  modeOfDelivery: undefined,
+  reference: undefined,
+});
+
+// Fetch new delivery number etc.
+await fetchInitialData();
+
+
   } catch (err) {
     console.error("Submit error:", err);
-    notification.error({
-      message: "Unexpected Error",
-      description: err.message || "Something went wrong while submitting the form.",
-    });
+    notification.error({ message: "Submission Error", description: err.message });
   } finally {
     setLoading(false);
   }
 };
-
-
 
   const fetchedTablecolumns = [
     {
@@ -2414,7 +2708,7 @@ const handleSubmit = async (values) => {
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
     const BOTTOM_MARGIN = 65;
-    const rightX = 130; // Right column start X
+    const rightX = 125; // Right column start X
 
     doc.setFontSize(10);
 
@@ -2443,7 +2737,7 @@ const handleSubmit = async (values) => {
 
       // Title & delivery info
       doc.setFontSize(30);
-      doc.text("Delivery Note", rightX, 22);
+      doc.text("Delivery Note", rightX, 20);
       doc.setFontSize(13);
       doc.text(
         `Delivery Note Number: ${formValues.deliveryNumber || ""}`,
@@ -2528,15 +2822,15 @@ const handleSubmit = async (values) => {
         textColor: [0, 0, 0],
       },
       headStyles: {
-        fillColor: [40, 40, 40],
+        fillColor: [100, 100, 100],
         textColor: [255, 255, 255],
         halign: "left",
       },
       alternateRowStyles: { fillColor: [245, 245, 245] },
       columnStyles: {
         0: { halign: "center", cellWidth: 10 },
-        1: { halign: "left", cellWidth: 152 },
-        2: { halign: "center", cellWidth: 20 },
+        1: { halign: "left", cellWidth: 150 },
+        2: { halign: "left", cellWidth: 22 },
       },
       pageBreak: "auto",
       didDrawPage: () => {
