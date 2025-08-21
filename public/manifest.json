@@ -8,12 +8,22 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "HaitianLogo192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "HaitianLogo256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "HaitianLogo384.png",
+      "type": "image/png",
+      "sizes": "384x384"
+    },
+    {
+      "src": "HaitianLogo512.png",
       "type": "image/png",
       "sizes": "512x512"
     }

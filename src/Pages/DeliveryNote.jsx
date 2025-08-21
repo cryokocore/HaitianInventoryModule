@@ -111,65 +111,126 @@ export default function DeliveryNote({ username }) {
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycby0-KbFm1fM94ni8YSC65F71yNJ1QD1N7CNMHkosI5J8Br1qnLufFNOPhhIvDoyMCWcSg/exec";
+    "https://script.google.com/macros/s/AKfycbwfASXRojkWZq-dztTKxVkpjptt3EciOnWPIeUVAOqYjm8_ccXqIIuKCw45R8HgZjjC1g/exec";
 
-  const fetchInitialData = async () => {
+  // const fetchInitialData = async () => {
+  //   try {
+  //     setLoadingDeliveryNumber(true);
+  //     setLoadingCustomerName(true);
+  //     setLoadingDescription(true);
+
+  //     const [deliveryRes, customerRes, descRes] = await Promise.all([
+  //       fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+  //       }),
+  //       fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({ action: "getCustomerDetails" }),
+  //       }),
+  //       fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({
+  //           action: "getAllDescriptionsWithPartNumbers",
+  //         }),
+  //       }),
+  //     ]);
+
+  //     const [deliveryNum, customers, descriptions] = await Promise.all([
+  //       deliveryRes.json(),
+  //       customerRes.json(),
+  //       descRes.json(),
+  //     ]);
+
+  //     if (deliveryNum.success) {
+  //       setDeliveryNumber(deliveryNum.deliveryNumber);
+  //       form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
+  //     }
+  //     if (customers.success) {
+  //       setCustomerList(customers.customers);
+  //     }
+  //     if (descriptions.success) {
+  //       setDescriptionList(descriptions.items);
+  //     }
+
+  //     // ✅ Fetch delivery notes separately
+  //     await fetchDeliveryNotesData();
+  //   } catch (err) {
+  //     console.error("Error fetching initial data:", err);
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Failed to fetch initial data",
+  //     });
+  //   } finally {
+  //     setLoadingDeliveryNumber(false);
+  //     setLoadingCustomerName(false);
+  //     setLoadingDescription(false);
+  //   }
+  // };
+
+  
+  async function fetchWithRetry(params, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
     try {
-      setLoadingDeliveryNumber(true);
-      setLoadingCustomerName(true);
-      setLoadingDescription(true);
-
-      const [deliveryRes, customerRes, descRes] = await Promise.all([
-        fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-        }),
-        fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ action: "getCustomerDetails" }),
-        }),
-        fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: "getAllDescriptionsWithPartNumbers",
-          }),
-        }),
-      ]);
-
-      const [deliveryNum, customers, descriptions] = await Promise.all([
-        deliveryRes.json(),
-        customerRes.json(),
-        descRes.json(),
-      ]);
-
-      if (deliveryNum.success) {
-        setDeliveryNumber(deliveryNum.deliveryNumber);
-        form.setFieldsValue({ deliveryNumber: deliveryNum.deliveryNumber });
-      }
-      if (customers.success) {
-        setCustomerList(customers.customers);
-      }
-      if (descriptions.success) {
-        setDescriptionList(descriptions.items);
-      }
-
-      // ✅ Fetch delivery notes separately
-      await fetchDeliveryNotesData();
-    } catch (err) {
-      console.error("Error fetching initial data:", err);
-      notification.error({
-        message: "Error",
-        description: "Failed to fetch initial data",
+      const res = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(params),
       });
-    } finally {
-      setLoadingDeliveryNumber(false);
-      setLoadingCustomerName(false);
-      setLoadingDescription(false);
+      const json = await res.json();
+      if (json.success) return json;
+    } catch (err) {
+      console.warn(`Retry ${i + 1} failed`, err);
     }
-  };
+  }
+  throw new Error("Failed after retries");
+}
+
+const fetchInitialData = async () => {
+  try {
+    setLoadingDeliveryNumber(true);
+    setLoadingCustomerName(true);
+    setLoadingDescription(true);
+
+    // 🔄 Fetch in parallel with retry logic
+    const [deliveryNum, customers, descriptions] = await Promise.allSettled([
+      fetchWithRetry({ action: "getNextDeliveryNumber" }),
+      fetchWithRetry({ action: "getCustomerDetails" }),
+      fetchWithRetry({ action: "getAllDescriptionsWithPartNumbers" }),
+    ]);
+
+    if (deliveryNum.status === "fulfilled" && deliveryNum.value) {
+      setDeliveryNumber(deliveryNum.value.deliveryNumber);
+      form.setFieldsValue({ deliveryNumber: deliveryNum.value.deliveryNumber });
+    }
+
+    if (customers.status === "fulfilled" && customers.value) {
+      setCustomerList(customers.value.customers || []);
+    }
+
+    if (descriptions.status === "fulfilled" && descriptions.value) {
+      setDescriptionList(descriptions.value.items || []);
+    }
+
+    // ✅ Fetch delivery notes separately (doesn’t need retry)
+    await fetchDeliveryNotesData();
+
+  } catch (err) {
+    console.error("Error fetching initial data:", err);
+    notification.error({
+      message: "Error",
+      description: "Failed to fetch initial data",
+    });
+  } finally {
+    setLoadingDeliveryNumber(false);
+    setLoadingCustomerName(false);
+    setLoadingDescription(false);
+  }
+};
+
 
   useEffect(() => {
     fetchInitialData();
@@ -846,13 +907,13 @@ onChange={(value) => {
 
     setDataSource(updatedData);
 
-    setInputRow({
-      partNumber: "",
-      itemDescription: "",
-      quantity: "",
-      stockInHand: "",
-      unit: "",
-    });
+    // setInputRow({
+    //   partNumber: "",
+    //   itemDescription: "",
+    //   quantity: "",
+    //   stockInHand: "",
+    //   unit: "",
+    // });
   };
 
   const handleDelete = (key) => {
@@ -1522,7 +1583,7 @@ const handleSubmit = async (values) => {
     let doc;
     try {
       doc = generateDeliveryNotePDF(
-        { ...values, date: formattedDate, paymentTerms, deliveryNumber: confirmedDeliveryNumber },
+        { ...values, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
         dataSource,
         false
       );
@@ -1531,10 +1592,17 @@ const handleSubmit = async (values) => {
       throw new Error("Form saved, but PDF generation failed.");
     }
 
-    const pdfOutput = doc.output("arraybuffer");
-    const pdfBase64 = btoa(
-      new Uint8Array(pdfOutput).reduce((data, byte) => data + String.fromCharCode(byte), "")
-    );
+    // const pdfOutput = doc.output("arraybuffer");
+    // const pdfBase64 = btoa(
+    //   new Uint8Array(pdfOutput).reduce((data, byte) => data + String.fromCharCode(byte), "")
+    // );
+
+    const pdfBase64 = doc.output("datauristring").split(",")[1];
+    const pdfSizeKB = (pdfBase64.length * 3 / 4 / 1024).toFixed(2);
+console.log("PDF size:", pdfSizeKB, "KB");
+if (pdfSizeKB > 6000) {
+  throw new Error("PDF too large for Apps Script upload (limit ~6MB). Try reducing content.");
+}
 
     // 3️⃣ Upload PDF separately
     const uploadRes = await fetch(GAS_URL, {
@@ -2699,157 +2767,355 @@ await fetchInitialData();
   //   return doc;
   // };
 
-  const generateDeliveryNotePDF = (
-    formValues,
-    items = [],
-    saveLocally = true
-  ) => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    const BOTTOM_MARGIN = 65;
-    const rightX = 125; // Right column start X
+//   const generateDeliveryNotePDF = (
+//     formValues,
+//     items = [],
+//     saveLocally = true
+//   ) => {
+//     const doc = new jsPDF();
+//     const pageWidth = doc.internal.pageSize.width;
+//     const pageHeight = doc.internal.pageSize.height;
+//     const BOTTOM_MARGIN = 65;
+//     const rightX = 125; // Right column start X
 
-    doc.setFontSize(10);
+//     doc.setFontSize(10);
 
-    // Wrap Deliver To lines (left column)
-    const deliverToLines = [
-      ...(formValues.customername ? [formValues.customername] : []),
-      ...(formValues.address ? formValues.address.split("\n") : []),
-    ].flatMap((line) => doc.splitTextToSize(line, 100));
+//     // Wrap Deliver To lines (left column)
+//     const deliverToLines = [
+//       ...(formValues.customername ? [formValues.customername] : []),
+//       ...(formValues.address ? formValues.address.split("\n") : []),
+//     ].flatMap((line) => doc.splitTextToSize(line, 100));
 
-    // Wrap Delivery Type + Payment Terms together (right column)
-    const deliveryTypeFullText = `${formValues.paymentTerms || ""}`;
-    const deliveryTypeLines = doc.splitTextToSize(
-      deliveryTypeFullText,
-      pageWidth - rightX - 14
+//     // Wrap Delivery Type + Payment Terms together (right column)
+//     const deliveryTypeFullText = `${formValues.paymentTerms || ""}`;
+//     const deliveryTypeLines = doc.splitTextToSize(
+//       deliveryTypeFullText,
+//       pageWidth - rightX - 14
+//     );
+
+//     // Calculate tallest column height
+//     const leftHeight = deliverToLines.length * 5 + 6;
+//     const rightHeight = deliveryTypeLines.length * 5 + 6;
+//     const HEADER_HEIGHT = 50 + Math.max(leftHeight, rightHeight);
+
+//     // Draw header
+//     const drawHeader = () => {
+//       // Logo
+//       doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+//       // Title & delivery info
+//       doc.setFontSize(30);
+//       doc.text("Delivery Note", rightX, 20);
+//       doc.setFontSize(13);
+//       doc.text(
+//         `Delivery Note Number: ${formValues.deliveryNumber || ""}`,
+//         rightX,
+//         30
+//       );
+//       doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+//       const startY = 50;
+
+//       // LEFT column (Deliver To)
+//       doc.setFont("helvetica", "normal");
+//       doc.setFontSize(13);
+//       doc.text("Deliver To:", 14, startY);
+//       doc.setFont("helvetica", "normal");
+//       doc.setFontSize(11);
+//       doc.text(deliverToLines, 14, startY + 6);
+
+//       // RIGHT column (Delivery Type + value wrapped together)
+//       doc.setFont("helvetica", "normal");
+//       doc.setFontSize(13);
+//       doc.text("Delivery Type:", rightX, startY);
+//       doc.setFont("helvetica", "normal");
+//       doc.setFontSize(11);
+//       doc.text(deliveryTypeLines, rightX, startY + 6);
+//     };
+
+//     // Draw footer
+//     const drawFooter = (pageNum, totalPages) => {
+//       doc.setFontSize(10);
+//       const borderY = pageHeight - 30;
+
+//       // Black border line
+//       doc.setDrawColor(0, 0, 0);
+//       doc.setLineWidth(0.5);
+//       doc.line(14, borderY, pageWidth - 14, borderY);
+
+//       // Signature line
+//       if (pageNum === totalPages) {
+//         const sigY = borderY - 10;
+//         doc.setDrawColor(0, 0, 0);
+//         doc.setLineDash([2, 1], 0);
+//         doc.line(14, sigY, 80, sigY);
+//         doc.setLineDash([]);
+//         doc.text("Authorized Signature", 14, sigY + 5);
+//       }
+
+//       // Company info
+//       const companyInfo = [
+//         "Haitian Middle East LLC",
+//         "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
+//         "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
+//       ];
+//       let footerY = borderY + 6;
+//       companyInfo.forEach((line) => {
+//         doc.text(line, pageWidth / 2, footerY, { align: "center" });
+//         footerY += 5;
+//       });
+
+//       // Page number
+//       doc.text(
+//         `Page ${pageNum} of ${totalPages}`,
+//         pageWidth / 2,
+//         pageHeight - 5,
+//         { align: "center" }
+//       );
+//     };
+
+//     // Table
+//     // autoTable(doc, {
+//     //   head: [["#", "Item & Description", "Qty"]],
+//     //   body: items.map((item, idx) => [
+//     //     idx + 1,
+//     //     `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//     //     item.quantity || "",
+//     //   ]),
+//     //   margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+//     //   styles: {
+//     //     fontSize: 11,
+//     //     cellPadding: 3,
+//     //     valign: "middle",
+//     //     textColor: [0, 0, 0],
+//     //   },
+//     //   headStyles: {
+//     //     fillColor: [100, 100, 100],
+//     //     textColor: [255, 255, 255],
+//     //     halign: "left",
+//     //   },
+//     //   alternateRowStyles: { fillColor: [245, 245, 245] },
+//     //   columnStyles: {
+//     //     0: { halign: "center", cellWidth: 10 },
+//     //     1: { halign: "left", cellWidth: 150 },
+//     //     2: { halign: "left", cellWidth: 22 },
+//     //   },
+//     //   pageBreak: "auto",
+//     //   didDrawPage: () => {
+//     //     drawHeader();
+//     //   },
+//     // });
+
+//     autoTable(doc, {
+//   head: [["#", "Item & Description", "Qty"]],
+//   body: items.map((item, idx) => [
+//     idx + 1,
+//     `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+//     item.quantity || "",
+//   ]),
+//   margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+//   styles: {
+//     fontSize: 11,
+//     cellPadding: 3,
+//     valign: "middle",
+//     textColor: [0, 0, 0], // Black text everywhere
+//     lineWidth: 0.2,        // Thin border
+//     lineColor: [0, 0, 0],  // Black grid
+//   },
+//   headStyles: {
+//     fillColor: [255, 255, 255], // White background (no gray)
+//     textColor: [0, 0, 0],       // Black header text
+//     halign: "left",
+//     lineWidth: 0.2,
+//     lineColor: [0, 0, 0],
+//   },
+//   alternateRowStyles: { fillColor: [255, 255, 255] }, // No shading
+//   columnStyles: {
+//     0: { halign: "center", cellWidth: 10 },
+//     1: { halign: "center", cellWidth: 150 },
+//     2: { halign: "center", cellWidth: 22 },
+//   },
+//   pageBreak: "auto",
+//   didDrawPage: () => {
+//     drawHeader();
+//   },
+// });
+
+
+//     // Footer for all pages
+//     const totalPages = doc.getNumberOfPages();
+//     for (let i = 1; i <= totalPages; i++) {
+//       doc.setPage(i);
+//       drawFooter(i, totalPages);
+//     }
+
+//     if (saveLocally) {
+//       doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+//     }
+//     return doc;
+//   };
+
+const generateDeliveryNotePDF = (
+  formValues,
+  items = [],
+  saveLocally = true
+) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const BOTTOM_MARGIN = 65;
+  const rightX = 125; // Right column start X
+
+  doc.setFontSize(10);
+
+  // Wrap Deliver To lines (left column)
+  const deliverToLines = [
+    ...(formValues.customername ? [formValues.customername] : []),
+    ...(formValues.address ? formValues.address.split("\n") : []),
+  ].flatMap((line) => doc.splitTextToSize(line, 100));
+
+  // Calculate header height only from left column
+  const leftHeight = deliverToLines.length * 5 + 6;
+  const HEADER_HEIGHT = 50 + leftHeight;
+
+  // Draw header
+  const drawHeader = () => {
+    // Logo
+    doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+    // Title & delivery info
+    doc.setFontSize(30);
+    doc.text("Delivery Note", rightX, 20);
+    doc.setFontSize(13);
+    doc.text(
+      `Delivery Note Number: ${formValues.deliveryNumber || ""}`,
+      rightX,
+      30
     );
+    doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
 
-    // Calculate tallest column height
-    const leftHeight = deliverToLines.length * 5 + 6;
-    const rightHeight = deliveryTypeLines.length * 5 + 6;
-    const HEADER_HEIGHT = 50 + Math.max(leftHeight, rightHeight);
+    const startY = 50;
 
-    // Draw header
-    const drawHeader = () => {
-      // Logo
-      doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+    // LEFT column (Deliver To)
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(13);
+    doc.text("Deliver To:", 14, startY);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(deliverToLines, 14, startY + 6);
 
-      // Title & delivery info
-      doc.setFontSize(30);
-      doc.text("Delivery Note", rightX, 20);
-      doc.setFontSize(13);
-      doc.text(
-        `Delivery Note Number: ${formValues.deliveryNumber || ""}`,
-        rightX,
-        30
-      );
-      doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+    // ✅ Removed Delivery Type completely
+  };
 
-      const startY = 50;
+  // Draw footer
+  const drawFooter = (pageNum, totalPages) => {
+    doc.setFontSize(10);
+    const borderY = pageHeight - 30;
 
-      // LEFT column (Deliver To)
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(13);
-      doc.text("Deliver To:", 14, startY);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.text(deliverToLines, 14, startY + 6);
+    // Black border line
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(14, borderY, pageWidth - 14, borderY);
 
-      // RIGHT column (Delivery Type + value wrapped together)
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(13);
-      doc.text("Delivery Type:", rightX, startY);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.text(deliveryTypeLines, rightX, startY + 6);
-    };
-
-    // Draw footer
-    const drawFooter = (pageNum, totalPages) => {
-      doc.setFontSize(10);
-      const borderY = pageHeight - 30;
-
-      // Black border line
+    // Signature lines (only on last page)
+    if (pageNum === totalPages) {
+      const sigY = borderY - 10;
       doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(14, borderY, pageWidth - 14, borderY);
+      doc.setLineDash([2, 1], 0);
 
-      // Signature line
-      if (pageNum === totalPages) {
-        const sigY = borderY - 10;
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineDash([2, 1], 0);
-        doc.line(14, sigY, 80, sigY);
-        doc.setLineDash([]);
-        doc.text("Authorized Signature", 14, sigY + 5);
-      }
+      // Left side (Received By)
+      doc.line(14, sigY, 80, sigY);
+      doc.text("Received By", 14, sigY + 5);
 
-      // Company info
-      const companyInfo = [
-        "Haitian Middle East LLC",
-        "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
-        "Phone: +971 656 222 38  Email: ask@haitianme.com   Web: www.haitianme.com",
-      ];
-      let footerY = borderY + 6;
-      companyInfo.forEach((line) => {
-        doc.text(line, pageWidth / 2, footerY, { align: "center" });
-        footerY += 5;
-      });
+      // Right side (Delivered By)
+      doc.line(pageWidth - 80, sigY, pageWidth - 14, sigY);
+      doc.text("Delivered By", pageWidth - 80, sigY + 5);
 
-      // Page number
-      doc.text(
-        `Page ${pageNum} of ${totalPages}`,
-        pageWidth / 2,
-        pageHeight - 5,
-        { align: "center" }
-      );
-    };
+      doc.setLineDash([]);
+    }
 
-    // Table
-    autoTable(doc, {
-      head: [["#", "Item & Description", "Qty"]],
-      body: items.map((item, idx) => [
-        idx + 1,
-        `${item.itemDescription || ""}\n${item.partNumber || ""}`,
-        item.quantity || "",
-      ]),
-      margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
-      styles: {
-        fontSize: 11,
-        cellPadding: 3,
-        valign: "middle",
-        textColor: [0, 0, 0],
-      },
-      headStyles: {
-        fillColor: [100, 100, 100],
-        textColor: [255, 255, 255],
-        halign: "left",
-      },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-      columnStyles: {
-        0: { halign: "center", cellWidth: 10 },
-        1: { halign: "left", cellWidth: 150 },
-        2: { halign: "left", cellWidth: 22 },
-      },
-      pageBreak: "auto",
-      didDrawPage: () => {
-        drawHeader();
-      },
+    // Company info
+    const companyInfo = [
+      "Haitian Middle East LLC",
+      "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
+      "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
+    ];
+    let footerY = borderY + 6;
+    companyInfo.forEach((line) => {
+      doc.text(line, pageWidth / 2, footerY, { align: "center" });
+      footerY += 5;
     });
 
-    // Footer for all pages
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      drawFooter(i, totalPages);
-    }
-
-    if (saveLocally) {
-      doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
-    }
-    return doc;
+    // Page number
+    doc.text(
+      `Page ${pageNum} of ${totalPages}`,
+      pageWidth / 2,
+      pageHeight - 5,
+      { align: "center" }
+    );
   };
+
+  // Table
+autoTable(doc, {
+  head: [["S.No", "Item & Description", "Qty"]],
+  body: items.map((item, idx) => [
+    idx + 1,
+    `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+    item.quantity || "",
+  ]),
+  margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+styles: {
+  fontSize: 11,
+  lineHeight: 1, // tighter multi-line spacing
+  cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }, // compact padding
+  valign: "middle",
+  textColor: [0, 0, 0],
+  lineWidth: 0.4,
+  lineColor: [0, 0, 0],
+},
+
+  headStyles: {
+    fillColor: [255, 255, 255], // White background
+    textColor: [0, 0, 0],       // Black header text
+    halign: "center",           // ✅ Center align only header
+    lineWidth: 0.4,
+    lineColor: [0, 0, 0],
+  },
+    bodyStyles: {
+    lineWidth: 0.4,      
+    lineColor: [0, 0, 0],
+  },
+ 
+  alternateRowStyles: { fillColor: [255, 255, 255] }, 
+  columnStyles: {
+    0: { halign: "center", cellWidth: 15 },
+    1: { halign: "left", }, 
+        // 1: { halign: "left", cellWidth: 145 }, 
+
+    2: { halign: "center", cellWidth: 21 },   
+  },
+  pageBreak: "auto",
+  didDrawPage: () => {
+    drawHeader();
+  },
+});
+
+
+
+
+  // Footer for all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    drawFooter(i, totalPages);
+  }
+
+  if (saveLocally) {
+    doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+  }
+  return doc;
+};
+
 
   const handleDownloadPDF = async (deliveryNumber) => {
     setDownloading(true);
@@ -3591,7 +3857,7 @@ await fetchInitialData();
                             handleDownloadPDF(selectedRow["Delivery Number"])
                           }
                         >
-                          {downloading ? "Downloading PDF..." : "Download PDF"}
+                          {downloading ? "Downloading PDF" : "Download PDF"}
                         </Button>
                       </div>
                     </div>
