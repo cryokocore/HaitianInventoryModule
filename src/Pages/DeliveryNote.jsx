@@ -111,7 +111,7 @@ export default function DeliveryNote({ username }) {
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbwfASXRojkWZq-dztTKxVkpjptt3EciOnWPIeUVAOqYjm8_ccXqIIuKCw45R8HgZjjC1g/exec";
+    "https://script.google.com/macros/s/AKfycbxAbi1evdPX3P6hWUVUVVnEuTWl_BAuo_7ya5bnqVXyv9nZfOxejPDKCI9Xaqm88gMPrw/exec";
 
   // const fetchInitialData = async () => {
   //   try {
@@ -838,14 +838,15 @@ onChange={(value) => {
     const formatted = dubaiDayjs.format("DD-MM-YYYY");
 
     setDeliveryDate(formatted);
+    form.setFieldsValue({ date: formatted });
 
-    if (username === "Admin") {
-      // Admin gets dayjs object for DatePicker
-      form.setFieldsValue({ date: dubaiDayjs });
-    } else {
-      // Non-admin gets formatted string for Input field
-      form.setFieldsValue({ date: formatted });
-    }
+    // if (username === "Admin") {
+    //   // Admin gets dayjs object for DatePicker
+    //   form.setFieldsValue({ date: dubaiDayjs });
+    // } else {
+    //   // Non-admin gets formatted string for Input field
+    //   form.setFieldsValue({ date: formatted });
+    // }
 
     // console.log("Non-admin deliveryDate:", formatted);
   }, []);
@@ -1555,8 +1556,9 @@ const handleSubmit = async (values) => {
   setLoading(true);
 
   try {
-    const formattedDate =
-      username === "Admin" ? dayjs(values.date).format("DD-MM-YYYY") : deliveryDate;
+    // const formattedDate =
+    //   username === "Admin" ? dayjs(values.date).format("DD-MM-YYYY") : deliveryDate;
+     const formattedDate = form.getFieldValue("date") || deliveryDate;
 
     // 1️⃣ Save form data only
     const response = await fetch(GAS_URL, {
@@ -1641,7 +1643,8 @@ setDeliveryDate(todayFormatted);
 
 // Admin vs Non-Admin reset
 form.setFieldsValue({
-  date: username === "Admin" ? dubaiDayjs : todayFormatted,
+  // date: username === "Admin" ? dubaiDayjs : todayFormatted,
+    date: todayFormatted, 
   customername: undefined,
   address: undefined,
   modeOfDelivery: undefined,
@@ -1869,6 +1872,13 @@ await fetchInitialData();
       return acc;
     }, {})
   );
+
+                      // Sort groupedData by "Delivery Number" descending
+const sortedData = [...groupedData].sort((a, b) => {
+  const numA = parseInt(a["Delivery Number"].replace("HD", ""), 10);
+  const numB = parseInt(b["Delivery Number"].replace("HD", ""), 10);
+  return numB - numA; // descending
+});
 
   const handleExport = () => {
     const now = dayjs().format("DD-MM-YYYY_HH-mm-ss");
@@ -3035,16 +3045,38 @@ const generateDeliveryNotePDF = (
     }
 
     // Company info
-    const companyInfo = [
-      "Haitian Middle East LLC",
-      "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
-      "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
-    ];
-    let footerY = borderY + 6;
-    companyInfo.forEach((line) => {
-      doc.text(line, pageWidth / 2, footerY, { align: "center" });
-      footerY += 5;
-    });
+    // const companyInfo = [
+    //   "Haitian Middle East LLC",
+    //   "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
+    //   "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
+    // ];
+    // let footerY = borderY + 6;
+    // companyInfo.forEach((line) => {
+    //   doc.text(line, pageWidth / 2, footerY, { align: "center" });
+    //   footerY += 5;
+    // });
+
+    // Company info
+const companyInfo = [
+  { text: "Haitian Middle East LLC", bold: true },
+  { text: "Umm El Thoub, Umm Al Quwain, United Arab Emirates" },
+  { text: "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com" },
+];
+let footerY = borderY + 6;
+companyInfo.forEach((line) => {
+  if (line.bold) {
+    doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+
+  } else {
+    doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+
+  }
+  doc.text(line.text, pageWidth / 2, footerY, { align: "center" });
+  footerY += 5;
+});
+
 
     // Page number
     doc.text(
@@ -3060,7 +3092,8 @@ autoTable(doc, {
   head: [["S.No", "Item & Description", "Qty"]],
   body: items.map((item, idx) => [
     idx + 1,
-    `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+    // `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+     [item.itemDescription || "", item.partNumber || ""].join("\n"), 
     item.quantity || "",
   ]),
   margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
@@ -3349,11 +3382,11 @@ styles: {
                           rules={[
                             {
                               required: true,
-                              message: "Please select the delivery date",
+                              message: "Date is required",
                             },
                           ]}
                         >
-                          {username === "Admin" ? (
+                          {/* {username === "Admin" ? (
                             <DatePicker
                               format="DD-MM-YYYY"
                               value={form.getFieldValue("date")} // ✅ dayjs object
@@ -3374,7 +3407,10 @@ styles: {
                               value={deliveryDate}
                               readOnly
                             />
-                          )}
+                          )} */}
+
+                            <Input  placeholder="Delivery date" readOnly value={form.getFieldValue("date")} />
+
                         </Form.Item>
                       </div>
                     </div>
@@ -3670,6 +3706,7 @@ styles: {
                     >
                       Reset
                     </Button>
+                       {username === "Admin" && (
 
                     <Button
                       icon={<ExportOutlined />}
@@ -3678,10 +3715,10 @@ styles: {
                       className="exportButton"
                     >
                       Export
-                    </Button>
+                    </Button>)}
                   </div>
 
-                  <Table
+                  {/* <Table
                     columns={fetchedTablecolumns}
                     dataSource={groupedData.map((item, index) => ({
                       key: index,
@@ -3691,7 +3728,22 @@ styles: {
                     pagination={{ pageSize: 10 }}
                     scroll={{ x: "max-content" }}
                     bordered
-                  />
+                  /> */}
+
+
+
+<Table
+  columns={fetchedTablecolumns}
+  dataSource={sortedData.map((item, index) => ({
+    key: index,
+    ...item,
+  }))}
+  loading={loadingFetchedData}
+  pagination={{ pageSize: 10 }}
+  scroll={{ x: "max-content" }}
+  bordered
+/>
+
                 </div>
 
                 <Modal

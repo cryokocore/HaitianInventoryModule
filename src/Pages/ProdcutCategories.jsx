@@ -35,7 +35,7 @@ export default function ProductCategories({ username }) {
   const [note, setNote] = useState("");
   const [dataSource, setDataSource] = useState([]);
   const [machineDataSource, setMachineDataSource] = useState([]);
-  const [assetsDataSource, setAssetsDataSource] = useState([]);
+  // const [assetsDataSource, setAssetsDataSource] = useState([]);
   const [auxiliariesDataSource, setAuxiliariesDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -66,7 +66,7 @@ export default function ProductCategories({ username }) {
     addOnCost: "",
     totalPrice: "",
   });
-  const [selectedAssets, setSelectedAssets] = useState(null);
+  // const [selectedAssets, setSelectedAssets] = useState(null);
   const [selectedAuxiliaries, setSelectedAuxiliaries] = useState(null);
   const [auxiliariesInputRow, setAuxiliariesInputRow] = useState({
     partNumber: "",
@@ -81,22 +81,22 @@ export default function ProductCategories({ username }) {
     addOnCost: "",
     totalPrice: "",
   });
-  const [assetsInputRow, setAssetsInputRow] = useState({
-    partNumber: "",
-    description: "",
-    quantity: "",
-    unit: "",
-    stockInHand: "",
-    note: "",
-    purchaseCost: "",
-    sellingCost: "",
-    stockUnit: "",
-    addOnCost: "",
-    totalPrice: "",
-  });
+  // const [assetsInputRow, setAssetsInputRow] = useState({
+  //   partNumber: "",
+  //   description: "",
+  //   quantity: "",
+  //   unit: "",
+  //   stockInHand: "",
+  //   note: "",
+  //   purchaseCost: "",
+  //   sellingCost: "",
+  //   stockUnit: "",
+  //   addOnCost: "",
+  //   totalPrice: "",
+  // });
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [selectedIMMSeries, setSelectedIMMSeries] = useState(null);
-  const [assetsFetching, setAssetsFetching] = useState(false);
+  // const [assetsFetching, setAssetsFetching] = useState(false);
   const [machineFetching, setMachineFetching] = useState(false);
   const [auxiliariesFetching, setAuxiliariesFetching] = useState(false);
   const [sparePartsFetching, setSparePartsFetching] = useState(false);
@@ -106,9 +106,9 @@ export default function ProductCategories({ username }) {
   const [machineUnitFetched, setMachineUnitFetched] = useState(false);
   const [machineUnitOptions, setMachineUnitOptions] = useState([]);
   const [machineUnitLoading, setMachineUnitLoading] = useState(false);
-  const [assetsUnitFetched, setAssetsUnitFetched] = useState(false);
-  const [assetsUnitOptions, setAssetsUnitOptions] = useState([]);
-  const [assetsUnitLoading, setAssetsUnitLoading] = useState(false);
+  // const [assetsUnitFetched, setAssetsUnitFetched] = useState(false);
+  // const [assetsUnitOptions, setAssetsUnitOptions] = useState([]);
+  // const [assetsUnitLoading, setAssetsUnitLoading] = useState(false);
   const [auxiliariesUnitFetched, setAuxiliariesUnitFetched] = useState(false);
   const [auxiliariesUnitOptions, setAuxiliariesUnitOptions] = useState([]);
   const [auxiliariesUnitLoading, setAuxiliariesUnitLoading] = useState(false);
@@ -132,7 +132,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbwfASXRojkWZq-dztTKxVkpjptt3EciOnWPIeUVAOqYjm8_ccXqIIuKCw45R8HgZjjC1g/exec";
+    "https://script.google.com/macros/s/AKfycbxAbi1evdPX3P6hWUVUVVnEuTWl_BAuo_7ya5bnqVXyv9nZfOxejPDKCI9Xaqm88gMPrw/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -187,23 +187,23 @@ export default function ProductCategories({ username }) {
             { value: "HTC-50SA-D/W", label: "HTC-50SA-D/W" },
           ],
         },
-        {
-          value: "Water-Cooled",
-          label: "Water-Cooled",
-          children: [
-            { value: "HTC-03W/W", label: "HTC-03W/W" },
-            { value: "HTC-05W/W", label: "HTC-05W/W" },
-            { value: "HTC-08W/W", label: "HTC-08W/W" },
-            { value: "HTC-10W/W", label: "HTC-10W/W" },
-            { value: "HTC-12SW/W", label: "HTC-12SW/W" },
-            { value: "HTC-15SW/W", label: "HTC-15SW/W" },
-            { value: "HTC-20SW-D/W", label: "HTC-20SW-D/W" },
-            { value: "HTC-25SW-D/W", label: "HTC-25SW-D/W" },
-            { value: "HTC-30SW-D/W", label: "HTC-30SW-D/W" },
-            { value: "HTC-40SW-D/W", label: "HTC-40SW-D/W" },
-            { value: "HTC-50SW-D/W", label: "HTC-50SW-D/W" },
-          ],
-        },
+        // {
+        //   value: "Water-Cooled",
+        //   label: "Water-Cooled",
+        //   children: [
+        //     { value: "HTC-03W/W", label: "HTC-03W/W" },
+        //     { value: "HTC-05W/W", label: "HTC-05W/W" },
+        //     { value: "HTC-08W/W", label: "HTC-08W/W" },
+        //     { value: "HTC-10W/W", label: "HTC-10W/W" },
+        //     { value: "HTC-12SW/W", label: "HTC-12SW/W" },
+        //     { value: "HTC-15SW/W", label: "HTC-15SW/W" },
+        //     { value: "HTC-20SW-D/W", label: "HTC-20SW-D/W" },
+        //     { value: "HTC-25SW-D/W", label: "HTC-25SW-D/W" },
+        //     { value: "HTC-30SW-D/W", label: "HTC-30SW-D/W" },
+        //     { value: "HTC-40SW-D/W", label: "HTC-40SW-D/W" },
+        //     { value: "HTC-50SW-D/W", label: "HTC-50SW-D/W" },
+        //   ],
+        // },
       ],
     },
     {
@@ -975,34 +975,34 @@ export default function ProductCategories({ username }) {
   //   };
   // }, [assetsInputRow.partNumber]);
 
-  useEffect(() => {
-    const part = assetsInputRow.partNumber?.trim();
-    if (!part) return;
+  // useEffect(() => {
+  //   const part = assetsInputRow.partNumber?.trim();
+  //   if (!part) return;
 
-    const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
-    const cached = stockCache[part];
-    let unit = "";
-    let stock = "0";
+  //   const defaultUnits = ["Set", "Number", "Metre", "Piece", "Litre"];
+  //   const cached = stockCache[part];
+  //   let unit = "";
+  //   let stock = "0";
 
-    if (cached) {
-      stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
-      unit = cached.unit?.trim() || "";
-    }
+  //   if (cached) {
+  //     stock = `${cached.stockInHand} ${cached.unit || ""}`.trim();
+  //     unit = cached.unit?.trim() || "";
+  //   }
 
-    setAssetsInputRow((prev) => ({
-      ...prev,
-      stockInHand: stock,
-      unit,
-    }));
+  //   setAssetsInputRow((prev) => ({
+  //     ...prev,
+  //     stockInHand: stock,
+  //     unit,
+  //   }));
 
-    if (unit) {
-      setAssetsUnitOptions(
-        userRole === "Admin" ? [...new Set([unit, ...defaultUnits])] : [unit]
-      );
-    } else {
-      setAssetsUnitOptions([...defaultUnits]);
-    }
-  }, [assetsInputRow.partNumber, stockCache, userRole]);
+  //   if (unit) {
+  //     setAssetsUnitOptions(
+  //       userRole === "Admin" ? [...new Set([unit, ...defaultUnits])] : [unit]
+  //     );
+  //   } else {
+  //     setAssetsUnitOptions([...defaultUnits]);
+  //   }
+  // }, [assetsInputRow.partNumber, stockCache, userRole]);
 
   // useEffect(() => {
   //   const controller = new AbortController();
@@ -1371,10 +1371,11 @@ export default function ProductCategories({ username }) {
       loading ||
       (machineDataSource.length === 0 &&
         auxiliariesDataSource.length === 0 &&
-        assetsDataSource.length === 0 &&
+        // assetsDataSource.length === 0 &&
         dataSource.length === 0 &&
-        !form.getFieldValue("consumables") &&
-        !form.getFieldValue("tools"))
+        !form.getFieldValue("consumables")
+        // !form.getFieldValue("tools")
+        )
     ) {
       console.log("Return");
       notification.error({
@@ -1395,9 +1396,9 @@ export default function ProductCategories({ username }) {
       zeSeries,
       haSeries,
       auxiliaries,
-      assets,
+      // assets,
       consumables,
-      tools,
+      // tools,
     } = values;
 
     try {
@@ -1415,14 +1416,14 @@ export default function ProductCategories({ username }) {
       const maxLength = Math.max(
         machineDataSource.length,
         auxiliariesDataSource.length,
-        assetsDataSource.length,
+        // assetsDataSource.length,
         dataSource.length
       );
 
       for (let i = 0; i < maxLength; i++) {
         const machine = machineDataSource[i] || {};
         const auxiliary = auxiliariesDataSource[i] || {};
-        const asset = assetsDataSource[i] || {};
+        // const asset = assetsDataSource[i] || {};
         const spare = dataSource[i] || {};
 
         const formData = new URLSearchParams({
@@ -1455,7 +1456,7 @@ export default function ProductCategories({ username }) {
           userName: username || "",
 
           consumables: i === 0 ? consumables || "" : "",
-          tools: i === 0 ? tools || "" : "",
+          // tools: i === 0 ? tools || "" : "",
 
           auxiliaries: Array.isArray(auxiliaries)
             ? auxiliaries.join(" / ")
@@ -1474,18 +1475,18 @@ export default function ProductCategories({ username }) {
           auxDate: auxiliary.date || "-",
 
           // assets: i === 0 ? assets || "-" : "",
-          assets: assets || "-",
-          assetPartNumber: asset.partNumber || "-",
-          assetDescription: asset.description || "-",
-          assetQuantity: asset.quantity || "-",
-          assetStockInHand: asset.stockInHand || "0",
-          assetNote: asset.note || "-",
-          assetPurchaseCost: asset.purchaseCost || "-",
-          assetAddOnCost: asset.addOnCost || "-",
-          assetSellingCost: asset.sellingCost || "-",
-          assetUnit: asset.unit || "-",
-          assetTotalPrice: asset.totalPrice || "-",
-          assetDate: asset.date || "",
+          // assets: assets || "-",
+          // assetPartNumber: asset.partNumber || "-",
+          // assetDescription: asset.description || "-",
+          // assetQuantity: asset.quantity || "-",
+          // assetStockInHand: asset.stockInHand || "0",
+          // assetNote: asset.note || "-",
+          // assetPurchaseCost: asset.purchaseCost || "-",
+          // assetAddOnCost: asset.addOnCost || "-",
+          // assetSellingCost: asset.sellingCost || "-",
+          // assetUnit: asset.unit || "-",
+          // assetTotalPrice: asset.totalPrice || "-",
+          // assetDate: asset.date || "",
 
           sparePartNumber: spare.partNumber || "-",
           spareDescription: spare.description || "-",
@@ -1514,7 +1515,7 @@ export default function ProductCategories({ username }) {
         currentRow++;
       }
 
-      if (maxLength === 0 && (consumables || tools)) {
+      if (maxLength === 0 && (consumables)) {
         const formData = new URLSearchParams({
           action: "addProductCategories",
           recordType: "general",
@@ -1530,14 +1531,14 @@ export default function ProductCategories({ username }) {
           auxiliaries: Array.isArray(auxiliaries)
             ? auxiliaries.join(" / ")
             : auxiliaries || "",
-          assets: assets || "-",
+          // assets: assets || "-",
           consumables: consumables || "-",
-          tools: tools || "-",
+          // tools: tools || "-",
           userName: username || "",
         });
 
         console.log(
-          `Submitting (consumables/tools only) row ${currentRow}:`,
+          `Submitting (consumables only) row ${currentRow}:`,
           Object.fromEntries(formData.entries())
         );
 
@@ -1565,7 +1566,7 @@ export default function ProductCategories({ username }) {
       setSelectedCategory(null);
       setMachineDataSource([]);
       setAuxiliariesDataSource([]);
-      setAssetsDataSource([]);
+      // setAssetsDataSource([]);
       setDataSource([]);
     } catch (err) {
       // console.error("Submission failed:", err);
@@ -3080,806 +3081,806 @@ export default function ProductCategories({ username }) {
     },
   ];
 
-  const displayAssetsData = [
-    { key: "input", isInput: true },
-    ...assetsDataSource,
-  ];
+  // const displayAssetsData = [
+  //   { key: "input", isInput: true },
+  //   ...assetsDataSource,
+  // ];
 
-  const handleAssetsAdd = async () => {
-    const {
-      partNumber,
-      description,
-      quantity,
-      unit,
-      purchaseCost,
-      addOnCost,
-      sellingCost,
-      totalPrice,
-    } = assetsInputRow;
+  // const handleAssetsAdd = async () => {
+  //   const {
+  //     partNumber,
+  //     description,
+  //     quantity,
+  //     unit,
+  //     purchaseCost,
+  //     addOnCost,
+  //     sellingCost,
+  //     totalPrice,
+  //   } = assetsInputRow;
 
-    if (
-      !partNumber ||
-      !description ||
-      !quantity ||
-      !unit ||
-      !purchaseCost ||
-      !addOnCost ||
-      !sellingCost ||
-      !totalPrice ||
-      !assetsInputRow.date
-    ) {
-      notification.error({
-        message: "Error",
-        description:
-          "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost and ensure Selling Cost & Total Price is calculated",
-      });
-      return;
-    }
+  //   if (
+  //     !partNumber ||
+  //     !description ||
+  //     !quantity ||
+  //     !unit ||
+  //     !purchaseCost ||
+  //     !addOnCost ||
+  //     !sellingCost ||
+  //     !totalPrice ||
+  //     !assetsInputRow.date
+  //   ) {
+  //     notification.error({
+  //       message: "Error",
+  //       description:
+  //         "Please fill in Date, Part Number, Description, Quantity, Unit, Purchase Cost, Add On Cost and ensure Selling Cost & Total Price is calculated",
+  //     });
+  //     return;
+  //   }
 
-    const newData = {
-      key: Date.now(),
-      ...assetsInputRow,
-      stockInHand: assetsInputRow.stockInHand || "0",
-    };
-    setAssetsDataSource([...assetsDataSource, newData]);
-    setAssetsInputRow({
-      partNumber: "",
-      description: "",
-      quantity: "",
-      unit: "",
-      stockInHand: "",
-      purchaseCost: "",
-      addOnCost: "",
-      sellingCost: "",
-      stockUnit: "",
-      totalPrice: "",
-      note: "",
-    });
-    await fetchAllStock();
-  };
+  //   const newData = {
+  //     key: Date.now(),
+  //     ...assetsInputRow,
+  //     stockInHand: assetsInputRow.stockInHand || "0",
+  //   };
+  //   setAssetsDataSource([...assetsDataSource, newData]);
+  //   setAssetsInputRow({
+  //     partNumber: "",
+  //     description: "",
+  //     quantity: "",
+  //     unit: "",
+  //     stockInHand: "",
+  //     purchaseCost: "",
+  //     addOnCost: "",
+  //     sellingCost: "",
+  //     stockUnit: "",
+  //     totalPrice: "",
+  //     note: "",
+  //   });
+  //   await fetchAllStock();
+  // };
 
-  const handleAssetsDelete = (key) => {
-    setAssetsDataSource(assetsDataSource.filter((item) => item.key !== key));
-  };
+  // const handleAssetsDelete = (key) => {
+  //   setAssetsDataSource(assetsDataSource.filter((item) => item.key !== key));
+  // };
 
-  const assetsColumns = [
-    {
-      title: "Date",
-      dataIndex: "date",
-      width: 220,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <DatePicker
-              format="DD-MM-YYYY"
-              style={{ width: "100%" }}
-              value={
-                assetsInputRow.date &&
-                dayjs(assetsInputRow.date, "DD-MM-YYYY").isValid()
-                  ? dayjs.tz(assetsInputRow.date, "DD-MM-YYYY", "Asia/Dubai")
-                  : null
-              }
-              onChange={(dateObj) => {
-                if (!dateObj) {
-                  setAssetsInputRow({ ...assetsInputRow, date: "" });
-                  return;
-                }
-                const formatted = dayjs(dateObj)
-                  .tz("Asia/Dubai")
-                  .format("DD-MM-YYYY");
-                setAssetsInputRow({ ...assetsInputRow, date: formatted });
-                console.log("Selected Dubai Date:", formatted);
-              }}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.date}>
-            <span>{record.date || "-"}</span>
-          </Tooltip>
-        ),
-    },
+  // const assetsColumns = [
+  //   {
+  //     title: "Date",
+  //     dataIndex: "date",
+  //     width: 220,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <DatePicker
+  //             format="DD-MM-YYYY"
+  //             style={{ width: "100%" }}
+  //             value={
+  //               assetsInputRow.date &&
+  //               dayjs(assetsInputRow.date, "DD-MM-YYYY").isValid()
+  //                 ? dayjs.tz(assetsInputRow.date, "DD-MM-YYYY", "Asia/Dubai")
+  //                 : null
+  //             }
+  //             onChange={(dateObj) => {
+  //               if (!dateObj) {
+  //                 setAssetsInputRow({ ...assetsInputRow, date: "" });
+  //                 return;
+  //               }
+  //               const formatted = dayjs(dateObj)
+  //                 .tz("Asia/Dubai")
+  //                 .format("DD-MM-YYYY");
+  //               setAssetsInputRow({ ...assetsInputRow, date: formatted });
+  //               console.log("Selected Dubai Date:", formatted);
+  //             }}
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip title={record.date}>
+  //           <span>{record.date || "-"}</span>
+  //         </Tooltip>
+  //       ),
+  //   },
 
-    {
-      title: "Part Number",
-      dataIndex: "partNumber",
-      width: 250,
-      ellipsis: true,
+  //   {
+  //     title: "Part Number",
+  //     dataIndex: "partNumber",
+  //     width: 250,
+  //     ellipsis: true,
 
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              placeholder="Enter part number"
-              value={assetsInputRow.partNumber}
-              onChange={(e) =>
-                setAssetsInputRow({
-                  ...assetsInputRow,
-                  partNumber: e.target.value.toUpperCase(),
-                  quantity: "",
-                })
-              }
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.partNumber}>
-            <span>{record.partNumber}</span>
-          </Tooltip>
-        ),
-    },
-    {
-      title: "Description",
-      dataIndex: "description",
-      width: 500,
-      ellipsis: true,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input
+  //             placeholder="Enter part number"
+  //             value={assetsInputRow.partNumber}
+  //             onChange={(e) =>
+  //               setAssetsInputRow({
+  //                 ...assetsInputRow,
+  //                 partNumber: e.target.value.toUpperCase(),
+  //                 quantity: "",
+  //               })
+  //             }
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip title={record.partNumber}>
+  //           <span>{record.partNumber}</span>
+  //         </Tooltip>
+  //       ),
+  //   },
+  //   {
+  //     title: "Description",
+  //     dataIndex: "description",
+  //     width: 500,
+  //     ellipsis: true,
 
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input.TextArea
-              // autoSize={{ minRows: 1, maxRows: 1 }}
-              rows={1}
-              placeholder="Enter description"
-              value={assetsInputRow.description}
-              onChange={(e) =>
-                setAssetsInputRow({
-                  ...assetsInputRow,
-                  description: e.target.value,
-                })
-              }
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip
-            title={record.description}
-            styles={{
-              root: {
-                maxWidth: 1000,
-                wordWrap: "break-word",
-                whiteSpace: "normal",
-              },
-            }}
-          >
-            <span className="truncate-text">
-              {record.description?.length > 150
-                ? `${record.description.slice(0, 150)}...`
-                : record.description}
-            </span>{" "}
-          </Tooltip>
-        ),
-    },
-    // {
-    //   title: "Purchase Cost(per item)",
-    //   dataIndex: "purchaseCost",
-    //   ellipsis: true,
-    //   width: 250,
-    //   render: (_, record) =>
-    //     record.isInput ? (
-    //       <Tooltip>
-    //         <Input
-    //           placeholder="Enter purchase cost"
-    //           type="number"
-    //           min={0}
-    //           value={assetsInputRow.purchaseCost}
-    //           onChange={(e) => {
-    //             const purchaseCost = e.target.value;
-    //             const { sellingPrice, totalPrice } = updateTotalPrice(
-    //               purchaseCost,
-    //               assetsInputRow.addOnCost,
-    //               assetsInputRow.quantity
-    //             );
-    //             setAssetsInputRow((prev) => ({
-    //               ...prev,
-    //               purchaseCost,
-    //               sellingCost: sellingPrice,
-    //               totalPrice,
-    //             }));
-    //           }}
-    //         />
-    //       </Tooltip>
-    //     ) : (
-    //       <Tooltip title={record.purchaseCost}>
-    //         <span>{record.purchaseCost || "-"}</span>
-    //       </Tooltip>
-    //     ),
-    // },
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input.TextArea
+  //             // autoSize={{ minRows: 1, maxRows: 1 }}
+  //             rows={1}
+  //             placeholder="Enter description"
+  //             value={assetsInputRow.description}
+  //             onChange={(e) =>
+  //               setAssetsInputRow({
+  //                 ...assetsInputRow,
+  //                 description: e.target.value,
+  //               })
+  //             }
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip
+  //           title={record.description}
+  //           styles={{
+  //             root: {
+  //               maxWidth: 1000,
+  //               wordWrap: "break-word",
+  //               whiteSpace: "normal",
+  //             },
+  //           }}
+  //         >
+  //           <span className="truncate-text">
+  //             {record.description?.length > 150
+  //               ? `${record.description.slice(0, 150)}...`
+  //               : record.description}
+  //           </span>{" "}
+  //         </Tooltip>
+  //       ),
+  //   },
+  //   // {
+  //   //   title: "Purchase Cost(per item)",
+  //   //   dataIndex: "purchaseCost",
+  //   //   ellipsis: true,
+  //   //   width: 250,
+  //   //   render: (_, record) =>
+  //   //     record.isInput ? (
+  //   //       <Tooltip>
+  //   //         <Input
+  //   //           placeholder="Enter purchase cost"
+  //   //           type="number"
+  //   //           min={0}
+  //   //           value={assetsInputRow.purchaseCost}
+  //   //           onChange={(e) => {
+  //   //             const purchaseCost = e.target.value;
+  //   //             const { sellingPrice, totalPrice } = updateTotalPrice(
+  //   //               purchaseCost,
+  //   //               assetsInputRow.addOnCost,
+  //   //               assetsInputRow.quantity
+  //   //             );
+  //   //             setAssetsInputRow((prev) => ({
+  //   //               ...prev,
+  //   //               purchaseCost,
+  //   //               sellingCost: sellingPrice,
+  //   //               totalPrice,
+  //   //             }));
+  //   //           }}
+  //   //         />
+  //   //       </Tooltip>
+  //   //     ) : (
+  //   //       <Tooltip title={record.purchaseCost}>
+  //   //         <span>{record.purchaseCost || "-"}</span>
+  //   //       </Tooltip>
+  //   //     ),
+  //   // },
 
-    {
-      title: "Purchase Cost (per item)",
-      dataIndex: "purchaseCost",
-      ellipsis: true,
-      width: 250,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              placeholder="Enter purchase cost"
-              type="number"
-              min={0}
-              value={assetsInputRow.purchaseCost}
-              onChange={(e) => {
-                const value = e.target.value.trim();
+  //   {
+  //     title: "Purchase Cost (per item)",
+  //     dataIndex: "purchaseCost",
+  //     ellipsis: true,
+  //     width: 250,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input
+  //             placeholder="Enter purchase cost"
+  //             type="number"
+  //             min={0}
+  //             value={assetsInputRow.purchaseCost}
+  //             onChange={(e) => {
+  //               const value = e.target.value.trim();
 
-                // Always update the input field so user can type freely
-                setAssetsInputRow((prev) => ({
-                  ...prev,
-                  purchaseCost: value,
-                }));
-                setAssetsFetching(true);
+  //               // Always update the input field so user can type freely
+  //               setAssetsInputRow((prev) => ({
+  //                 ...prev,
+  //                 purchaseCost: value,
+  //               }));
+  //               setAssetsFetching(true);
 
-                // Debounce validation
-                clearTimeout(window.purchaseCostDebounce);
-                window.purchaseCostDebounce = setTimeout(() => {
-                  const num = parseFloat(value);
+  //               // Debounce validation
+  //               clearTimeout(window.purchaseCostDebounce);
+  //               window.purchaseCostDebounce = setTimeout(() => {
+  //                 const num = parseFloat(value);
 
-                  if (
-                    value !== "" &&
-                    (value === "0" ||
-                      value === "0.0" ||
-                      value === ".0" ||
-                      isNaN(num) ||
-                      num <= 0)
-                  ) {
-                    notification.error({
-                      message: "Invalid Purchase Cost",
-                      description: "Purchase cost must be greater than 0.",
-                    });
+  //                 if (
+  //                   value !== "" &&
+  //                   (value === "0" ||
+  //                     value === "0.0" ||
+  //                     value === ".0" ||
+  //                     isNaN(num) ||
+  //                     num <= 0)
+  //                 ) {
+  //                   notification.error({
+  //                     message: "Invalid Purchase Cost",
+  //                     description: "Purchase cost must be greater than 0.",
+  //                   });
 
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      purchaseCost: "",
-                    }));
-                  } else {
-                    const { totalPrice } = updateTotalPrice(
-                      value,
-                      assetsInputRow.addOnCost,
-                      assetsInputRow.quantity
-                    );
+  //                   setAssetsInputRow((prev) => ({
+  //                     ...prev,
+  //                     purchaseCost: "",
+  //                   }));
+  //                 } else {
+  //                   const { totalPrice } = updateTotalPrice(
+  //                     value,
+  //                     assetsInputRow.addOnCost,
+  //                     assetsInputRow.quantity
+  //                   );
 
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      totalPrice,
-                    }));
-                  }
-                  setAssetsFetching(false);
-                }, 3000);
-              }}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.purchaseCost}>
-            <span>{record.purchaseCost || "-"}</span>
-          </Tooltip>
-        ),
-    },
+  //                   setAssetsInputRow((prev) => ({
+  //                     ...prev,
+  //                     totalPrice,
+  //                   }));
+  //                 }
+  //                 setAssetsFetching(false);
+  //               }, 3000);
+  //             }}
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip title={record.purchaseCost}>
+  //           <span>{record.purchaseCost || "-"}</span>
+  //         </Tooltip>
+  //       ),
+  //   },
 
-    // {
-    //   title: "Add On Cost",
-    //   dataIndex: "addOnCost",
-    //   ellipsis: true,
-    //   width: 250,
-    //   render: (_, record) =>
-    //     record.isInput ? (
-    //       <Tooltip>
-    //         <Input
-    //           type="number"
-    //           min={0}
-    //           placeholder="Enter add on cost"
-    //           value={assetsInputRow.addOnCost}
-    //           onChange={(e) => {
-    //             const addOnCost = e.target.value;
-    //             const { sellingPrice, totalPrice } = updateTotalPrice(
-    //               assetsInputRow.purchaseCost,
-    //               addOnCost,
-    //               assetsInputRow.quantity
-    //             );
-    //             setAssetsInputRow((prev) => ({
-    //               ...prev,
-    //               addOnCost,
-    //               sellingCost: sellingPrice,
-    //               totalPrice,
-    //             }));
-    //           }}
-    //         />
-    //       </Tooltip>
-    //     ) : (
-    //       <Tooltip title={record.addOnCost}>
-    //         <span>{record.addOnCost}</span>
-    //       </Tooltip>
-    //     ),
-    // },
+  //   // {
+  //   //   title: "Add On Cost",
+  //   //   dataIndex: "addOnCost",
+  //   //   ellipsis: true,
+  //   //   width: 250,
+  //   //   render: (_, record) =>
+  //   //     record.isInput ? (
+  //   //       <Tooltip>
+  //   //         <Input
+  //   //           type="number"
+  //   //           min={0}
+  //   //           placeholder="Enter add on cost"
+  //   //           value={assetsInputRow.addOnCost}
+  //   //           onChange={(e) => {
+  //   //             const addOnCost = e.target.value;
+  //   //             const { sellingPrice, totalPrice } = updateTotalPrice(
+  //   //               assetsInputRow.purchaseCost,
+  //   //               addOnCost,
+  //   //               assetsInputRow.quantity
+  //   //             );
+  //   //             setAssetsInputRow((prev) => ({
+  //   //               ...prev,
+  //   //               addOnCost,
+  //   //               sellingCost: sellingPrice,
+  //   //               totalPrice,
+  //   //             }));
+  //   //           }}
+  //   //         />
+  //   //       </Tooltip>
+  //   //     ) : (
+  //   //       <Tooltip title={record.addOnCost}>
+  //   //         <span>{record.addOnCost}</span>
+  //   //       </Tooltip>
+  //   //     ),
+  //   // },
 
-    {
-      title: "Add On Cost",
-      dataIndex: "addOnCost",
-      ellipsis: true,
-      width: 250,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              type="number"
-              min={0}
-              placeholder="Enter add on cost"
-              value={assetsInputRow.addOnCost}
-              onChange={(e) => {
-                const value = e.target.value.trim();
+  //   {
+  //     title: "Add On Cost",
+  //     dataIndex: "addOnCost",
+  //     ellipsis: true,
+  //     width: 250,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input
+  //             type="number"
+  //             min={0}
+  //             placeholder="Enter add on cost"
+  //             value={assetsInputRow.addOnCost}
+  //             onChange={(e) => {
+  //               const value = e.target.value.trim();
 
-                setAssetsInputRow((prev) => ({
-                  ...prev,
-                  addOnCost: value,
-                }));
-                setAssetsFetching(true);
+  //               setAssetsInputRow((prev) => ({
+  //                 ...prev,
+  //                 addOnCost: value,
+  //               }));
+  //               setAssetsFetching(true);
 
-                clearTimeout(window.addOnDebounce);
-                window.addOnDebounce = setTimeout(() => {
-                  const num = parseFloat(value);
+  //               clearTimeout(window.addOnDebounce);
+  //               window.addOnDebounce = setTimeout(() => {
+  //                 const num = parseFloat(value);
 
-                  if (
-                    value !== "" &&
-                    (value === "0" ||
-                      value === "0.0" ||
-                      value === ".0" ||
-                      isNaN(num) ||
-                      num <= 0)
-                  ) {
-                    notification.error({
-                      message: "Invalid Add On Cost",
-                      description: "Add on cost must be greater than 0.",
-                    });
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      addOnCost: "",
-                    }));
-                  } else {
-                    const { totalPrice } = updateTotalPrice(
-                      assetsInputRow.purchaseCost,
-                      value,
-                      assetsInputRow.quantity
-                    );
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      totalPrice,
-                    }));
-                  }
-                  setAssetsFetching(false);
-                }, 3000);
-              }}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.addOnCost}>
-            <span>{record.addOnCost}</span>
-          </Tooltip>
-        ),
-    },
+  //                 if (
+  //                   value !== "" &&
+  //                   (value === "0" ||
+  //                     value === "0.0" ||
+  //                     value === ".0" ||
+  //                     isNaN(num) ||
+  //                     num <= 0)
+  //                 ) {
+  //                   notification.error({
+  //                     message: "Invalid Add On Cost",
+  //                     description: "Add on cost must be greater than 0.",
+  //                   });
+  //                   setAssetsInputRow((prev) => ({
+  //                     ...prev,
+  //                     addOnCost: "",
+  //                   }));
+  //                 } else {
+  //                   const { totalPrice } = updateTotalPrice(
+  //                     assetsInputRow.purchaseCost,
+  //                     value,
+  //                     assetsInputRow.quantity
+  //                   );
+  //                   setAssetsInputRow((prev) => ({
+  //                     ...prev,
+  //                     totalPrice,
+  //                   }));
+  //                 }
+  //                 setAssetsFetching(false);
+  //               }, 3000);
+  //             }}
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip title={record.addOnCost}>
+  //           <span>{record.addOnCost}</span>
+  //         </Tooltip>
+  //       ),
+  //   },
 
-    {
-      title: "Selling Cost (AED)",
-      dataIndex: "sellingCost",
-      ellipsis: true,
-      width: 250,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              type="number"
-              min={0}
-              placeholder="Enter Selling Cost"
-              value={assetsInputRow.sellingCost || ""}
-              onChange={(e) => {
-                const value = e.target.value.trim();
+  //   {
+  //     title: "Selling Cost (AED)",
+  //     dataIndex: "sellingCost",
+  //     ellipsis: true,
+  //     width: 250,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input
+  //             type="number"
+  //             min={0}
+  //             placeholder="Enter Selling Cost"
+  //             value={assetsInputRow.sellingCost || ""}
+  //             onChange={(e) => {
+  //               const value = e.target.value.trim();
 
-                setAssetsInputRow((prev) => ({
-                  ...prev,
-                  sellingCost: value,
-                }));
+  //               setAssetsInputRow((prev) => ({
+  //                 ...prev,
+  //                 sellingCost: value,
+  //               }));
 
-                clearTimeout(window.sellingDebounce);
-                window.sellingDebounce = setTimeout(() => {
-                  const num = parseFloat(value);
+  //               clearTimeout(window.sellingDebounce);
+  //               window.sellingDebounce = setTimeout(() => {
+  //                 const num = parseFloat(value);
 
-                  if (
-                    value !== "" &&
-                    (value === "0" ||
-                      value === "0.0" ||
-                      value === ".0" ||
-                      isNaN(num) ||
-                      num <= 0)
-                  ) {
-                    notification.error({
-                      message: "Invalid Selling Cost",
-                      description: "Selling cost must be greater than 0.",
-                    });
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      sellingCost: "",
-                    }));
-                  }
-                }, 3000);
-              }}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.sellingCost}>
-            <span>{record.sellingCost}</span>
-          </Tooltip>
-        ),
-    },
+  //                 if (
+  //                   value !== "" &&
+  //                   (value === "0" ||
+  //                     value === "0.0" ||
+  //                     value === ".0" ||
+  //                     isNaN(num) ||
+  //                     num <= 0)
+  //                 ) {
+  //                   notification.error({
+  //                     message: "Invalid Selling Cost",
+  //                     description: "Selling cost must be greater than 0.",
+  //                   });
+  //                   setAssetsInputRow((prev) => ({
+  //                     ...prev,
+  //                     sellingCost: "",
+  //                   }));
+  //                 }
+  //               }, 3000);
+  //             }}
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip title={record.sellingCost}>
+  //           <span>{record.sellingCost}</span>
+  //         </Tooltip>
+  //       ),
+  //   },
 
-    // {
-    //   title: "Quantity",
-    //   dataIndex: "quantity",
-    //   width: 200,
-    //   ellipsis: true,
-    //   render: (_, record) =>
-    //     record.isInput ? (
-    //       <Tooltip>
-    //         <Input
-    //           placeholder="Enter Quantity"
-    //           type="number"
-    //           min={1}
-    //           value={assetsInputRow.quantity}
-    //           onChange={(e) => {
-    //             const quantity = e.target.value;
-    //             const { sellingPrice, totalPrice } = updateTotalPrice(
-    //               assetsInputRow.purchaseCost,
-    //               assetsInputRow.addOnCost,
-    //               quantity
-    //             );
-    //             setAssetsInputRow((prev) => ({
-    //               ...prev,
-    //               quantity,
-    //               sellingCost: sellingPrice, // still needed in case it's blank initially
-    //               totalPrice,
-    //             }));
-    //           }}
-    //         />
-    //       </Tooltip>
-    //     ) : (
-    //       <Tooltip title={record.quantity}>
-    //         <span>{record.quantity}</span>
-    //       </Tooltip>
-    //     ),
-    // },
+  //   // {
+  //   //   title: "Quantity",
+  //   //   dataIndex: "quantity",
+  //   //   width: 200,
+  //   //   ellipsis: true,
+  //   //   render: (_, record) =>
+  //   //     record.isInput ? (
+  //   //       <Tooltip>
+  //   //         <Input
+  //   //           placeholder="Enter Quantity"
+  //   //           type="number"
+  //   //           min={1}
+  //   //           value={assetsInputRow.quantity}
+  //   //           onChange={(e) => {
+  //   //             const quantity = e.target.value;
+  //   //             const { sellingPrice, totalPrice } = updateTotalPrice(
+  //   //               assetsInputRow.purchaseCost,
+  //   //               assetsInputRow.addOnCost,
+  //   //               quantity
+  //   //             );
+  //   //             setAssetsInputRow((prev) => ({
+  //   //               ...prev,
+  //   //               quantity,
+  //   //               sellingCost: sellingPrice, // still needed in case it's blank initially
+  //   //               totalPrice,
+  //   //             }));
+  //   //           }}
+  //   //         />
+  //   //       </Tooltip>
+  //   //     ) : (
+  //   //       <Tooltip title={record.quantity}>
+  //   //         <span>{record.quantity}</span>
+  //   //       </Tooltip>
+  //   //     ),
+  //   // },
 
-    // {
-    //   title: "Quantity",
-    //   dataIndex: "quantity",
-    //   width: 200,
-    //   ellipsis: true,
-    //   render: (_, record) =>
-    //     record.isInput ? (
-    //       <Tooltip>
-    //         <Input
-    //           placeholder="Enter Quantity"
-    //           type="number"
-    //           min={1}
-    //           value={assetsInputRow.quantity}
-    //           onChange={(e) => {
-    //             const value = e.target.value.trim();
+  //   // {
+  //   //   title: "Quantity",
+  //   //   dataIndex: "quantity",
+  //   //   width: 200,
+  //   //   ellipsis: true,
+  //   //   render: (_, record) =>
+  //   //     record.isInput ? (
+  //   //       <Tooltip>
+  //   //         <Input
+  //   //           placeholder="Enter Quantity"
+  //   //           type="number"
+  //   //           min={1}
+  //   //           value={assetsInputRow.quantity}
+  //   //           onChange={(e) => {
+  //   //             const value = e.target.value.trim();
 
-    //             setAssetsInputRow((prev) => ({
-    //               ...prev,
-    //               quantity: value,
-    //             }));
+  //   //             setAssetsInputRow((prev) => ({
+  //   //               ...prev,
+  //   //               quantity: value,
+  //   //             }));
 
-    //             clearTimeout(window.quantityDebounce);
-    //             window.quantityDebounce = setTimeout(() => {
-    //               const num = parseFloat(value);
+  //   //             clearTimeout(window.quantityDebounce);
+  //   //             window.quantityDebounce = setTimeout(() => {
+  //   //               const num = parseFloat(value);
 
-    //               if (
-    //                 value !== "" &&
-    //                 (value === "0" ||
-    //                   value === "0.0" ||
-    //                   value === ".0" ||
-    //                   isNaN(num) ||
-    //                   num === 0)
-    //               ) {
-    //                 notification.error({
-    //                   message: "Invalid Quantity",
-    //                   description: "Quantity must be greater than 0.",
-    //                 });
-    //                 setAssetsInputRow((prev) => ({
-    //                   ...prev,
-    //                   quantity: "",
-    //                 }));
-    //               } else {
-    //                 const { totalPrice } = updateTotalPrice(
-    //                   assetsInputRow.purchaseCost,
-    //                   assetsInputRow.addOnCost,
-    //                   value
-    //                 );
-    //                 setAssetsInputRow((prev) => ({
-    //                   ...prev,
-    //                   totalPrice,
-    //                 }));
-    //               }
-    //             }, 3000);
-    //           }}
-    //         />
-    //       </Tooltip>
-    //     ) : (
-    //       <Tooltip title={record.quantity}>
-    //         <span>{record.quantity}</span>
-    //       </Tooltip>
-    //     ),
-    // },
-    // {
-    //   title: "Unit",
-    //   dataIndex: "unit",
-    //   width: 250,
-    //   ellipsis: true,
-    //   render: (_, record) =>
-    //     record.isInput ? (
-    //       <Select
-    //         className="w-100"
-    //         value={assetsInputRow.unit}
-    //         onChange={(value) =>
-    //           setAssetsInputRow((prev) => ({ ...prev, unit: value }))
-    //         }
-    //         options={assetsUnitOptions.map((u) => ({ value: u, label: u }))}
-    //         loading={assetsUnitLoading}
-    //         placeholder={assetsUnitLoading ? "Fetching unit..." : "Select Unit"}
-    //         notFoundContent={
-    //           assetsUnitLoading ? "Fetching unit..." : "No units found"
-    //         }
-    //         // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
-    //       />
-    //     ) : (
-    //       record.unit || ""
-    //     ),
-    // },
+  //   //               if (
+  //   //                 value !== "" &&
+  //   //                 (value === "0" ||
+  //   //                   value === "0.0" ||
+  //   //                   value === ".0" ||
+  //   //                   isNaN(num) ||
+  //   //                   num === 0)
+  //   //               ) {
+  //   //                 notification.error({
+  //   //                   message: "Invalid Quantity",
+  //   //                   description: "Quantity must be greater than 0.",
+  //   //                 });
+  //   //                 setAssetsInputRow((prev) => ({
+  //   //                   ...prev,
+  //   //                   quantity: "",
+  //   //                 }));
+  //   //               } else {
+  //   //                 const { totalPrice } = updateTotalPrice(
+  //   //                   assetsInputRow.purchaseCost,
+  //   //                   assetsInputRow.addOnCost,
+  //   //                   value
+  //   //                 );
+  //   //                 setAssetsInputRow((prev) => ({
+  //   //                   ...prev,
+  //   //                   totalPrice,
+  //   //                 }));
+  //   //               }
+  //   //             }, 3000);
+  //   //           }}
+  //   //         />
+  //   //       </Tooltip>
+  //   //     ) : (
+  //   //       <Tooltip title={record.quantity}>
+  //   //         <span>{record.quantity}</span>
+  //   //       </Tooltip>
+  //   //     ),
+  //   // },
+  //   // {
+  //   //   title: "Unit",
+  //   //   dataIndex: "unit",
+  //   //   width: 250,
+  //   //   ellipsis: true,
+  //   //   render: (_, record) =>
+  //   //     record.isInput ? (
+  //   //       <Select
+  //   //         className="w-100"
+  //   //         value={assetsInputRow.unit}
+  //   //         onChange={(value) =>
+  //   //           setAssetsInputRow((prev) => ({ ...prev, unit: value }))
+  //   //         }
+  //   //         options={assetsUnitOptions.map((u) => ({ value: u, label: u }))}
+  //   //         loading={assetsUnitLoading}
+  //   //         placeholder={assetsUnitLoading ? "Fetching unit..." : "Select Unit"}
+  //   //         notFoundContent={
+  //   //           assetsUnitLoading ? "Fetching unit..." : "No units found"
+  //   //         }
+  //   //         // disabled={inputRow.sparePartsUnitFetched && userRole !== "Admin"}
+  //   //       />
+  //   //     ) : (
+  //   //       record.unit || ""
+  //   //     ),
+  //   // },
 
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      width: 200,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              placeholder="Enter Quantity"
-              type="number"
-              // min={1}
-              disabled={assetsUnitLoading}
-              value={assetsInputRow.quantity}
-              onChange={(e) => {
-                const value = e.target.value.trim();
+  //   {
+  //     title: "Quantity",
+  //     dataIndex: "quantity",
+  //     width: 200,
+  //     ellipsis: true,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input
+  //             placeholder="Enter Quantity"
+  //             type="number"
+  //             // min={1}
+  //             disabled={assetsUnitLoading}
+  //             value={assetsInputRow.quantity}
+  //             onChange={(e) => {
+  //               const value = e.target.value.trim();
 
-                setAssetsInputRow((prev) => ({
-                  ...prev,
-                  quantity: value,
-                }));
-                setAssetsFetching(true);
+  //               setAssetsInputRow((prev) => ({
+  //                 ...prev,
+  //                 quantity: value,
+  //               }));
+  //               setAssetsFetching(true);
 
-                clearTimeout(window.assetsQuantityDebounce);
-                window.assetsQuantityDebounce = setTimeout(() => {
-                  const num = parseFloat(value);
+  //               clearTimeout(window.assetsQuantityDebounce);
+  //               window.assetsQuantityDebounce = setTimeout(() => {
+  //                 const num = parseFloat(value);
 
-                  // Basic checks
-                  if (
-                    value !== "" &&
-                    (value === "0" ||
-                      value === "0.0" ||
-                      value === ".0" ||
-                      isNaN(num) ||
-                      num <= 0)
-                  ) {
-                    notification.error({
-                      message: "Invalid Quantity",
-                      description: "Quantity must be greater than 0.",
-                    });
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      quantity: "",
-                    }));
-                    setAssetsFetching(false);
+  //                 // Basic checks
+  //                 if (
+  //                   value !== "" &&
+  //                   (value === "0" ||
+  //                     value === "0.0" ||
+  //                     value === ".0" ||
+  //                     isNaN(num) ||
+  //                     num <= 0)
+  //                 ) {
+  //                   notification.error({
+  //                     message: "Invalid Quantity",
+  //                     description: "Quantity must be greater than 0.",
+  //                   });
+  //                   setAssetsInputRow((prev) => ({
+  //                     ...prev,
+  //                     quantity: "",
+  //                   }));
+  //                   setAssetsFetching(false);
 
-                    return;
-                  }
+  //                   return;
+  //                 }
 
-                  // Check for Set / Piece unit requirement
-                  const unit = (assetsInputRow.unit || "").toLowerCase();
-                  if (
-                    (unit === "set" || unit === "piece") &&
-                    !Number.isInteger(num)
-                  ) {
-                    notification.error({
-                      message: "Invalid Quantity",
-                      description: `Quantity for unit "${assetsInputRow.unit}" must be a whole number.`,
-                    });
-                    setAssetsInputRow((prev) => ({
-                      ...prev,
-                      quantity: "",
-                      unit: "",
-                    }));
-                    setAssetsFetching(false);
+  //                 // Check for Set / Piece unit requirement
+  //                 const unit = (assetsInputRow.unit || "").toLowerCase();
+  //                 if (
+  //                   (unit === "set" || unit === "piece") &&
+  //                   !Number.isInteger(num)
+  //                 ) {
+  //                   notification.error({
+  //                     message: "Invalid Quantity",
+  //                     description: `Quantity for unit "${assetsInputRow.unit}" must be a whole number.`,
+  //                   });
+  //                   setAssetsInputRow((prev) => ({
+  //                     ...prev,
+  //                     quantity: "",
+  //                     unit: "",
+  //                   }));
+  //                   setAssetsFetching(false);
 
-                    return;
-                  }
+  //                   return;
+  //                 }
 
-                  // Update total price
-                  const { totalPrice } = updateTotalPrice(
-                    assetsInputRow.purchaseCost,
-                    assetsInputRow.addOnCost,
-                    value
-                  );
-                  setAssetsInputRow((prev) => ({
-                    ...prev,
-                    totalPrice,
-                  }));
-                  setAssetsFetching(false);
-                }, 3000);
-              }}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.quantity}>
-            <span>{record.quantity}</span>
-          </Tooltip>
-        ),
-    },
-    {
-      title: "Unit",
-      dataIndex: "unit",
-      width: 250,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Select
-            className="w-100"
-            value={assetsInputRow.unit}
-            onChange={(selectedUnit) => {
-              clearTimeout(window.assetsUnitDebounce);
-              window.assetsUnitDebounce = setTimeout(() => {
-                const unitLower = (selectedUnit || "").toLowerCase();
-                const num = parseFloat(assetsInputRow.quantity);
+  //                 // Update total price
+  //                 const { totalPrice } = updateTotalPrice(
+  //                   assetsInputRow.purchaseCost,
+  //                   assetsInputRow.addOnCost,
+  //                   value
+  //                 );
+  //                 setAssetsInputRow((prev) => ({
+  //                   ...prev,
+  //                   totalPrice,
+  //                 }));
+  //                 setAssetsFetching(false);
+  //               }, 3000);
+  //             }}
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip title={record.quantity}>
+  //           <span>{record.quantity}</span>
+  //         </Tooltip>
+  //       ),
+  //   },
+  //   {
+  //     title: "Unit",
+  //     dataIndex: "unit",
+  //     width: 250,
+  //     ellipsis: true,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Select
+  //           className="w-100"
+  //           value={assetsInputRow.unit}
+  //           onChange={(selectedUnit) => {
+  //             clearTimeout(window.assetsUnitDebounce);
+  //             window.assetsUnitDebounce = setTimeout(() => {
+  //               const unitLower = (selectedUnit || "").toLowerCase();
+  //               const num = parseFloat(assetsInputRow.quantity);
 
-                // Check if quantity must be whole number
-                if (
-                  (unitLower === "set" || unitLower === "piece") &&
-                  !Number.isInteger(num)
-                ) {
-                  notification.error({
-                    message: "Invalid Quantity",
-                    description: `Quantity for unit "${selectedUnit}" must be a whole number and should not be empty.`,
-                  });
-                  setAssetsInputRow((prev) => ({
-                    ...prev,
-                    unit: "",
-                    quantity: "",
-                  }));
-                  return;
-                }
+  //               // Check if quantity must be whole number
+  //               if (
+  //                 (unitLower === "set" || unitLower === "piece") &&
+  //                 !Number.isInteger(num)
+  //               ) {
+  //                 notification.error({
+  //                   message: "Invalid Quantity",
+  //                   description: `Quantity for unit "${selectedUnit}" must be a whole number and should not be empty.`,
+  //                 });
+  //                 setAssetsInputRow((prev) => ({
+  //                   ...prev,
+  //                   unit: "",
+  //                   quantity: "",
+  //                 }));
+  //                 return;
+  //               }
 
-                // If valid, update the unit
-                setAssetsInputRow((prev) => ({ ...prev, unit: selectedUnit }));
-              }, 300);
-            }}
-            options={assetsUnitOptions.map((u) => ({ value: u, label: u }))}
-            loading={assetsUnitLoading}
-            placeholder={assetsUnitLoading ? "Fetching unit..." : "Select Unit"}
-            notFoundContent={
-              assetsUnitLoading ? "Fetching unit..." : "No units found"
-            }
-          />
-        ) : (
-          record.unit || ""
-        ),
-    },
+  //               // If valid, update the unit
+  //               setAssetsInputRow((prev) => ({ ...prev, unit: selectedUnit }));
+  //             }, 300);
+  //           }}
+  //           options={assetsUnitOptions.map((u) => ({ value: u, label: u }))}
+  //           loading={assetsUnitLoading}
+  //           placeholder={assetsUnitLoading ? "Fetching unit..." : "Select Unit"}
+  //           notFoundContent={
+  //             assetsUnitLoading ? "Fetching unit..." : "No units found"
+  //           }
+  //         />
+  //       ) : (
+  //         record.unit || ""
+  //       ),
+  //   },
 
-    {
-      title: "Stock In Hand",
-      dataIndex: "stockInHand",
-      width: 200,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input
-              readOnly
-              value={
-                assetsInputRow.stockInHand
-                  ? `${assetsInputRow.stockInHand} ${
-                      assetsInputRow.stockUnit || ""
-                    }`
-                  : ""
-              }
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
-            <span>
-              {record.stockInHand
-                ? `${record.stockInHand} ${record.stockUnit || ""}`
-                : "-"}
-            </span>
-          </Tooltip>
-        ),
-    },
+  //   {
+  //     title: "Stock In Hand",
+  //     dataIndex: "stockInHand",
+  //     width: 200,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input
+  //             readOnly
+  //             value={
+  //               assetsInputRow.stockInHand
+  //                 ? `${assetsInputRow.stockInHand} ${
+  //                     assetsInputRow.stockUnit || ""
+  //                   }`
+  //                 : ""
+  //             }
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip title={`${record.stockInHand} ${record.stockUnit || ""}`}>
+  //           <span>
+  //             {record.stockInHand
+  //               ? `${record.stockInHand} ${record.stockUnit || ""}`
+  //               : "-"}
+  //           </span>
+  //         </Tooltip>
+  //       ),
+  //   },
 
-    {
-      title: "Total Price In AED",
-      dataIndex: "totalPrice",
-      width: 200,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input value={assetsInputRow.totalPrice || ""} readOnly />
-          </Tooltip>
-        ) : (
-          <Tooltip title={record.totalPrice}>
-            <span>{record.totalPrice || "-"}</span>
-          </Tooltip>
-        ),
-    },
-    {
-      title: "Note",
-      dataIndex: "note",
-      width: 500,
-      ellipsis: true,
-      render: (_, record) =>
-        record.isInput ? (
-          <Tooltip>
-            <Input.TextArea
-              // autoSize={{ minRows: 1, maxRows: 1 }}
-              rows={1}
-              placeholder="Enter note"
-              value={assetsInputRow.note}
-              onChange={(e) =>
-                setAssetsInputRow({ ...assetsInputRow, note: e.target.value })
-              }
-            />
-          </Tooltip>
-        ) : (
-          // <Tooltip title={record.note}>
-          //   <span>{record.note}</span>
-          // </Tooltip>
-          <Tooltip
-            title={record.note}
-            styles={{
-              root: {
-                maxWidth: 1000,
-                wordWrap: "break-word",
-                whiteSpace: "normal",
-              },
-            }}
-          >
-            {/* <span> {record.note}</span> */}
-            <span className="truncate-text">
-              {record.note?.length > 150
-                ? `${record.note.slice(0, 150)}...`
-                : record.note}
-            </span>
-          </Tooltip>
-        ),
-    },
-    {
-      title: "Action",
-      width: 120,
-      fixed: "right",
-      align: "center",
-      render: (_, record) =>
-        record.isInput ? (
-          <Button
-            className="addButton ps-4 pe-4"
-            onClick={handleAssetsAdd}
-            disabled={assetsFetching}
-            loading={assetsFetching}
-          >
-            {assetsFetching ? "Loading" : "Add"}
-          </Button>
-        ) : (
-          <Button
-            className="deleteButton ps-3 pe-3"
-            onClick={() => handleAssetsDelete(record.key)}
-          >
-            Delete
-          </Button>
-        ),
-    },
-  ];
+  //   {
+  //     title: "Total Price In AED",
+  //     dataIndex: "totalPrice",
+  //     width: 200,
+  //     ellipsis: true,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input value={assetsInputRow.totalPrice || ""} readOnly />
+  //         </Tooltip>
+  //       ) : (
+  //         <Tooltip title={record.totalPrice}>
+  //           <span>{record.totalPrice || "-"}</span>
+  //         </Tooltip>
+  //       ),
+  //   },
+  //   {
+  //     title: "Note",
+  //     dataIndex: "note",
+  //     width: 500,
+  //     ellipsis: true,
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Tooltip>
+  //           <Input.TextArea
+  //             // autoSize={{ minRows: 1, maxRows: 1 }}
+  //             rows={1}
+  //             placeholder="Enter note"
+  //             value={assetsInputRow.note}
+  //             onChange={(e) =>
+  //               setAssetsInputRow({ ...assetsInputRow, note: e.target.value })
+  //             }
+  //           />
+  //         </Tooltip>
+  //       ) : (
+  //         // <Tooltip title={record.note}>
+  //         //   <span>{record.note}</span>
+  //         // </Tooltip>
+  //         <Tooltip
+  //           title={record.note}
+  //           styles={{
+  //             root: {
+  //               maxWidth: 1000,
+  //               wordWrap: "break-word",
+  //               whiteSpace: "normal",
+  //             },
+  //           }}
+  //         >
+  //           {/* <span> {record.note}</span> */}
+  //           <span className="truncate-text">
+  //             {record.note?.length > 150
+  //               ? `${record.note.slice(0, 150)}...`
+  //               : record.note}
+  //           </span>
+  //         </Tooltip>
+  //       ),
+  //   },
+  //   {
+  //     title: "Action",
+  //     width: 120,
+  //     fixed: "right",
+  //     align: "center",
+  //     render: (_, record) =>
+  //       record.isInput ? (
+  //         <Button
+  //           className="addButton ps-4 pe-4"
+  //           onClick={handleAssetsAdd}
+  //           disabled={assetsFetching}
+  //           loading={assetsFetching}
+  //         >
+  //           {assetsFetching ? "Loading" : "Add"}
+  //         </Button>
+  //       ) : (
+  //         <Button
+  //           className="deleteButton ps-3 pe-3"
+  //           onClick={() => handleAssetsDelete(record.key)}
+  //         >
+  //           Delete
+  //         </Button>
+  //       ),
+  //   },
+  // ];
 
   const displayMachineData = [
     { key: "input", isInput: true },
@@ -4863,13 +4864,13 @@ export default function ProductCategories({ username }) {
                               stockInHand: "",
                               note: "",
                             });
-                            setAssetsInputRow({
-                              partNumber: "",
-                              description: "",
-                              quantity: "",
-                              stockInHand: "",
-                              note: "",
-                            });
+                            // setAssetsInputRow({
+                            //   partNumber: "",
+                            //   description: "",
+                            //   quantity: "",
+                            //   stockInHand: "",
+                            //   note: "",
+                            // });
                             setAuxiliariesInputRow({
                               partNumber: "",
                               description: "",
@@ -4886,11 +4887,11 @@ export default function ProductCategories({ username }) {
                             });
                             setSelectedMachine(null);
                             setSelectedIMMSeries(null);
-                            setSelectedAssets(null);
+                            // setSelectedAssets(null);
                             setSelectedAuxiliaries(null);
                             setMachineDataSource([]);
                             setAuxiliariesDataSource([]);
-                            setAssetsDataSource([]);
+                            // setAssetsDataSource([]);
                             setDataSource([]);
                             form.setFieldsValue({
                               machines: undefined,
@@ -4902,9 +4903,9 @@ export default function ProductCategories({ username }) {
                               zeSeries: undefined,
                               haSeries: undefined,
                               auxiliaries: undefined,
-                              assets: undefined,
+                              // assets: undefined,
                               consumables: undefined,
-                              tools: undefined,
+                              // tools: undefined,
                             });
                           }}
                         >
@@ -4912,13 +4913,13 @@ export default function ProductCategories({ username }) {
                             Machines
                           </Select.Option>
                           <Select.Option value="Consumables">
-                            Consumables (Stationery)
+                            Consumables
                           </Select.Option>
-                          <Select.Option value="Tools">Tools</Select.Option>
+                          {/* <Select.Option value="Tools">Tools</Select.Option> */}
                           <Select.Option value="Auxiliaries">
                             Auxiliaries
                           </Select.Option>
-                          <Select.Option value="Assets">Assets</Select.Option>
+                          {/* <Select.Option value="Assets">Assets</Select.Option> */}
                           <Select.Option value="SpareParts">
                             Spare Parts
                           </Select.Option>
@@ -4955,8 +4956,8 @@ export default function ProductCategories({ username }) {
                           >
                             <Select.Option value="IMM">IMM</Select.Option>
                             <Select.Option value="BMM">BMM</Select.Option>
-                            <Select.Option value="EBM">EBM</Select.Option>
-                            <Select.Option value="SBM">SBM</Select.Option>
+                            {/* <Select.Option value="EBM">EBM</Select.Option>
+                            <Select.Option value="SBM">SBM</Select.Option> */}
                           </Select>
                         </Form.Item>
 
@@ -5160,7 +5161,7 @@ export default function ProductCategories({ username }) {
                       <div className="rounded-2 p-1 ">
                         <div className="col-12">
                           <Form.Item
-                            label="Consumables (Stationery)"
+                            label="Consumables"
                             name="consumables"
                             className="fw-bold"
                             rules={[
@@ -5176,7 +5177,7 @@ export default function ProductCategories({ username }) {
                       </div>
                     )}
 
-                    {selectedCategory === "Tools" && (
+                    {/* {selectedCategory === "Tools" && (
                       <div className="rounded-2 p-1 ">
                         <div className="col-12">
                           <Form.Item
@@ -5191,7 +5192,7 @@ export default function ProductCategories({ username }) {
                           </Form.Item>
                         </div>
                       </div>
-                    )}
+                    )} */}
 
                     {selectedCategory === "Auxiliaries" && (
                       <div className=" rounded-2 p-1 ">
@@ -5245,7 +5246,7 @@ export default function ProductCategories({ username }) {
                       </div>
                     )}
 
-                    {selectedCategory === "Assets" && (
+                    {/* {selectedCategory === "Assets" && (
                       <div className=" rounded-2 p-1 ">
                         <Form.Item
                           label="Assets"
@@ -5292,7 +5293,7 @@ export default function ProductCategories({ username }) {
                           </div>
                         )}
                       </div>
-                    )}
+                    )} */}
 
                     {selectedCategory === "SpareParts" && (
                       <div className=" rounded-2 p-1 ">
@@ -5352,12 +5353,12 @@ export default function ProductCategories({ username }) {
                               Object.values(formValues).every((val) => !val)) &&
                             machineDataSource.length === 0 &&
                             auxiliariesDataSource.length === 0 &&
-                            assetsDataSource.length === 0 &&
+                            // assetsDataSource.length === 0 &&
                             dataSource.length === 0 &&
                             isObjectEmpty(inputRow) &&
                             isObjectEmpty(machineinputRow) &&
-                            isObjectEmpty(auxiliariesInputRow) &&
-                            isObjectEmpty(assetsInputRow);
+                            isObjectEmpty(auxiliariesInputRow)
+                            // isObjectEmpty(assetsInputRow);
 
                           if (isEverythingEmpty) {
                             notification.info({
@@ -5401,20 +5402,20 @@ export default function ProductCategories({ username }) {
                             totalPrice: "",
                           });
 
-                          setAssetsInputRow({
-                            partNumber: "",
-                            description: "",
-                            quantity: "",
-                            stockInHand: "",
-                            note: "",
-                            price: "",
-                            totalPrice: "",
-                          });
+                          // setAssetsInputRow({
+                          //   partNumber: "",
+                          //   description: "",
+                          //   quantity: "",
+                          //   stockInHand: "",
+                          //   note: "",
+                          //   price: "",
+                          //   totalPrice: "",
+                          // });
 
                           setSelectedCategory(null);
                           setMachineDataSource([]);
                           setAuxiliariesDataSource([]);
-                          setAssetsDataSource([]);
+                          // setAssetsDataSource([]);
                           setDataSource([]);
 
                           notification.success({

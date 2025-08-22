@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
 import UAE from "../Images/UAE.png";
 import US from "../Images/US.png";
+import Dirham from "../Images/Dirham.png";
+
 import {
   faCircleUser,
   faLock,
@@ -29,7 +31,7 @@ export default function CustomerDetails({ username }) {
   const [ownerLoading, setOwnerLoading] = useState(false);
 
   const [ownerOptions, setOwnerOptions] = useState([]);
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwfASXRojkWZq-dztTKxVkpjptt3EciOnWPIeUVAOqYjm8_ccXqIIuKCw45R8HgZjjC1g/exec"
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxAbi1evdPX3P6hWUVUVVnEuTWl_BAuo_7ya5bnqVXyv9nZfOxejPDKCI9Xaqm88gMPrw/exec"
 
   useEffect(() => {
     fetchCustomerOwners();
@@ -617,7 +619,12 @@ export default function CustomerDetails({ username }) {
                               style={{ width: "30px" }}
                             />{" "}
                             <span className="ms-1">
-                              United Arab Emirates - AED (د.إ)
+                              United Arab Emirates - AED (<img
+                              src={Dirham}
+                              alt="Dirham"
+                              style={{ width: "15px" }}
+                              className="img-fluid m-0 p-0"
+                            />)
                             </span>
                           </div>
                         </option>
@@ -625,7 +632,8 @@ export default function CustomerDetails({ username }) {
                           <div className="d-flex align-items-center">
                             <img src={US} alt="US" style={{ width: "30px" }} />{" "}
                             <span className="ms-1">
-                              United States Of America - USD ($)
+                              United States Of America - USD (<span className="fw-bold"                               style={{ width: "15px" }}
+>$</span>)
                             </span>
                           </div>
                         </option>
