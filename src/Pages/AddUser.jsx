@@ -9,6 +9,8 @@ import {
   Table,
   notification,
   Tooltip,
+  Checkbox,
+  Radio,
 } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListCheck } from "@fortawesome/free-solid-svg-icons";
@@ -25,9 +27,67 @@ notification.config({
   duration: 3,
 });
 
-export default function AddUser() {
+const modules = [
+  "Dashboard",
+  "Inventory",
+  "Product Categories",
+  "Customer Details",
+  "Delivery Note",
+  "Reports",
+  "Add User",
+];
+const accessLevels = ["No Access", "Read", "Write/Update", "Full Control"];
+
+export default function AddUser({ username }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+
+  const dataSource = modules.map((module, index) => ({
+    key: index,
+    module,
+  }));
+
+  // Define columns (first column for module name, rest for access levels)
+ const moduleColumns = [
+  {
+    title: <span style={{ fontWeight: "bold", color: "#0D3884" }}>Module</span>,
+    dataIndex: "module",
+    key: "module",
+     width: "50%",
+    render: (text) => (
+      <span style={{ fontWeight: "normal", color: "#0D3884" }}>{text}</span>
+    ),
+  },
+  {
+    title: <span style={{ fontWeight: "bold", color: "#0D3884" }}>Access Level</span>,
+    key: "access",
+     width: "50%",
+    render: (_, record) => (
+      <Form.Item
+        name={["access", record.module]}
+        rules={[{ required: true, message: "Please select access level" }]}
+        style={{ marginBottom: 0 }}
+        validateTrigger="onSubmit"
+      >
+        <Radio.Group>
+          {accessLevels.map((level) => (
+            <Radio
+              key={level}
+              value={level}
+              className="me-4"
+              style={{ fontWeight: "normal",   }}
+            >
+              {level}
+            </Radio>
+          ))}
+        </Radio.Group>
+      </Form.Item>
+    ),
+  },
+];
+
+
+
   const styl = `.ant-form-item .ant-form-item-explain-error {
     color: #ff4d4f;
     font-weight: normal;
@@ -59,57 +119,148 @@ export default function AddUser() {
     color: #ff4d4f;
     font-weight: normal !important;
 }    
+    .ant-form-item .ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-weight: normal !important;
+}    
+    [class^="ant-table"] [class^="ant-table"], [class*=" ant-table"] [class^="ant-table"], [class^="ant-table"] [class*=" ant-table"], [class*=" ant-table"] [class*=" ant-table"] {
+    box-sizing: border-box;
+    color: #0D3884 !important;
+}
+    .ant-tooltip .ant-tooltip-inner {
+    min-width: 28px;
+    min-height: 32px;
+    padding: 6px 8px;
+    color: white;
+    text-align: start;
+    text-decoration: none;
+    word-wrap: break-word;
+    background-color: #0D3883;
+    border-radius: 6px;
+      border: 2px solid rgba(137, 137, 137, 0.87);
+    box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+}
+    .ant-table-wrapper .ant-table-thead >tr>th, .ant-table-wrapper .ant-table-thead >tr>td {
+    position: relative;
+    color: #0d3884 !important;
+    text-align: start;
+    background-color: #E8F0FE;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s ease;
+  
+}
   
   `;
 
+  // const handleSubmit = async (values) => {
+  //   if (!navigator.onLine) {
+  //     notification.error({
+  //       message: "No Internet Connection",
+  //       description: "Please check your internet and try again.",
+  //     });
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch(
+  //       "https://script.google.com/macros/s/AKfycbwHZ3G5sqmuTZgKskzbeKiPcM6bnlShQ-vvdiGzCr6VbwfqN-kjRmQQIoLc1LeBpVSStg/exec",
+  //       {
+  //         method: "POST",
+  //         body: new URLSearchParams({
+  //           action: "registerUser",
+  //           userEmail: values.userEmail,
+  //           password: values.password,
+  //         }),
+  //       }
+  //     );
+
+  //     const result = await response.json();
+  //     if (result.success) {
+  //       // message.success(result.message);
+  //       notification.success({
+  //         message: "Success",
+  //         description: result.message,
+  //       });
+  //       form.resetFields();
+  //     } else {
+  //       // message.error(result.message || "Failed to register user");
+  //       notification.error({
+  //         message: "Error",
+  //         description: result.message || "Failed to register user",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     // message.error("Something went wrong");
+
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Something went wrong",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (values) => {
-            if (!navigator.onLine) {
-          notification.error({
-            message: "No Internet Connection",
-            description: "Please check your internet and try again.",
-          });
-          return;
-        }
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxAbi1evdPX3P6hWUVUVVnEuTWl_BAuo_7ya5bnqVXyv9nZfOxejPDKCI9Xaqm88gMPrw/exec",
-        {
-          method: "POST",
-          body: new URLSearchParams({
-            action: "registerUser",
-            username: values.username,
-            password: values.password,
-          }),
-        }
-      );
+  // Ensure at least one module has access selected
+  const access = values.access || {};
+  const hasAccess = Object.values(access).some((arr) => arr && arr.length > 0);
 
-      const result = await response.json();
-      if (result.success) {
-        // message.success(result.message);
-        notification.success({
-          message: "Success",
-          description: result.message,
-        });
-        form.resetFields();
-      } else {
-        // message.error(result.message || "Failed to register user");
-        notification.error({
-          message: "Error",
-          description: result.message || "Failed to register user",
-        });
+  if (!hasAccess) {
+    notification.error({
+      message: "Error",
+      description: "Please provide at least one module access!",
+    });
+    return;
+  }
+
+  if (!navigator.onLine) {
+    notification.error({
+      message: "No Internet Connection",
+      description: "Please check your internet and try again.",
+    });
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec",
+      {
+        method: "POST",
+        body: new URLSearchParams({
+          action: "registerUser",
+          userEmail: values.userEmail,
+          password: values.password,
+          access: JSON.stringify(values.access), // send as JSON
+        }),
       }
-    } catch (error) {
-      // message.error("Something went wrong");
+    );
 
+    const result = await response.json();
+    if (result.success) {
+      notification.success({
+        message: "Success",
+        description: result.message,
+      });
+      form.resetFields();
+    } else {
       notification.error({
         message: "Error",
-        description: "Something went wrong",
+        description: result.message || "Failed to register user",
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: "Something went wrong",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
@@ -176,7 +327,7 @@ export default function AddUser() {
                   disabled={loading}
                 >
                   <div className="row mt-3">
-                    <Form.Item
+                    {/* <Form.Item
                       label="User Name"
                       name="username"
                       className="fw-bold"
@@ -188,12 +339,38 @@ export default function AddUser() {
                       ]}
                     >
                       <Input placeholder="Enter user name" />
+                    </Form.Item> */}
+
+                    <Form.Item
+                      label="User Email"
+                      name="userEmail"
+                      className="fw-bold"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input your email!",
+                        },
+                        {
+                          type: "email",
+                          message: "Please enter a valid email address!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter User Email" />
                     </Form.Item>
+
+              
+
+                    <Table
+                      dataSource={dataSource}
+                      columns={moduleColumns}
+                      pagination={false}
+                    />
 
                     <Form.Item
                       label="Password"
                       name="password"
-                      className="fw-bold"
+                      className="fw-bold mt-4"
                       hasFeedback
                       rules={[
                         {

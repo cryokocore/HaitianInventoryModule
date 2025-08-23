@@ -376,7 +376,7 @@ const [animationClass, setAnimationClass] = useState("page-enter");
         />
         <Route
           path="/inventory"
-          element={isLoggedIn ? <Inventory /> : <Navigate to="/" />}
+          element={isLoggedIn ? <Inventory  username={username} /> : <Navigate to="/" />}
         />
         <Route
           path="/productCategories"
@@ -410,7 +410,7 @@ const [animationClass, setAnimationClass] = useState("page-enter");
         />
         <Route
           path="/addUser"
-          element={isLoggedIn ? <AddUser /> : <Navigate to="/" />}
+          element={isLoggedIn ? <AddUser username={username} /> : <Navigate to="/" />}
         />
         <Route
           path="*"

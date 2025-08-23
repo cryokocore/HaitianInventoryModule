@@ -7,102 +7,223 @@ import "../App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
-export default function Inventory() {
+export default function Inventory({ username }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [tableDataSource, setTableDataSource] = useState();
+
+// const columns = [
+//   {
+//     title: "Serial Number",
+//     dataIndex: "Serial Number",
+//     key: "serial",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+//   {
+//     title: "Part Number",
+//     dataIndex: "Part Number",
+//     key: "partNumber",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+//   {
+//     title: "Description",
+//     dataIndex: "Description",
+//     key: "description",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+//   {
+//     title: "Quantity",
+//     dataIndex: "Quantity",
+//     key: "quantity",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+//   {
+//     title: "Unit",
+//     dataIndex: "Unit",
+//     key: "unit",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+  
+//   // {
+//   //   title: "Total Price in AED",
+//   //   dataIndex: "Total Price in AED",
+//   //   key: "totalPrice",
+//   //   render: (text) => (
+//   //     <Tooltip title={text}>
+//   //       <span>{text}</span>
+//   //     </Tooltip>
+//   //   ),
+//   // },
+//   // {
+//   //   title: "Purchase Cost(per item)",
+//   //   dataIndex: "Purchase Cost(per item)",
+//   //   key: "purchaseCost",
+//   //   render: (text) => (
+//   //     <Tooltip title={text}>
+//   //       <span>{text}</span>
+//   //     </Tooltip>
+//   //   ),
+//   // },
+//   // {
+//   //   title: "Add On Cost",
+//   //   dataIndex: "Add On Cost",
+//   //   key: "addOnCost",
+//   //   render: (text) => (
+//   //     <Tooltip title={text}>
+//   //       <span>{text}</span>
+//   //     </Tooltip>
+//   //   ),
+//   // },
+//   // {
+//   //   title: "Selling Cost",
+//   //   dataIndex: "Selling Cost",
+//   //   key: "sellingCost",
+//   //   render: (text) => (
+//   //     <Tooltip title={text}>
+//   //       <span>{text}</span>
+//   //     </Tooltip>
+//   //   ),
+//   // },
+
+//    ...(username === "Admin"
+//       ? [
+//       {
+//     title: "Total Price in AED",
+//     dataIndex: "Total Price in AED",
+//     key: "totalPrice",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+//   {
+//     title: "Purchase Cost(per item)",
+//     dataIndex: "Purchase Cost(per item)",
+//     key: "purchaseCost",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+//   {
+//     title: "Add On Cost",
+//     dataIndex: "Add On Cost",
+//     key: "addOnCost",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+//   {
+//     title: "Selling Cost",
+//     dataIndex: "Selling Cost",
+//     key: "sellingCost",
+//     render: (text) => (
+//       <Tooltip title={text}>
+//         <span>{text}</span>
+//       </Tooltip>
+//     ),
+//   },
+//       ]
+//       : []),
+  
+// ];
+
 const columns = [
   {
     title: "Serial Number",
-    dataIndex: "Serial Number",
+    dataIndex: "serialNumber",  
     key: "serial",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
   {
     title: "Part Number",
-    dataIndex: "Part Number",
+    dataIndex: "partNumber",  
     key: "partNumber",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
   {
     title: "Description",
-    dataIndex: "Description",
+    dataIndex: "description",  
     key: "description",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
   {
     title: "Quantity",
-    dataIndex: "Quantity",
+    dataIndex: "quantity",  
     key: "quantity",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
   {
     title: "Unit",
-    dataIndex: "Unit",
+    dataIndex: "unit",  
     key: "unit",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
-  {
-    title: "Total Price in AED",
-    dataIndex: "Total Price in AED",
-    key: "totalPrice",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
-  },
-  {
-    title: "Purchase Cost(per item)",
-    dataIndex: "Purchase Cost(per item)",
-    key: "purchaseCost",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
-  },
-  {
-    title: "Add On Cost",
-    dataIndex: "Add On Cost",
-    key: "addOnCost",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
-  },
-  {
-    title: "Selling Cost",
-    dataIndex: "Selling Cost",
-    key: "sellingCost",
-    render: (text) => (
-      <Tooltip title={text}>
-        <span>{text}</span>
-      </Tooltip>
-    ),
-  },
+  ...(username === "Admin"
+    ? [
+        {
+          title: "Total Price in AED",
+          dataIndex: "totalPrice",  
+          key: "totalPrice",
+          render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+        },
+        {
+          title: "Purchase Cost(per item)",
+          dataIndex: "purchaseCost",  
+          key: "purchaseCost",
+          render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+        },
+        {
+          title: "Add On Cost",
+          dataIndex: "addOnCost",  
+          key: "addOnCost",
+          render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+        },
+        {
+          title: "Selling Cost",
+          dataIndex: "sellingCost",  
+          key: "sellingCost",
+          render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+        },
+      ]
+    : []),
 ];
+
+const columnMapping = {
+  "Serial Number": "serialNumber",
+  "Part Number": "partNumber",
+  "Description": "description",
+  "Quantity": "quantity",
+  "Unit": "unit",
+  "Total Price in AED": "totalPrice",
+  "Purchase Cost(per item)": "purchaseCost",
+  "Add On Cost": "addOnCost",
+  "Selling Cost": "sellingCost",
+};
 
 
   const fetchInventory = async (values = {}) => {
@@ -115,7 +236,7 @@ const columns = [
       });
 
       const res = await fetch(
-        "https://script.google.com/macros/s/AKfycbxAbi1evdPX3P6hWUVUVVnEuTWl_BAuo_7ya5bnqVXyv9nZfOxejPDKCI9Xaqm88gMPrw/exec",
+        "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec",
         {
           method: "POST",
           body: params,
@@ -123,11 +244,26 @@ const columns = [
       );
 
       const data = await res.json();
+      // if (data.success) {
+      //   setTableDataSource(data.data);
+      // } else {
+      //   notification.error({ message: "Error", description: data.message });
+      // }
+
       if (data.success) {
-        setTableDataSource(data.data);
-      } else {
-        notification.error({ message: "Error", description: data.message });
-      }
+   const normalizedData = data.data.map((item, idx) => {
+        const normalizedItem = { key: idx };
+        Object.keys(item).forEach((header) => {
+          const newKey = columnMapping[header] || header; // map if exists, else keep original
+          normalizedItem[newKey] = item[header];
+        });
+        return normalizedItem;
+      });
+  setTableDataSource(normalizedData);
+} else {
+  notification.error({ message: "Error", description: data.message });
+}
+
     } catch (err) {
       notification.error({ message: "Error", description: err.message });
     } finally {

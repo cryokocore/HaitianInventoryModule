@@ -111,7 +111,7 @@ export default function DeliveryNote({ username }) {
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbxAbi1evdPX3P6hWUVUVVnEuTWl_BAuo_7ya5bnqVXyv9nZfOxejPDKCI9Xaqm88gMPrw/exec";
+    "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec";
 
   // const fetchInitialData = async () => {
   //   try {
@@ -171,66 +171,65 @@ export default function DeliveryNote({ username }) {
   //   }
   // };
 
-  
   async function fetchWithRetry(params, retries = 2) {
-  for (let i = 0; i <= retries; i++) {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(params),
+        });
+        const json = await res.json();
+        if (json.success) return json;
+      } catch (err) {
+        console.warn(`Retry ${i + 1} failed`, err);
+      }
+    }
+    throw new Error("Failed after retries");
+  }
+
+  const fetchInitialData = async () => {
     try {
-      const res = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(params),
-      });
-      const json = await res.json();
-      if (json.success) return json;
+      setLoadingDeliveryNumber(true);
+      setLoadingCustomerName(true);
+      setLoadingDescription(true);
+
+      // 🔄 Fetch in parallel with retry logic
+      const [deliveryNum, customers, descriptions] = await Promise.allSettled([
+        fetchWithRetry({ action: "getNextDeliveryNumber" }),
+        fetchWithRetry({ action: "getCustomerDetails" }),
+        fetchWithRetry({ action: "getAllDescriptionsWithPartNumbers" }),
+      ]);
+
+      if (deliveryNum.status === "fulfilled" && deliveryNum.value) {
+        setDeliveryNumber(deliveryNum.value.deliveryNumber);
+        form.setFieldsValue({
+          deliveryNumber: deliveryNum.value.deliveryNumber,
+        });
+      }
+
+      if (customers.status === "fulfilled" && customers.value) {
+        setCustomerList(customers.value.customers || []);
+      }
+
+      if (descriptions.status === "fulfilled" && descriptions.value) {
+        setDescriptionList(descriptions.value.items || []);
+      }
+
+      // ✅ Fetch delivery notes separately (doesn’t need retry)
+      await fetchDeliveryNotesData();
     } catch (err) {
-      console.warn(`Retry ${i + 1} failed`, err);
+      console.error("Error fetching initial data:", err);
+      notification.error({
+        message: "Error",
+        description: "Failed to fetch initial data",
+      });
+    } finally {
+      setLoadingDeliveryNumber(false);
+      setLoadingCustomerName(false);
+      setLoadingDescription(false);
     }
-  }
-  throw new Error("Failed after retries");
-}
-
-const fetchInitialData = async () => {
-  try {
-    setLoadingDeliveryNumber(true);
-    setLoadingCustomerName(true);
-    setLoadingDescription(true);
-
-    // 🔄 Fetch in parallel with retry logic
-    const [deliveryNum, customers, descriptions] = await Promise.allSettled([
-      fetchWithRetry({ action: "getNextDeliveryNumber" }),
-      fetchWithRetry({ action: "getCustomerDetails" }),
-      fetchWithRetry({ action: "getAllDescriptionsWithPartNumbers" }),
-    ]);
-
-    if (deliveryNum.status === "fulfilled" && deliveryNum.value) {
-      setDeliveryNumber(deliveryNum.value.deliveryNumber);
-      form.setFieldsValue({ deliveryNumber: deliveryNum.value.deliveryNumber });
-    }
-
-    if (customers.status === "fulfilled" && customers.value) {
-      setCustomerList(customers.value.customers || []);
-    }
-
-    if (descriptions.status === "fulfilled" && descriptions.value) {
-      setDescriptionList(descriptions.value.items || []);
-    }
-
-    // ✅ Fetch delivery notes separately (doesn’t need retry)
-    await fetchDeliveryNotesData();
-
-  } catch (err) {
-    console.error("Error fetching initial data:", err);
-    notification.error({
-      message: "Error",
-      description: "Failed to fetch initial data",
-    });
-  } finally {
-    setLoadingDeliveryNumber(false);
-    setLoadingCustomerName(false);
-    setLoadingDescription(false);
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchInitialData();
@@ -390,62 +389,69 @@ const fetchInitialData = async () => {
               //     unit: selected?.unit || "",
               //   }));
               // }}
-             onChange={(value) => {
-  const selected = descriptionList.find((item) => item.partNumber === value);
-  const cachedStock = stockMap[value] || { stockInHand: 0, unit: "" };
+              onChange={(value) => {
+                const selected = descriptionList.find(
+                  (item) => item.partNumber === value
+                );
+                const cachedStock = stockMap[value] || {
+                  stockInHand: 0,
+                  unit: "",
+                };
 
-  // Immediate UI update from cache
-  setInputRow((prev) => ({
-    ...prev,
-    partNumber: value,
-    itemDescription: selected?.description || prev.itemDescription,
-    unit: cachedStock.unit,
-    stockInHand: cachedStock.stockInHand.toString(),
-    stockUnit: cachedStock.unit,
-  }));
+                // Immediate UI update from cache
+                setInputRow((prev) => ({
+                  ...prev,
+                  partNumber: value,
+                  itemDescription:
+                    selected?.description || prev.itemDescription,
+                  unit: cachedStock.unit,
+                  stockInHand: cachedStock.stockInHand.toString(),
+                  stockUnit: cachedStock.unit,
+                }));
 
-  // Save the part number being fetched
-  const currentPart = value;
+                // Save the part number being fetched
+                const currentPart = value;
 
-  // 🔄 Background fetch
-  (async () => {
-    try {
-      const res = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "getStockForPartNumber",
-          partNumber: currentPart,
-        }),
-      });
-      const result = await res.json();
+                // 🔄 Background fetch
+                (async () => {
+                  try {
+                    const res = await fetch(GAS_URL, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                      },
+                      body: new URLSearchParams({
+                        action: "getStockForPartNumber",
+                        partNumber: currentPart,
+                      }),
+                    });
+                    const result = await res.json();
 
-      // ✅ Only update if user is still on the same part
-      setInputRow((prev) => {
-        if (prev.partNumber !== currentPart) {
-          return prev; // ignore outdated response
-        }
-        return {
-          ...prev,
-          stockInHand: result.stockInHand?.toString() || "0",
-          stockUnit: result.unit || "",
-          unit: result.unit || prev.unit,
-        };
-      });
+                    // ✅ Only update if user is still on the same part
+                    setInputRow((prev) => {
+                      if (prev.partNumber !== currentPart) {
+                        return prev; // ignore outdated response
+                      }
+                      return {
+                        ...prev,
+                        stockInHand: result.stockInHand?.toString() || "0",
+                        stockUnit: result.unit || "",
+                        unit: result.unit || prev.unit,
+                      };
+                    });
 
-      setStockMap((prev) => ({
-        ...prev,
-        [currentPart]: {
-          stockInHand: result.stockInHand,
-          unit: result.unit,
-        },
-      }));
-    } catch (err) {
-      console.error("Live stock fetch failed", err);
-    }
-  })();
-}}
-
+                    setStockMap((prev) => ({
+                      ...prev,
+                      [currentPart]: {
+                        stockInHand: result.stockInHand,
+                        unit: result.unit,
+                      },
+                    }));
+                  } catch (err) {
+                    console.error("Live stock fetch failed", err);
+                  }
+                })();
+              }}
               onSearch={(value) => {
                 setInputRow((prev) => ({
                   ...prev,
@@ -502,62 +508,67 @@ const fetchInitialData = async () => {
               //   }));
               // }}
 
-onChange={(value) => {
-  const selected = descriptionList.find((item) => item.description === value);
-  const partNumber = selected?.partNumber || "";
-  const cachedStock = stockMap[partNumber] || { stockInHand: 0, unit: "" };
+              onChange={(value) => {
+                const selected = descriptionList.find(
+                  (item) => item.description === value
+                );
+                const partNumber = selected?.partNumber || "";
+                const cachedStock = stockMap[partNumber] || {
+                  stockInHand: 0,
+                  unit: "",
+                };
 
-  // Immediate UI update from cache
-  setInputRow((prev) => ({
-    ...prev,
-    itemDescription: value,
-    partNumber,
-    unit: cachedStock.unit,
-    stockInHand: cachedStock.stockInHand.toString(),
-    stockUnit: cachedStock.unit,
-  }));
+                // Immediate UI update from cache
+                setInputRow((prev) => ({
+                  ...prev,
+                  itemDescription: value,
+                  partNumber,
+                  unit: cachedStock.unit,
+                  stockInHand: cachedStock.stockInHand.toString(),
+                  stockUnit: cachedStock.unit,
+                }));
 
-  // Save the part number being fetched
-  const currentPart = partNumber;
+                // Save the part number being fetched
+                const currentPart = partNumber;
 
-  // 🔄 Background live fetch
-  (async () => {
-    try {
-      const res = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          action: "getStockForPartNumber",
-          partNumber: currentPart,
-        }),
-      });
-      const result = await res.json();
+                // 🔄 Background live fetch
+                (async () => {
+                  try {
+                    const res = await fetch(GAS_URL, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                      },
+                      body: new URLSearchParams({
+                        action: "getStockForPartNumber",
+                        partNumber: currentPart,
+                      }),
+                    });
+                    const result = await res.json();
 
-      // ✅ Only update if still on the same part
-      setInputRow((prev) => {
-        if (prev.partNumber !== currentPart) return prev; // ignore outdated
-        return {
-          ...prev,
-          stockInHand: result.stockInHand?.toString() || "0",
-          stockUnit: result.unit || "",
-          unit: result.unit || prev.unit,
-        };
-      });
+                    // ✅ Only update if still on the same part
+                    setInputRow((prev) => {
+                      if (prev.partNumber !== currentPart) return prev; // ignore outdated
+                      return {
+                        ...prev,
+                        stockInHand: result.stockInHand?.toString() || "0",
+                        stockUnit: result.unit || "",
+                        unit: result.unit || prev.unit,
+                      };
+                    });
 
-      setStockMap((prev) => ({
-        ...prev,
-        [currentPart]: {
-          stockInHand: result.stockInHand,
-          unit: result.unit,
-        },
-      }));
-    } catch (err) {
-      console.error("Live stock fetch failed (description)", err);
-    }
-  })();
-}}
-
-
+                    setStockMap((prev) => ({
+                      ...prev,
+                      [currentPart]: {
+                        stockInHand: result.stockInHand,
+                        unit: result.unit,
+                      },
+                    }));
+                  } catch (err) {
+                    console.error("Live stock fetch failed (description)", err);
+                  }
+                })();
+              }}
               style={{ width: "100%" }}
             >
               {[...new Set(descriptionList.map((item) => item.description))]
@@ -1037,8 +1048,7 @@ onChange={(value) => {
   //   }
   // };
 
-
-//Working code
+  //Working code
   // const handleSubmit = async (values) => {
   //   if (!navigator.onLine) {
   //     notification.error({
@@ -1182,486 +1192,505 @@ onChange={(value) => {
   //   }
   // };
 
-// const handleSubmit = async (values) => {
-//   if (!navigator.onLine) {
-//     notification.error({
-//       message: "No Internet Connection",
-//       description: "Please check your internet and try again.",
-//     });
-//     return;
-//   }
+  // const handleSubmit = async (values) => {
+  //   if (!navigator.onLine) {
+  //     notification.error({
+  //       message: "No Internet Connection",
+  //       description: "Please check your internet and try again.",
+  //     });
+  //     return;
+  //   }
 
-//   if (dataSource.length === 0) {
-//     notification.error({
-//       message: "No Items",
-//       description: "Please add at least one item to submit.",
-//     });
-//     return;
-//   }
+  //   if (dataSource.length === 0) {
+  //     notification.error({
+  //       message: "No Items",
+  //       description: "Please add at least one item to submit.",
+  //     });
+  //     return;
+  //   }
 
-//   if (loading) return; // ⛔ prevent duplicate submit
-//   setLoading(true);
+  //   if (loading) return; // ⛔ prevent duplicate submit
+  //   setLoading(true);
 
-//   try {
-//     // Format date
-//     const formattedDate =
-//       username === "Admin"
-//         ? dayjs(values.date).format("DD-MM-YYYY")
-//         : deliveryDate;
+  //   try {
+  //     // Format date
+  //     const formattedDate =
+  //       username === "Admin"
+  //         ? dayjs(values.date).format("DD-MM-YYYY")
+  //         : deliveryDate;
 
-//     // 1️⃣ Save form data first
-//     const response = await fetch(GAS_URL, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({
-//         action: "addDeliveryNote",
-//         deliveryNumber: values.deliveryNumber,
-//         date: formattedDate,
-//         customername: values.customername,
-//         address: values.address,
-//         modeOfDelivery: values.modeOfDelivery,
-//         reference: values.reference,
-//         items: JSON.stringify(dataSource),
-//         userName: username || "-",
-//       }),
-//     });
+  //     // 1️⃣ Save form data first
+  //     const response = await fetch(GAS_URL, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //       body: new URLSearchParams({
+  //         action: "addDeliveryNote",
+  //         deliveryNumber: values.deliveryNumber,
+  //         date: formattedDate,
+  //         customername: values.customername,
+  //         address: values.address,
+  //         modeOfDelivery: values.modeOfDelivery,
+  //         reference: values.reference,
+  //         items: JSON.stringify(dataSource),
+  //         userName: username || "-",
+  //       }),
+  //     });
 
-//     const result = await response.json();
+  //     const result = await response.json();
 
-// if (!result.success) {
-//   if (result.message.includes("System is busy")) {
-//     notification.warning({
-//       message: "Please Retry",
-//       description: "Another user is submitting a delivery note. Please try again in a moment.",
-//     });
-//   } else {
-//     notification.error({
-//       message: "Form Submission Failed",
-//       description: result.message || "Failed to add delivery note.",
-//     });
-//   }
-//   setLoading(false);
-//   return;
-// }
+  // if (!result.success) {
+  //   if (result.message.includes("System is busy")) {
+  //     notification.warning({
+  //       message: "Please Retry",
+  //       description: "Another user is submitting a delivery note. Please try again in a moment.",
+  //     });
+  //   } else {
+  //     notification.error({
+  //       message: "Form Submission Failed",
+  //       description: result.message || "Failed to add delivery note.",
+  //     });
+  //   }
+  //   setLoading(false);
+  //   return;
+  // }
 
-//     const confirmedDeliveryNumber = result.deliveryNumber;
+  //     const confirmedDeliveryNumber = result.deliveryNumber;
 
+  //     // ✅ Form saved successfully
+  //     notification.success({
+  //       message: "Form Submitted",
+  //       description: "Delivery note saved successfully. Generating PDF...",
+  //     });
 
-//     // ✅ Form saved successfully
-//     notification.success({
-//       message: "Form Submitted",
-//       description: "Delivery note saved successfully. Generating PDF...",
-//     });
+  //     // 2️⃣ Generate PDF BEFORE resetting the table
+  //     let doc;
+  //     try {
+  //       doc = generateDeliveryNotePDF(
+  //         { ...values, paymentTerms, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
+  //         dataSource,
+  //         false
+  //       );
+  //     } catch (pdfErr) {
+  //       console.error("PDF generation failed:", pdfErr);
+  //       notification.warning({
+  //         message: "PDF Generation Error",
+  //         description: "Form was saved, but PDF generation failed.",
+  //       });
+  //        setLoading(false);
+  //       return;
+  //     }
 
-//     // 2️⃣ Generate PDF BEFORE resetting the table
-//     let doc;
-//     try {
-//       doc = generateDeliveryNotePDF(
-//         { ...values, paymentTerms, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
-//         dataSource,
-//         false
-//       );
-//     } catch (pdfErr) {
-//       console.error("PDF generation failed:", pdfErr);
-//       notification.warning({
-//         message: "PDF Generation Error",
-//         description: "Form was saved, but PDF generation failed.",
-//       });
-//        setLoading(false);
-//       return;
-//     }
+  //     // 3️⃣ Upload PDF
+  //     try {
+  //       const pdfOutput = doc.output("arraybuffer");
+  //       const pdfBase64 = btoa(
+  //         new Uint8Array(pdfOutput).reduce(
+  //           (data, byte) => data + String.fromCharCode(byte),
+  //           ""
+  //         )
+  //       );
 
-//     // 3️⃣ Upload PDF
-//     try {
-//       const pdfOutput = doc.output("arraybuffer");
-//       const pdfBase64 = btoa(
-//         new Uint8Array(pdfOutput).reduce(
-//           (data, byte) => data + String.fromCharCode(byte),
-//           ""
-//         )
-//       );
+  //       const uploadRes = await fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({
+  //           action: "uploadDeliveryNotePDF",
+  //           pdfBase64,
+  //       fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
+  //         }),
+  //       });
 
-//       const uploadRes = await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: new URLSearchParams({
-//           action: "uploadDeliveryNotePDF",
-//           pdfBase64,
-//       fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
-//         }),
-//       });
+  //       const uploadResult = await uploadRes.json();
 
-//       const uploadResult = await uploadRes.json();
+  //       if (uploadResult.success) {
+  //         notification.success({
+  //           message: "PDF Uploaded",
+  //           description: "Delivery note PDF uploaded to Google Drive.",
+  //         });
+  //       } else {
+  //         notification.warning({
+  //           message: "PDF Upload Failed",
+  //           description:
+  //             uploadResult.message || "Form was saved, but PDF upload failed.",
+  //         });
+  //       }
+  //     } catch (uploadErr) {
+  //       console.error("PDF upload failed:", uploadErr);
+  //       notification.warning({
+  //         message: "PDF Upload Error",
+  //         description: "Form was saved, but PDF upload failed.",
+  //       });
+  //       setLoading(false);
+  //         return;
 
-//       if (uploadResult.success) {
-//         notification.success({
-//           message: "PDF Uploaded",
-//           description: "Delivery note PDF uploaded to Google Drive.",
-//         });
-//       } else {
-//         notification.warning({
-//           message: "PDF Upload Failed",
-//           description:
-//             uploadResult.message || "Form was saved, but PDF upload failed.",
-//         });
-//       }
-//     } catch (uploadErr) {
-//       console.error("PDF upload failed:", uploadErr);
-//       notification.warning({
-//         message: "PDF Upload Error",
-//         description: "Form was saved, but PDF upload failed.",
-//       });
-//       setLoading(false); 
-//         return;
+  //     }
 
-//     }
+  //     // 4️⃣ Reset table + fetch next delivery number AFTER PDF is done
+  //     setDataSource([]);
+  //     setInputRow({
+  //       partNumber: "",
+  //       itemDescription: "",
+  //       quantity: "",
+  //       unit: "",
+  //       stockInHand: "",
+  //     });
 
-//     // 4️⃣ Reset table + fetch next delivery number AFTER PDF is done
-//     setDataSource([]);
-//     setInputRow({
-//       partNumber: "",
-//       itemDescription: "",
-//       quantity: "",
-//       unit: "",
-//       stockInHand: "",
-//     });
+  //     try {
+  //       const nextRes = await fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+  //       });
+  //       const nextResult = await nextRes.json();
+  //       if (nextResult.success) {
+  //         form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
+  //       }
+  //     } catch (numErr) {
+  //       console.error("Failed to fetch next delivery number:", numErr);
+  //     }
 
-//     try {
-//       const nextRes = await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-//       });
-//       const nextResult = await nextRes.json();
-//       if (nextResult.success) {
-//         form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
-//       }
-//     } catch (numErr) {
-//       console.error("Failed to fetch next delivery number:", numErr);
-//     }
+  //     // Reset date
+  //     const nowUTC = new Date();
+  //     const dubaiOffset = 4 * 60;
+  //     const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+  //     const dubaiDayjs = dayjs(dubaiTime);
+  //     const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
+  //     setDeliveryDate(todayFormatted);
 
-//     // Reset date
-//     const nowUTC = new Date();
-//     const dubaiOffset = 4 * 60;
-//     const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-//     const dubaiDayjs = dayjs(dubaiTime);
-//     const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
-//     setDeliveryDate(todayFormatted);
+  //     if (username === "Admin") {
+  //       form.setFieldsValue({ date: dubaiDayjs });
+  //     } else {
+  //       form.setFieldsValue({ date: todayFormatted });
+  //     }
 
-//     if (username === "Admin") {
-//       form.setFieldsValue({ date: dubaiDayjs });
-//     } else {
-//       form.setFieldsValue({ date: todayFormatted });
-//     }
+  //     form.setFields([
+  //       { name: "customername", value: undefined },
+  //       { name: "address", value: undefined },
+  //       { name: "modeOfDelivery", value: undefined },
+  //       { name: "reference", value: undefined },
+  //     ]);
 
-//     form.setFields([
-//       { name: "customername", value: undefined },
-//       { name: "address", value: undefined },
-//       { name: "modeOfDelivery", value: undefined },
-//       { name: "reference", value: undefined },
-//     ]);
+  //     await fetchInitialData();
+  //   } catch (err) {
+  //     console.error("Submit error:", err);
+  //     notification.error({
+  //       message: "Unexpected Error",
+  //       description: err.message || "Something went wrong while submitting the form.",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-//     await fetchInitialData();
-//   } catch (err) {
-//     console.error("Submit error:", err);
-//     notification.error({
-//       message: "Unexpected Error",
-//       description: err.message || "Something went wrong while submitting the form.",
-//     });
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+  // const handleSubmit = async (values) => {
+  //   if (!navigator.onLine) {
+  //     notification.error({
+  //       message: "No Internet Connection",
+  //       description: "Please check your internet and try again.",
+  //     });
+  //     return;
+  //   }
 
-// const handleSubmit = async (values) => {
-//   if (!navigator.onLine) {
-//     notification.error({
-//       message: "No Internet Connection",
-//       description: "Please check your internet and try again.",
-//     });
-//     return;
-//   }
+  //   if (dataSource.length === 0) {
+  //     notification.error({
+  //       message: "No Items",
+  //       description: "Please add at least one item to submit.",
+  //     });
+  //     return;
+  //   }
 
-//   if (dataSource.length === 0) {
-//     notification.error({
-//       message: "No Items",
-//       description: "Please add at least one item to submit.",
-//     });
-//     return;
-//   }
+  //   if (loading) return; // prevent duplicate submit
+  //   setLoading(true);
 
-//   if (loading) return; // prevent duplicate submit
-//   setLoading(true);
+  //   try {
+  //     // Format date
+  //     const formattedDate =
+  //       username === "Admin"
+  //         ? dayjs(values.date).format("DD-MM-YYYY")
+  //         : deliveryDate;
 
-//   try {
-//     // Format date
-//     const formattedDate =
-//       username === "Admin"
-//         ? dayjs(values.date).format("DD-MM-YYYY")
-//         : deliveryDate;
+  //     // 1️⃣ Save form data
+  //     const response = await fetch(GAS_URL, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //       body: new URLSearchParams({
+  //         action: "addDeliveryNote",
+  //         deliveryNumber: values.deliveryNumber,
+  //         date: formattedDate,
+  //         customername: values.customername,
+  //         address: values.address,
+  //         modeOfDelivery: values.modeOfDelivery,
+  //         reference: values.reference,
+  //         items: JSON.stringify(dataSource),
+  //         userName: username || "-",
+  //       }),
+  //     });
 
-//     // 1️⃣ Save form data
-//     const response = await fetch(GAS_URL, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//       body: new URLSearchParams({
-//         action: "addDeliveryNote",
-//         deliveryNumber: values.deliveryNumber,
-//         date: formattedDate,
-//         customername: values.customername,
-//         address: values.address,
-//         modeOfDelivery: values.modeOfDelivery,
-//         reference: values.reference,
-//         items: JSON.stringify(dataSource),
-//         userName: username || "-",
-//       }),
-//     });
+  //     const result = await response.json();
 
-//     const result = await response.json();
+  //     if (!result.success) {
+  //       if (result.message.includes("System is busy")) {
+  //         throw new Error("System busy: another user is submitting a delivery note.");
+  //       } else {
+  //         throw new Error(result.message || "Failed to add delivery note.");
+  //       }
+  //     }
 
-//     if (!result.success) {
-//       if (result.message.includes("System is busy")) {
-//         throw new Error("System busy: another user is submitting a delivery note.");
-//       } else {
-//         throw new Error(result.message || "Failed to add delivery note.");
-//       }
-//     }
+  //     const confirmedDeliveryNumber = result.deliveryNumber;
 
-//     const confirmedDeliveryNumber = result.deliveryNumber;
+  //     notification.success({
+  //       message: "Form Submitted",
+  //       description: "Delivery note saved successfully. Generating PDF...",
+  //     });
 
-//     notification.success({
-//       message: "Form Submitted",
-//       description: "Delivery note saved successfully. Generating PDF...",
-//     });
+  //     // 2️⃣ Generate PDF
+  //     let doc;
+  //     // try {
+  //     //   doc = generateDeliveryNotePDF(
+  //     //     { ...values, paymentTerms, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
+  //     //     dataSource,
+  //     //     false
+  //     //   );
+  //     // } catch {
+  //     //   throw new Error("Form saved, but PDF generation failed.");
+  //     // }
+  //     try {
+  //   doc = generateDeliveryNotePDF(
+  //     { ...values, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
+  //     dataSource || [],
+  //     false
+  //   );
+  //   if (!doc) throw new Error("PDF generation returned null");
+  // } catch (pdfErr) {
+  //   console.error("PDF generation failed:", pdfErr);
+  //   throw new Error("Form saved, but PDF generation failed.");
+  // }
 
-//     // 2️⃣ Generate PDF
-//     let doc;
-//     // try {
-//     //   doc = generateDeliveryNotePDF(
-//     //     { ...values, paymentTerms, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
-//     //     dataSource,
-//     //     false
-//     //   );
-//     // } catch {
-//     //   throw new Error("Form saved, but PDF generation failed.");
-//     // }
-//     try {
-//   doc = generateDeliveryNotePDF(
-//     { ...values, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
-//     dataSource || [],
-//     false
-//   );
-//   if (!doc) throw new Error("PDF generation returned null");
-// } catch (pdfErr) {
-//   console.error("PDF generation failed:", pdfErr);
-//   throw new Error("Form saved, but PDF generation failed.");
-// }
+  //     // 3️⃣ Upload PDF
+  //     try {
+  //       const pdfOutput = doc.output("arraybuffer");
+  //       const pdfBase64 = btoa(
+  //         new Uint8Array(pdfOutput).reduce(
+  //           (data, byte) => data + String.fromCharCode(byte),
+  //           ""
+  //         )
+  //       );
 
+  //       const uploadRes = await fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({
+  //           action: "uploadDeliveryNotePDF",
+  //           pdfBase64,
+  //           fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
+  //         }),
+  //       });
 
-//     // 3️⃣ Upload PDF
-//     try {
-//       const pdfOutput = doc.output("arraybuffer");
-//       const pdfBase64 = btoa(
-//         new Uint8Array(pdfOutput).reduce(
-//           (data, byte) => data + String.fromCharCode(byte),
-//           ""
-//         )
-//       );
+  //       const uploadResult = await uploadRes.json();
+  //       if (!uploadResult.success) {
+  //         throw new Error(uploadResult.message || "Form saved, but PDF upload failed.");
+  //       }
 
-//       const uploadRes = await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: new URLSearchParams({
-//           action: "uploadDeliveryNotePDF",
-//           pdfBase64,
-//           fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
-//         }),
-//       });
+  //       notification.success({
+  //         message: "PDF Uploaded",
+  //         description: "Delivery note PDF uploaded to Google Drive.",
+  //       });
+  //     } catch {
+  //       throw new Error("Form saved, but PDF upload failed.");
+  //     }
 
-//       const uploadResult = await uploadRes.json();
-//       if (!uploadResult.success) {
-//         throw new Error(uploadResult.message || "Form saved, but PDF upload failed.");
-//       }
+  //     // 4️⃣ Reset form and fetch next delivery number
+  //     setDataSource([]);
+  //     setInputRow({
+  //       partNumber: "",
+  //       itemDescription: "",
+  //       quantity: "",
+  //       unit: "",
+  //       stockInHand: "",
+  //     });
 
-//       notification.success({
-//         message: "PDF Uploaded",
-//         description: "Delivery note PDF uploaded to Google Drive.",
-//       });
-//     } catch {
-//       throw new Error("Form saved, but PDF upload failed.");
-//     }
+  //     try {
+  //       const nextRes = await fetch(GAS_URL, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  //         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
+  //       });
+  //       const nextResult = await nextRes.json();
+  //       if (nextResult.success) {
+  //         form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
+  //       }
+  //     } catch (numErr) {
+  //       console.error("Failed to fetch next delivery number:", numErr);
+  //     }
 
-//     // 4️⃣ Reset form and fetch next delivery number
-//     setDataSource([]);
-//     setInputRow({
-//       partNumber: "",
-//       itemDescription: "",
-//       quantity: "",
-//       unit: "",
-//       stockInHand: "",
-//     });
+  //     // Reset date
+  //     const nowUTC = new Date();
+  //     const dubaiOffset = 4 * 60;
+  //     const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+  //     const dubaiDayjs = dayjs(dubaiTime);
+  //     const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
+  //     setDeliveryDate(todayFormatted);
 
-//     try {
-//       const nextRes = await fetch(GAS_URL, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-//         body: new URLSearchParams({ action: "getNextDeliveryNumber" }),
-//       });
-//       const nextResult = await nextRes.json();
-//       if (nextResult.success) {
-//         form.setFieldsValue({ deliveryNumber: nextResult.deliveryNumber });
-//       }
-//     } catch (numErr) {
-//       console.error("Failed to fetch next delivery number:", numErr);
-//     }
+  //     form.setFieldsValue({
+  //       date: username === "Admin" ? dubaiDayjs : todayFormatted,
+  //       customername: undefined,
+  //       address: undefined,
+  //       modeOfDelivery: undefined,
+  //       reference: undefined,
+  //     });
 
-//     // Reset date
-//     const nowUTC = new Date();
-//     const dubaiOffset = 4 * 60;
-//     const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-//     const dubaiDayjs = dayjs(dubaiTime);
-//     const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
-//     setDeliveryDate(todayFormatted);
+  //     await fetchInitialData();
+  //   } catch (err) {
+  //     console.error("Submit error:", err);
+  //     notification.error({
+  //       message: "Submission Error",
+  //       description: err.message,
+  //     });
+  //   } finally {
+  //     setLoading(false); // ✅ always runs
+  //   }
+  // };
 
-//     form.setFieldsValue({
-//       date: username === "Admin" ? dubaiDayjs : todayFormatted,
-//       customername: undefined,
-//       address: undefined,
-//       modeOfDelivery: undefined,
-//       reference: undefined,
-//     });
-
-//     await fetchInitialData();
-//   } catch (err) {
-//     console.error("Submit error:", err);
-//     notification.error({
-//       message: "Submission Error",
-//       description: err.message,
-//     });
-//   } finally {
-//     setLoading(false); // ✅ always runs
-//   }
-// };
-
-const handleSubmit = async (values) => {
-  if (!navigator.onLine) {
-    notification.error({ message: "No Internet", description: "Check connection." });
-    return;
-  }
-  if (dataSource.length === 0) {
-    notification.error({ message: "No Items", description: "Please add at least one item." });
-    return;
-  }
-  if (loading) return;
-  setLoading(true);
-
-  try {
-    // const formattedDate =
-    //   username === "Admin" ? dayjs(values.date).format("DD-MM-YYYY") : deliveryDate;
-     const formattedDate = form.getFieldValue("date") || deliveryDate;
-
-    // 1️⃣ Save form data only
-    const response = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        action: "addDeliveryNote",
-        date: formattedDate,
-        customername: values.customername,
-        address: values.address,
-        modeOfDelivery: values.modeOfDelivery,
-        reference: values.reference,
-        items: JSON.stringify(dataSource),
-        userName: username || "-",
-      }),
-    });
-
-    const result = await response.json();
-    if (!result.success) throw new Error(result.message || "Failed to add delivery note.");
-
-    const confirmedDeliveryNumber = result.deliveryNumber;
-
-    // 2️⃣ Generate PDF with confirmed delivery number
-    let doc;
-    try {
-      doc = generateDeliveryNotePDF(
-        { ...values, date: formattedDate, deliveryNumber: confirmedDeliveryNumber },
-        dataSource,
-        false
-      );
-    } catch (pdfErr) {
-      console.error("PDF generation failed:", pdfErr);
-      throw new Error("Form saved, but PDF generation failed.");
+  const handleSubmit = async (values) => {
+    if (!navigator.onLine) {
+      notification.error({
+        message: "No Internet",
+        description: "Check connection.",
+      });
+      return;
     }
+    if (dataSource.length === 0) {
+      notification.error({
+        message: "No Items",
+        description: "Please add at least one item.",
+      });
+      return;
+    }
+    if (loading) return;
+    setLoading(true);
 
-    // const pdfOutput = doc.output("arraybuffer");
-    // const pdfBase64 = btoa(
-    //   new Uint8Array(pdfOutput).reduce((data, byte) => data + String.fromCharCode(byte), "")
-    // );
+    try {
+      // const formattedDate =
+      //   username === "Admin" ? dayjs(values.date).format("DD-MM-YYYY") : deliveryDate;
+      const formattedDate = form.getFieldValue("date") || deliveryDate;
 
-    const pdfBase64 = doc.output("datauristring").split(",")[1];
-    const pdfSizeKB = (pdfBase64.length * 3 / 4 / 1024).toFixed(2);
-console.log("PDF size:", pdfSizeKB, "KB");
-if (pdfSizeKB > 6000) {
-  throw new Error("PDF too large for Apps Script upload (limit ~6MB). Try reducing content.");
-}
+      // 1️⃣ Save form data only
+      const response = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "addDeliveryNote",
+          date: formattedDate,
+          customername: values.customername,
+          address: values.address,
+          modeOfDelivery: values.modeOfDelivery,
+          reference: values.reference,
+          items: JSON.stringify(dataSource),
+          userName: username || "-",
+        }),
+      });
 
-    // 3️⃣ Upload PDF separately
-    const uploadRes = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        action: "uploadDeliveryNotePDF",
-        pdfBase64,
-        fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
-      }),
-    });
+      const result = await response.json();
+      if (!result.success)
+        throw new Error(result.message || "Failed to add delivery note.");
 
-    const uploadResult = await uploadRes.json();
-    if (!uploadResult.success) throw new Error(uploadResult.message || "PDF upload failed.");
+      const confirmedDeliveryNumber = result.deliveryNumber;
 
-    notification.success({
-      message: "Success",
-      description: `Delivery Note ${confirmedDeliveryNumber} saved and PDF uploaded.`,
-    });
+      // 2️⃣ Generate PDF with confirmed delivery number
+      let doc;
+      try {
+        doc = generateDeliveryNotePDF(
+          {
+            ...values,
+            date: formattedDate,
+            deliveryNumber: confirmedDeliveryNumber,
+          },
+          dataSource,
+          false
+        );
+      } catch (pdfErr) {
+        console.error("PDF generation failed:", pdfErr);
+        throw new Error("Form saved, but PDF generation failed.");
+      }
 
-    // 4️⃣ Reset form (same as before)
-  // 4️⃣ Reset form fields + table
-setDataSource([]);
-setInputRow({ partNumber: "", itemDescription: "", quantity: "", unit: "", stockInHand: "" });
+      // const pdfOutput = doc.output("arraybuffer");
+      // const pdfBase64 = btoa(
+      //   new Uint8Array(pdfOutput).reduce((data, byte) => data + String.fromCharCode(byte), "")
+      // );
 
-// Reset AntD form fields
-form.resetFields();
+      const pdfBase64 = doc.output("datauristring").split(",")[1];
+      const pdfSizeKB = ((pdfBase64.length * 3) / 4 / 1024).toFixed(2);
+      console.log("PDF size:", pdfSizeKB, "KB");
+      if (pdfSizeKB > 6000) {
+        throw new Error(
+          "PDF too large for Apps Script upload (limit ~6MB). Try reducing content."
+        );
+      }
 
-// Reset delivery date
-const nowUTC = new Date();
-const dubaiOffset = 4 * 60; // UTC+4
-const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
-const dubaiDayjs = dayjs(dubaiTime);
-const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
-setDeliveryDate(todayFormatted);
+      // 3️⃣ Upload PDF separately
+      const uploadRes = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          action: "uploadDeliveryNotePDF",
+          pdfBase64,
+          fileName: `DeliveryNote_${confirmedDeliveryNumber}.pdf`,
+        }),
+      });
 
-// Admin vs Non-Admin reset
-form.setFieldsValue({
-  // date: username === "Admin" ? dubaiDayjs : todayFormatted,
-    date: todayFormatted, 
-  customername: undefined,
-  address: undefined,
-  modeOfDelivery: undefined,
-  reference: undefined,
-});
+      const uploadResult = await uploadRes.json();
+      if (!uploadResult.success)
+        throw new Error(uploadResult.message || "PDF upload failed.");
 
-// Fetch new delivery number etc.
-await fetchInitialData();
+      notification.success({
+        message: "Success",
+        description: `Delivery Note ${confirmedDeliveryNumber} saved and PDF uploaded.`,
+      });
 
+      // 4️⃣ Reset form (same as before)
+      // 4️⃣ Reset form fields + table
+      setDataSource([]);
+      setInputRow({
+        partNumber: "",
+        itemDescription: "",
+        quantity: "",
+        unit: "",
+        stockInHand: "",
+      });
 
-  } catch (err) {
-    console.error("Submit error:", err);
-    notification.error({ message: "Submission Error", description: err.message });
-  } finally {
-    setLoading(false);
-  }
-};
+      // Reset AntD form fields
+      form.resetFields();
+
+      // Reset delivery date
+      const nowUTC = new Date();
+      const dubaiOffset = 4 * 60; // UTC+4
+      const dubaiTime = new Date(nowUTC.getTime() + dubaiOffset * 60000);
+      const dubaiDayjs = dayjs(dubaiTime);
+      const todayFormatted = dubaiDayjs.format("DD-MM-YYYY");
+      setDeliveryDate(todayFormatted);
+
+      // Admin vs Non-Admin reset
+      form.setFieldsValue({
+        // date: username === "Admin" ? dubaiDayjs : todayFormatted,
+        date: todayFormatted,
+        customername: undefined,
+        address: undefined,
+        modeOfDelivery: undefined,
+        reference: undefined,
+      });
+
+      // Fetch new delivery number etc.
+      await fetchInitialData();
+    } catch (err) {
+      console.error("Submit error:", err);
+      notification.error({
+        message: "Submission Error",
+        description: err.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchedTablecolumns = [
     {
@@ -1873,12 +1902,12 @@ await fetchInitialData();
     }, {})
   );
 
-                      // Sort groupedData by "Delivery Number" descending
-const sortedData = [...groupedData].sort((a, b) => {
-  const numA = parseInt(a["Delivery Number"].replace("HD", ""), 10);
-  const numB = parseInt(b["Delivery Number"].replace("HD", ""), 10);
-  return numB - numA; // descending
-});
+  // Sort groupedData by "Delivery Number" descending
+  const sortedData = [...groupedData].sort((a, b) => {
+    const numA = parseInt(a["Delivery Number"].replace("HD", ""), 10);
+    const numB = parseInt(b["Delivery Number"].replace("HD", ""), 10);
+    return numB - numA; // descending
+  });
 
   const handleExport = () => {
     const now = dayjs().format("DD-MM-YYYY_HH-mm-ss");
@@ -2777,378 +2806,372 @@ const sortedData = [...groupedData].sort((a, b) => {
   //   return doc;
   // };
 
-//   const generateDeliveryNotePDF = (
-//     formValues,
-//     items = [],
-//     saveLocally = true
-//   ) => {
-//     const doc = new jsPDF();
-//     const pageWidth = doc.internal.pageSize.width;
-//     const pageHeight = doc.internal.pageSize.height;
-//     const BOTTOM_MARGIN = 65;
-//     const rightX = 125; // Right column start X
+  //   const generateDeliveryNotePDF = (
+  //     formValues,
+  //     items = [],
+  //     saveLocally = true
+  //   ) => {
+  //     const doc = new jsPDF();
+  //     const pageWidth = doc.internal.pageSize.width;
+  //     const pageHeight = doc.internal.pageSize.height;
+  //     const BOTTOM_MARGIN = 65;
+  //     const rightX = 125; // Right column start X
 
-//     doc.setFontSize(10);
+  //     doc.setFontSize(10);
 
-//     // Wrap Deliver To lines (left column)
-//     const deliverToLines = [
-//       ...(formValues.customername ? [formValues.customername] : []),
-//       ...(formValues.address ? formValues.address.split("\n") : []),
-//     ].flatMap((line) => doc.splitTextToSize(line, 100));
+  //     // Wrap Deliver To lines (left column)
+  //     const deliverToLines = [
+  //       ...(formValues.customername ? [formValues.customername] : []),
+  //       ...(formValues.address ? formValues.address.split("\n") : []),
+  //     ].flatMap((line) => doc.splitTextToSize(line, 100));
 
-//     // Wrap Delivery Type + Payment Terms together (right column)
-//     const deliveryTypeFullText = `${formValues.paymentTerms || ""}`;
-//     const deliveryTypeLines = doc.splitTextToSize(
-//       deliveryTypeFullText,
-//       pageWidth - rightX - 14
-//     );
+  //     // Wrap Delivery Type + Payment Terms together (right column)
+  //     const deliveryTypeFullText = `${formValues.paymentTerms || ""}`;
+  //     const deliveryTypeLines = doc.splitTextToSize(
+  //       deliveryTypeFullText,
+  //       pageWidth - rightX - 14
+  //     );
 
-//     // Calculate tallest column height
-//     const leftHeight = deliverToLines.length * 5 + 6;
-//     const rightHeight = deliveryTypeLines.length * 5 + 6;
-//     const HEADER_HEIGHT = 50 + Math.max(leftHeight, rightHeight);
+  //     // Calculate tallest column height
+  //     const leftHeight = deliverToLines.length * 5 + 6;
+  //     const rightHeight = deliveryTypeLines.length * 5 + 6;
+  //     const HEADER_HEIGHT = 50 + Math.max(leftHeight, rightHeight);
 
-//     // Draw header
-//     const drawHeader = () => {
-//       // Logo
-//       doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+  //     // Draw header
+  //     const drawHeader = () => {
+  //       // Logo
+  //       doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
 
-//       // Title & delivery info
-//       doc.setFontSize(30);
-//       doc.text("Delivery Note", rightX, 20);
-//       doc.setFontSize(13);
-//       doc.text(
-//         `Delivery Note Number: ${formValues.deliveryNumber || ""}`,
-//         rightX,
-//         30
-//       );
-//       doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+  //       // Title & delivery info
+  //       doc.setFontSize(30);
+  //       doc.text("Delivery Note", rightX, 20);
+  //       doc.setFontSize(13);
+  //       doc.text(
+  //         `Delivery Note Number: ${formValues.deliveryNumber || ""}`,
+  //         rightX,
+  //         30
+  //       );
+  //       doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
 
-//       const startY = 50;
+  //       const startY = 50;
 
-//       // LEFT column (Deliver To)
-//       doc.setFont("helvetica", "normal");
-//       doc.setFontSize(13);
-//       doc.text("Deliver To:", 14, startY);
-//       doc.setFont("helvetica", "normal");
-//       doc.setFontSize(11);
-//       doc.text(deliverToLines, 14, startY + 6);
+  //       // LEFT column (Deliver To)
+  //       doc.setFont("helvetica", "normal");
+  //       doc.setFontSize(13);
+  //       doc.text("Deliver To:", 14, startY);
+  //       doc.setFont("helvetica", "normal");
+  //       doc.setFontSize(11);
+  //       doc.text(deliverToLines, 14, startY + 6);
 
-//       // RIGHT column (Delivery Type + value wrapped together)
-//       doc.setFont("helvetica", "normal");
-//       doc.setFontSize(13);
-//       doc.text("Delivery Type:", rightX, startY);
-//       doc.setFont("helvetica", "normal");
-//       doc.setFontSize(11);
-//       doc.text(deliveryTypeLines, rightX, startY + 6);
-//     };
+  //       // RIGHT column (Delivery Type + value wrapped together)
+  //       doc.setFont("helvetica", "normal");
+  //       doc.setFontSize(13);
+  //       doc.text("Delivery Type:", rightX, startY);
+  //       doc.setFont("helvetica", "normal");
+  //       doc.setFontSize(11);
+  //       doc.text(deliveryTypeLines, rightX, startY + 6);
+  //     };
 
-//     // Draw footer
-//     const drawFooter = (pageNum, totalPages) => {
-//       doc.setFontSize(10);
-//       const borderY = pageHeight - 30;
+  //     // Draw footer
+  //     const drawFooter = (pageNum, totalPages) => {
+  //       doc.setFontSize(10);
+  //       const borderY = pageHeight - 30;
 
-//       // Black border line
-//       doc.setDrawColor(0, 0, 0);
-//       doc.setLineWidth(0.5);
-//       doc.line(14, borderY, pageWidth - 14, borderY);
+  //       // Black border line
+  //       doc.setDrawColor(0, 0, 0);
+  //       doc.setLineWidth(0.5);
+  //       doc.line(14, borderY, pageWidth - 14, borderY);
 
-//       // Signature line
-//       if (pageNum === totalPages) {
-//         const sigY = borderY - 10;
-//         doc.setDrawColor(0, 0, 0);
-//         doc.setLineDash([2, 1], 0);
-//         doc.line(14, sigY, 80, sigY);
-//         doc.setLineDash([]);
-//         doc.text("Authorized Signature", 14, sigY + 5);
-//       }
+  //       // Signature line
+  //       if (pageNum === totalPages) {
+  //         const sigY = borderY - 10;
+  //         doc.setDrawColor(0, 0, 0);
+  //         doc.setLineDash([2, 1], 0);
+  //         doc.line(14, sigY, 80, sigY);
+  //         doc.setLineDash([]);
+  //         doc.text("Authorized Signature", 14, sigY + 5);
+  //       }
 
-//       // Company info
-//       const companyInfo = [
-//         "Haitian Middle East LLC",
-//         "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
-//         "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
-//       ];
-//       let footerY = borderY + 6;
-//       companyInfo.forEach((line) => {
-//         doc.text(line, pageWidth / 2, footerY, { align: "center" });
-//         footerY += 5;
-//       });
+  //       // Company info
+  //       const companyInfo = [
+  //         "Haitian Middle East LLC",
+  //         "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
+  //         "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
+  //       ];
+  //       let footerY = borderY + 6;
+  //       companyInfo.forEach((line) => {
+  //         doc.text(line, pageWidth / 2, footerY, { align: "center" });
+  //         footerY += 5;
+  //       });
 
-//       // Page number
-//       doc.text(
-//         `Page ${pageNum} of ${totalPages}`,
-//         pageWidth / 2,
-//         pageHeight - 5,
-//         { align: "center" }
-//       );
-//     };
+  //       // Page number
+  //       doc.text(
+  //         `Page ${pageNum} of ${totalPages}`,
+  //         pageWidth / 2,
+  //         pageHeight - 5,
+  //         { align: "center" }
+  //       );
+  //     };
 
-//     // Table
-//     // autoTable(doc, {
-//     //   head: [["#", "Item & Description", "Qty"]],
-//     //   body: items.map((item, idx) => [
-//     //     idx + 1,
-//     //     `${item.itemDescription || ""}\n${item.partNumber || ""}`,
-//     //     item.quantity || "",
-//     //   ]),
-//     //   margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
-//     //   styles: {
-//     //     fontSize: 11,
-//     //     cellPadding: 3,
-//     //     valign: "middle",
-//     //     textColor: [0, 0, 0],
-//     //   },
-//     //   headStyles: {
-//     //     fillColor: [100, 100, 100],
-//     //     textColor: [255, 255, 255],
-//     //     halign: "left",
-//     //   },
-//     //   alternateRowStyles: { fillColor: [245, 245, 245] },
-//     //   columnStyles: {
-//     //     0: { halign: "center", cellWidth: 10 },
-//     //     1: { halign: "left", cellWidth: 150 },
-//     //     2: { halign: "left", cellWidth: 22 },
-//     //   },
-//     //   pageBreak: "auto",
-//     //   didDrawPage: () => {
-//     //     drawHeader();
-//     //   },
-//     // });
+  //     // Table
+  //     // autoTable(doc, {
+  //     //   head: [["#", "Item & Description", "Qty"]],
+  //     //   body: items.map((item, idx) => [
+  //     //     idx + 1,
+  //     //     `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+  //     //     item.quantity || "",
+  //     //   ]),
+  //     //   margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+  //     //   styles: {
+  //     //     fontSize: 11,
+  //     //     cellPadding: 3,
+  //     //     valign: "middle",
+  //     //     textColor: [0, 0, 0],
+  //     //   },
+  //     //   headStyles: {
+  //     //     fillColor: [100, 100, 100],
+  //     //     textColor: [255, 255, 255],
+  //     //     halign: "left",
+  //     //   },
+  //     //   alternateRowStyles: { fillColor: [245, 245, 245] },
+  //     //   columnStyles: {
+  //     //     0: { halign: "center", cellWidth: 10 },
+  //     //     1: { halign: "left", cellWidth: 150 },
+  //     //     2: { halign: "left", cellWidth: 22 },
+  //     //   },
+  //     //   pageBreak: "auto",
+  //     //   didDrawPage: () => {
+  //     //     drawHeader();
+  //     //   },
+  //     // });
 
-//     autoTable(doc, {
-//   head: [["#", "Item & Description", "Qty"]],
-//   body: items.map((item, idx) => [
-//     idx + 1,
-//     `${item.itemDescription || ""}\n${item.partNumber || ""}`,
-//     item.quantity || "",
-//   ]),
-//   margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
-//   styles: {
-//     fontSize: 11,
-//     cellPadding: 3,
-//     valign: "middle",
-//     textColor: [0, 0, 0], // Black text everywhere
-//     lineWidth: 0.2,        // Thin border
-//     lineColor: [0, 0, 0],  // Black grid
-//   },
-//   headStyles: {
-//     fillColor: [255, 255, 255], // White background (no gray)
-//     textColor: [0, 0, 0],       // Black header text
-//     halign: "left",
-//     lineWidth: 0.2,
-//     lineColor: [0, 0, 0],
-//   },
-//   alternateRowStyles: { fillColor: [255, 255, 255] }, // No shading
-//   columnStyles: {
-//     0: { halign: "center", cellWidth: 10 },
-//     1: { halign: "center", cellWidth: 150 },
-//     2: { halign: "center", cellWidth: 22 },
-//   },
-//   pageBreak: "auto",
-//   didDrawPage: () => {
-//     drawHeader();
-//   },
-// });
+  //     autoTable(doc, {
+  //   head: [["#", "Item & Description", "Qty"]],
+  //   body: items.map((item, idx) => [
+  //     idx + 1,
+  //     `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+  //     item.quantity || "",
+  //   ]),
+  //   margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+  //   styles: {
+  //     fontSize: 11,
+  //     cellPadding: 3,
+  //     valign: "middle",
+  //     textColor: [0, 0, 0], // Black text everywhere
+  //     lineWidth: 0.2,        // Thin border
+  //     lineColor: [0, 0, 0],  // Black grid
+  //   },
+  //   headStyles: {
+  //     fillColor: [255, 255, 255], // White background (no gray)
+  //     textColor: [0, 0, 0],       // Black header text
+  //     halign: "left",
+  //     lineWidth: 0.2,
+  //     lineColor: [0, 0, 0],
+  //   },
+  //   alternateRowStyles: { fillColor: [255, 255, 255] }, // No shading
+  //   columnStyles: {
+  //     0: { halign: "center", cellWidth: 10 },
+  //     1: { halign: "center", cellWidth: 150 },
+  //     2: { halign: "center", cellWidth: 22 },
+  //   },
+  //   pageBreak: "auto",
+  //   didDrawPage: () => {
+  //     drawHeader();
+  //   },
+  // });
 
+  //     // Footer for all pages
+  //     const totalPages = doc.getNumberOfPages();
+  //     for (let i = 1; i <= totalPages; i++) {
+  //       doc.setPage(i);
+  //       drawFooter(i, totalPages);
+  //     }
 
-//     // Footer for all pages
-//     const totalPages = doc.getNumberOfPages();
-//     for (let i = 1; i <= totalPages; i++) {
-//       doc.setPage(i);
-//       drawFooter(i, totalPages);
-//     }
+  //     if (saveLocally) {
+  //       doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+  //     }
+  //     return doc;
+  //   };
 
-//     if (saveLocally) {
-//       doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
-//     }
-//     return doc;
-//   };
+  const generateDeliveryNotePDF = (
+    formValues,
+    items = [],
+    saveLocally = true
+  ) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const BOTTOM_MARGIN = 65;
+    const rightX = 125; // Right column start X
 
-const generateDeliveryNotePDF = (
-  formValues,
-  items = [],
-  saveLocally = true
-) => {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.width;
-  const pageHeight = doc.internal.pageSize.height;
-  const BOTTOM_MARGIN = 65;
-  const rightX = 125; // Right column start X
-
-  doc.setFontSize(10);
-
-  // Wrap Deliver To lines (left column)
-  const deliverToLines = [
-    ...(formValues.customername ? [formValues.customername] : []),
-    ...(formValues.address ? formValues.address.split("\n") : []),
-  ].flatMap((line) => doc.splitTextToSize(line, 100));
-
-  // Calculate header height only from left column
-  const leftHeight = deliverToLines.length * 5 + 6;
-  const HEADER_HEIGHT = 50 + leftHeight;
-
-  // Draw header
-  const drawHeader = () => {
-    // Logo
-    doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
-
-    // Title & delivery info
-    doc.setFontSize(30);
-    doc.text("Delivery Note", rightX, 20);
-    doc.setFontSize(13);
-    doc.text(
-      `Delivery Note Number: ${formValues.deliveryNumber || ""}`,
-      rightX,
-      30
-    );
-    doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
-
-    const startY = 50;
-
-    // LEFT column (Deliver To)
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(13);
-    doc.text("Deliver To:", 14, startY);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text(deliverToLines, 14, startY + 6);
-
-    // ✅ Removed Delivery Type completely
-  };
-
-  // Draw footer
-  const drawFooter = (pageNum, totalPages) => {
     doc.setFontSize(10);
-    const borderY = pageHeight - 30;
 
-    // Black border line
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(14, borderY, pageWidth - 14, borderY);
+    // Wrap Deliver To lines (left column)
+    const deliverToLines = [
+      ...(formValues.customername ? [formValues.customername] : []),
+      ...(formValues.address ? formValues.address.split("\n") : []),
+    ].flatMap((line) => doc.splitTextToSize(line, 100));
 
-    // Signature lines (only on last page)
-    if (pageNum === totalPages) {
-      const sigY = borderY - 10;
+    // Calculate header height only from left column
+    const leftHeight = deliverToLines.length * 5 + 6;
+    const HEADER_HEIGHT = 50 + leftHeight;
+
+    // Draw header
+    const drawHeader = () => {
+      // Logo
+      doc.addImage(HaitianLogo, "PNG", 10, 10, 70, 25);
+
+      // Title & delivery info
+      doc.setFontSize(30);
+      doc.text("Delivery Note", rightX, 20);
+      doc.setFontSize(13);
+      doc.text(
+        `Delivery Note Number: ${formValues.deliveryNumber || ""}`,
+        rightX,
+        30
+      );
+      doc.text(`Delivery Date: ${formValues.date || ""}`, rightX, 36);
+
+      const startY = 50;
+
+      // LEFT column (Deliver To)
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(13);
+      doc.text("Deliver To:", 14, startY);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(deliverToLines, 14, startY + 6);
+
+      // ✅ Removed Delivery Type completely
+    };
+
+    // Draw footer
+    const drawFooter = (pageNum, totalPages) => {
+      doc.setFontSize(10);
+      const borderY = pageHeight - 30;
+
+      // Black border line
       doc.setDrawColor(0, 0, 0);
-      doc.setLineDash([2, 1], 0);
+      doc.setLineWidth(0.5);
+      doc.line(14, borderY, pageWidth - 14, borderY);
 
-      // Left side (Received By)
-      doc.line(14, sigY, 80, sigY);
-      doc.text("Received By", 14, sigY + 5);
+      // Signature lines (only on last page)
+      if (pageNum === totalPages) {
+        const sigY = borderY - 10;
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineDash([2, 1], 0);
 
-      // Right side (Delivered By)
-      doc.line(pageWidth - 80, sigY, pageWidth - 14, sigY);
-      doc.text("Delivered By", pageWidth - 80, sigY + 5);
+        // Left side (Received By)
+        doc.line(14, sigY, 80, sigY);
+        doc.text("Received By", 14, sigY + 5);
 
-      doc.setLineDash([]);
+        // Right side (Delivered By)
+        doc.line(pageWidth - 80, sigY, pageWidth - 14, sigY);
+        doc.text("Delivered By", pageWidth - 80, sigY + 5);
+
+        doc.setLineDash([]);
+      }
+
+      // Company info
+      // const companyInfo = [
+      //   "Haitian Middle East LLC",
+      //   "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
+      //   "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
+      // ];
+      // let footerY = borderY + 6;
+      // companyInfo.forEach((line) => {
+      //   doc.text(line, pageWidth / 2, footerY, { align: "center" });
+      //   footerY += 5;
+      // });
+
+      // Company info
+      const companyInfo = [
+        { text: "Haitian Middle East LLC", bold: true },
+        { text: "Umm El Thoub, Umm Al Quwain, United Arab Emirates" },
+        {
+          text: "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
+        },
+      ];
+      let footerY = borderY + 6;
+      companyInfo.forEach((line) => {
+        if (line.bold) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(12);
+        } else {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+        }
+        doc.text(line.text, pageWidth / 2, footerY, { align: "center" });
+        footerY += 5;
+      });
+
+      // Page number
+      doc.text(
+        `Page ${pageNum} of ${totalPages}`,
+        pageWidth / 2,
+        pageHeight - 5,
+        { align: "center" }
+      );
+    };
+
+    // Table
+    autoTable(doc, {
+      head: [["S.No", "Item & Description", "Qty"]],
+      body: items.map((item, idx) => [
+        idx + 1,
+        // `${item.itemDescription || ""}\n${item.partNumber || ""}`,
+        [item.itemDescription || "", item.partNumber || ""].join("\n"),
+        item.quantity || "",
+      ]),
+      margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
+      styles: {
+        fontSize: 11,
+        lineHeight: 1, // tighter multi-line spacing
+        cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }, // compact padding
+        valign: "middle",
+        textColor: [0, 0, 0],
+        lineWidth: 0.4,
+        lineColor: [0, 0, 0],
+      },
+
+      headStyles: {
+        fillColor: [255, 255, 255], // White background
+        textColor: [0, 0, 0], // Black header text
+        halign: "center", // ✅ Center align only header
+        lineWidth: 0.4,
+        lineColor: [0, 0, 0],
+      },
+      bodyStyles: {
+        lineWidth: 0.4,
+        lineColor: [0, 0, 0],
+      },
+
+      alternateRowStyles: { fillColor: [255, 255, 255] },
+      columnStyles: {
+        0: { halign: "center", cellWidth: 15 },
+        1: { halign: "left" },
+        // 1: { halign: "left", cellWidth: 145 },
+
+        2: { halign: "center", cellWidth: 21 },
+      },
+      pageBreak: "auto",
+      didDrawPage: () => {
+        drawHeader();
+      },
+    });
+
+    // Footer for all pages
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      drawFooter(i, totalPages);
     }
 
-    // Company info
-    // const companyInfo = [
-    //   "Haitian Middle East LLC",
-    //   "Umm El Thoub, Umm Al Quwain, United Arab Emirates",
-    //   "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com",
-    // ];
-    // let footerY = borderY + 6;
-    // companyInfo.forEach((line) => {
-    //   doc.text(line, pageWidth / 2, footerY, { align: "center" });
-    //   footerY += 5;
-    // });
-
-    // Company info
-const companyInfo = [
-  { text: "Haitian Middle East LLC", bold: true },
-  { text: "Umm El Thoub, Umm Al Quwain, United Arab Emirates" },
-  { text: "Phone: +971 688 457 78  Email: ask@haitianme.com   Web: www.haitianme.com" },
-];
-let footerY = borderY + 6;
-companyInfo.forEach((line) => {
-  if (line.bold) {
-    doc.setFont("helvetica", "bold");
-        doc.setFontSize(12);
-
-  } else {
-    doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-
-  }
-  doc.text(line.text, pageWidth / 2, footerY, { align: "center" });
-  footerY += 5;
-});
-
-
-    // Page number
-    doc.text(
-      `Page ${pageNum} of ${totalPages}`,
-      pageWidth / 2,
-      pageHeight - 5,
-      { align: "center" }
-    );
+    if (saveLocally) {
+      doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
+    }
+    return doc;
   };
-
-  // Table
-autoTable(doc, {
-  head: [["S.No", "Item & Description", "Qty"]],
-  body: items.map((item, idx) => [
-    idx + 1,
-    // `${item.itemDescription || ""}\n${item.partNumber || ""}`,
-     [item.itemDescription || "", item.partNumber || ""].join("\n"), 
-    item.quantity || "",
-  ]),
-  margin: { top: HEADER_HEIGHT, bottom: BOTTOM_MARGIN },
-styles: {
-  fontSize: 11,
-  lineHeight: 1, // tighter multi-line spacing
-  cellPadding: { top: 2, right: 3, bottom: 2, left: 3 }, // compact padding
-  valign: "middle",
-  textColor: [0, 0, 0],
-  lineWidth: 0.4,
-  lineColor: [0, 0, 0],
-},
-
-  headStyles: {
-    fillColor: [255, 255, 255], // White background
-    textColor: [0, 0, 0],       // Black header text
-    halign: "center",           // ✅ Center align only header
-    lineWidth: 0.4,
-    lineColor: [0, 0, 0],
-  },
-    bodyStyles: {
-    lineWidth: 0.4,      
-    lineColor: [0, 0, 0],
-  },
- 
-  alternateRowStyles: { fillColor: [255, 255, 255] }, 
-  columnStyles: {
-    0: { halign: "center", cellWidth: 15 },
-    1: { halign: "left", }, 
-        // 1: { halign: "left", cellWidth: 145 }, 
-
-    2: { halign: "center", cellWidth: 21 },   
-  },
-  pageBreak: "auto",
-  didDrawPage: () => {
-    drawHeader();
-  },
-});
-
-
-
-
-  // Footer for all pages
-  const totalPages = doc.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    drawFooter(i, totalPages);
-  }
-
-  if (saveLocally) {
-    doc.save(`DeliveryNote_${formValues.deliveryNumber || "Unknown"}.pdf`);
-  }
-  return doc;
-};
-
 
   const handleDownloadPDF = async (deliveryNumber) => {
     setDownloading(true);
@@ -3321,6 +3344,7 @@ styles: {
                   onFinish={handleSubmit}
                   className="mt-3 mt-lg-3"
                   disabled={loading}
+                  style={{fontFamily: "Poppins, sans-serif !important"}}
                 >
                   <div className="row mt-3">
                     <div className="row m-0 p-0">
@@ -3409,8 +3433,11 @@ styles: {
                             />
                           )} */}
 
-                            <Input  placeholder="Delivery date" readOnly value={form.getFieldValue("date")} />
-
+                          <Input
+                            placeholder="Delivery date"
+                            readOnly
+                            value={form.getFieldValue("date")}
+                          />
                         </Form.Item>
                       </div>
                     </div>
@@ -3706,16 +3733,16 @@ styles: {
                     >
                       Reset
                     </Button>
-                       {username === "Admin" && (
-
-                    <Button
-                      icon={<ExportOutlined />}
-                      onClick={handleExport}
-                      size="large"
-                      className="exportButton"
-                    >
-                      Export
-                    </Button>)}
+                    {username === "Admin" && (
+                      <Button
+                        icon={<ExportOutlined />}
+                        onClick={handleExport}
+                        size="large"
+                        className="exportButton"
+                      >
+                        Export
+                      </Button>
+                    )}
                   </div>
 
                   {/* <Table
@@ -3730,20 +3757,17 @@ styles: {
                     bordered
                   /> */}
 
-
-
-<Table
-  columns={fetchedTablecolumns}
-  dataSource={sortedData.map((item, index) => ({
-    key: index,
-    ...item,
-  }))}
-  loading={loadingFetchedData}
-  pagination={{ pageSize: 10 }}
-  scroll={{ x: "max-content" }}
-  bordered
-/>
-
+                  <Table
+                    columns={fetchedTablecolumns}
+                    dataSource={sortedData.map((item, index) => ({
+                      key: index,
+                      ...item,
+                    }))}
+                    loading={loadingFetchedData}
+                    pagination={{ pageSize: 10 }}
+                    scroll={{ x: "max-content" }}
+                    bordered
+                  />
                 </div>
 
                 <Modal

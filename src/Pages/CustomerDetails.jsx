@@ -31,11 +31,12 @@ export default function CustomerDetails({ username }) {
   const [ownerLoading, setOwnerLoading] = useState(false);
 
   const [ownerOptions, setOwnerOptions] = useState([]);
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxAbi1evdPX3P6hWUVUVVnEuTWl_BAuo_7ya5bnqVXyv9nZfOxejPDKCI9Xaqm88gMPrw/exec"
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec"
 
   useEffect(() => {
     fetchCustomerOwners();
   }, []);
+  
   const fetchCustomerOwners = async () => {
     setOwnerLoading(true);
     try {
