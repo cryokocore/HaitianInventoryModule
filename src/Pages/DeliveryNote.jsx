@@ -74,7 +74,7 @@ function parseToDayjs(value) {
   return d.isValid() ? d : null;
 }
 
-export default function DeliveryNote({ username }) {
+export default function DeliveryNote({ user }) {
   const [form] = Form.useForm();
   const [viewForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -110,8 +110,10 @@ export default function DeliveryNote({ username }) {
 
   const displayData = [{ key: "input", isInput: true }, ...dataSource];
   const [customerList, setCustomerList] = useState([]);
+  const access = user?.access?.["Delivery Note"] || "No Access";
+
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec";
+    "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec";
 
   // const fetchInitialData = async () => {
   //   try {
@@ -1586,7 +1588,7 @@ export default function DeliveryNote({ username }) {
           modeOfDelivery: values.modeOfDelivery,
           reference: values.reference,
           items: JSON.stringify(dataSource),
-          userName: username || "-",
+          userName: user || "-",
         }),
       });
 
@@ -1691,6 +1693,13 @@ export default function DeliveryNote({ username }) {
       setLoading(false);
     }
   };
+  if (access === "No Access") {
+    return (
+      <h2 style={{ padding: 20 }}>
+        You do not have access to Customer Details
+      </h2>
+    );
+  }
 
   const fetchedTablecolumns = [
     {
@@ -3280,6 +3289,16 @@ export default function DeliveryNote({ username }) {
 
   
   `;
+
+  if (access === "No Access") {
+    return (
+      <h2 style={{ padding: 20 }}>You do not have access to Delivery Notes</h2>
+    );
+  }
+
+  const readOnly = access === "Read";
+  const canWrite = access === "Read/Write" || access === "Full Control";
+  const isFullControl = access === "Full Control";
   return (
     <>
       <style>{styl}</style>
@@ -3298,57 +3317,59 @@ export default function DeliveryNote({ username }) {
               style={{ color: "#0D3884" }}
             >
               (Record of goods delivered, including item list, delivery date,
-              and reference details)
+              reference details, etc.)
             </p>
           </div>
           <div className="row d-flex flex-row mt-4 ">
             <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly rounded-4">
-              <div className="col-12 p-3 p-lg-4  ">
-                <div className="d-flex align-items-center gap-2 mb-1">
-                  <div
-                    className="d-flex align-items-center justify-content-center"
-                    style={{
-                      backgroundColor: "#e8f0fe",
-                      borderRadius: "12px",
-                      width: "40px",
-                      height: "40px",
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={faListCheck}
-                      size="lg"
-                      style={{ color: "#0D3884" }}
-                    />
-                  </div>
-                  <div>
-                    <div
-                      className="fw-bold m-0 p-0"
-                      style={{ fontSize: "20px", color: "#0D3884" }}
-                    >
-                      Delivery note information
+              <div className="col-12 p-3 p-lg-4 ">
+                {!readOnly && (
+                  <>
+                    <div className="d-flex align-items-center gap-2 mb-1">
+                      <div
+                        className="d-flex align-items-center justify-content-center"
+                        style={{
+                          backgroundColor: "#e8f0fe",
+                          borderRadius: "12px",
+                          width: "40px",
+                          height: "40px",
+                        }}
+                      >
+                        <FontAwesomeIcon
+                          icon={faListCheck}
+                          size="lg"
+                          style={{ color: "#0D3884" }}
+                        />
+                      </div>
+                      <div>
+                        <div
+                          className="fw-bold m-0 p-0"
+                          style={{ fontSize: "20px", color: "#0D3884" }}
+                        >
+                          Delivery note information
+                        </div>
+                        <div
+                          className="m-0 p-0"
+                          style={{ fontSize: "14px", color: "#0D3884" }}
+                        >
+                          Provide the details about delivery note
+                        </div>
+                      </div>
                     </div>
-                    <div
-                      className="m-0 p-0"
-                      style={{ fontSize: "14px", color: "#0D3884" }}
+
+                    <div className="border border-1"></div>
+
+                    <Form
+                      form={form}
+                      layout="vertical"
+                      onFinish={handleSubmit}
+                      className="mt-3 mt-lg-3"
+                      disabled={loading || readOnly}
+                      style={{ fontFamily: "Poppins, sans-serif !important" }}
                     >
-                      Provide the details about delivery note
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border border-1"></div>
-
-                <Form
-                  form={form}
-                  layout="vertical"
-                  onFinish={handleSubmit}
-                  className="mt-3 mt-lg-3"
-                  disabled={loading}
-                  style={{fontFamily: "Poppins, sans-serif !important"}}
-                >
-                  <div className="row mt-3">
-                    <div className="row m-0 p-0">
-                      {/* <div className="col-6">
+                      <div className="row mt-3">
+                        <div className="row m-0 p-0">
+                          {/* <div className="col-6">
                         <Form.Item
                           label="Delivery Number"
                           name="deliveryNumber"
@@ -3372,45 +3393,45 @@ export default function DeliveryNote({ username }) {
                           />
                         </Form.Item>
                       </div> */}
-                      <div className="col-6">
-                        <Form.Item
-                          label="Delivery Number"
-                          name="deliveryNumber"
-                          className="fw-bold"
-                          rules={[
-                            {
-                              required: true,
-                              message: "",
-                            },
-                          ]}
-                        >
-                          <div>
-                            <Input
-                              placeholder="Delivery number"
-                              readOnly
-                              value={
-                                loadingDeliveryNumber
-                                  ? "Fetching..."
-                                  : form.getFieldValue("deliveryNumber")
-                              }
-                            />
+                          <div className="col-6">
+                            <Form.Item
+                              label="Delivery Number"
+                              name="deliveryNumber"
+                              className="fw-bold"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "",
+                                },
+                              ]}
+                            >
+                              <div>
+                                <Input
+                                  placeholder="Delivery number"
+                                  readOnly
+                                  value={
+                                    loadingDeliveryNumber
+                                      ? "Fetching..."
+                                      : form.getFieldValue("deliveryNumber")
+                                  }
+                                />
+                              </div>
+                            </Form.Item>
                           </div>
-                        </Form.Item>
-                      </div>
 
-                      <div className="col-6">
-                        <Form.Item
-                          label="Date"
-                          name="date"
-                          className="fw-bold"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Date is required",
-                            },
-                          ]}
-                        >
-                          {/* {username === "Admin" ? (
+                          <div className="col-6">
+                            <Form.Item
+                              label="Date"
+                              name="date"
+                              className="fw-bold"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Date is required",
+                                },
+                              ]}
+                            >
+                              {/* {username === "Admin" ? (
                             <DatePicker
                               format="DD-MM-YYYY"
                               value={form.getFieldValue("date")} // ✅ dayjs object
@@ -3433,200 +3454,220 @@ export default function DeliveryNote({ username }) {
                             />
                           )} */}
 
-                          <Input
-                            placeholder="Delivery date"
-                            readOnly
-                            value={form.getFieldValue("date")}
+                              <Input
+                                placeholder="Delivery date"
+                                readOnly
+                                value={form.getFieldValue("date")}
+                              />
+                            </Form.Item>
+                          </div>
+                        </div>
+                        <Form.Item
+                          label="Customer Name"
+                          name="customername"
+                          className="fw-bold"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please input customer name!",
+                            },
+                          ]}
+                        >
+                          <Select
+                            showSearch
+                            placeholder="Search customer name"
+                            loading={loadingCustomerName}
+                            disabled={
+                              loadingCustomerName || loading || readOnly
+                            }
+                            notFoundContent={
+                              loadingCustomerName
+                                ? "Fetching..."
+                                : "No results found"
+                            }
+                            filterOption={(input, option) =>
+                              option.children
+                                .toLowerCase()
+                                .includes(input.toLowerCase())
+                            }
+                            // onChange={(value) => {
+                            //   const customer = customerList.find(
+                            //     (c) => c.customername === value
+                            //   );
+                            //   if (customer) {
+                            //     form.setFieldsValue({ address: customer.address });
+                            //   }
+                            // }}
+
+                            onChange={(value) => {
+                              const customer = customerList.find(
+                                (c) =>
+                                  c.customername?.trim().toLowerCase() ===
+                                  value.trim().toLowerCase()
+                              );
+                              if (customer) {
+                                form.setFieldsValue({
+                                  address: customer.address,
+                                });
+                                setPaymentTerms(customer.paymentTerms || "");
+                              } else {
+                                form.setFieldsValue({ address: "" });
+                                setPaymentTerms("");
+                              }
+                            }}
+                          >
+                            {customerList.map((customer) => (
+                              <Select.Option
+                                key={customer.customername}
+                                value={customer.customername}
+                              >
+                                {customer.customername}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                          label="Address"
+                          name="address"
+                          className="fw-bold"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please enter the address!",
+                            },
+                          ]}
+                        >
+                          <Input.TextArea
+                            placeholder="Enter address"
+                            rows={6}
                           />
                         </Form.Item>
-                      </div>
-                    </div>
-                    <Form.Item
-                      label="Customer Name"
-                      name="customername"
-                      className="fw-bold"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please input customer name!",
-                        },
-                      ]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Search customer name"
-                        loading={loadingCustomerName}
-                        disabled={loadingCustomerName}
-                        notFoundContent={
-                          loadingCustomerName
-                            ? "Fetching..."
-                            : "No results found"
-                        }
-                        filterOption={(input, option) =>
-                          option.children
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        // onChange={(value) => {
-                        //   const customer = customerList.find(
-                        //     (c) => c.customername === value
-                        //   );
-                        //   if (customer) {
-                        //     form.setFieldsValue({ address: customer.address });
-                        //   }
-                        // }}
-
-                        onChange={(value) => {
-                          const customer = customerList.find(
-                            (c) =>
-                              c.customername?.trim().toLowerCase() ===
-                              value.trim().toLowerCase()
-                          );
-                          if (customer) {
-                            form.setFieldsValue({ address: customer.address });
-                            setPaymentTerms(customer.paymentTerms || "");
-                          } else {
-                            form.setFieldsValue({ address: "" });
-                            setPaymentTerms("");
-                          }
-                        }}
-                      >
-                        {customerList.map((customer) => (
-                          <Select.Option
-                            key={customer.customername}
-                            value={customer.customername}
-                          >
-                            {customer.customername}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                      label="Address"
-                      name="address"
-                      className="fw-bold"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please enter the address!",
-                        },
-                      ]}
-                    >
-                      <Input.TextArea placeholder="Enter address" rows={6} />
-                    </Form.Item>
-                    <div className="row m-0 p-0">
-                      <div className="col-6">
-                        <Form.Item
-                          label="Mode of delivery"
-                          name="modeOfDelivery"
-                          className="fw-bold"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please enter the mode of delivery!",
-                            },
-                          ]}
-                        >
-                          <Input placeholder="Enter mode of delivery" />
+                        <div className="row m-0 p-0">
+                          <div className="col-6">
+                            <Form.Item
+                              label="Mode of delivery"
+                              name="modeOfDelivery"
+                              className="fw-bold"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please enter the mode of delivery!",
+                                },
+                              ]}
+                            >
+                              <Input placeholder="Enter mode of delivery" />
+                            </Form.Item>
+                          </div>
+                          <div className="col-6">
+                            <Form.Item
+                              label="Reference "
+                              name="reference"
+                              className="fw-bold"
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Please enter the reference!",
+                                },
+                              ]}
+                            >
+                              <Input placeholder="Enter reference" />
+                            </Form.Item>
+                          </div>
+                        </div>
+                        <Form.Item>
+                          <Table
+                            columns={columns}
+                            dataSource={displayData}
+                            pagination={{
+                              pageSize: 10,
+                            }}
+                            rowKey="key"
+                            scroll={{ x: "max-content" }}
+                            size="middle"
+                            bordered
+                          />
                         </Form.Item>
+
+                        {!readOnly && (
+                          <div className="col-7 text-center m-auto d-flex">
+                            <Button
+                              htmlType="submit"
+                              size="large"
+                              className="submitButton "
+                              loading={loading}
+                              disabled={loading}
+                            >
+                              {loading
+                                ? "Submitting Delivery Note"
+                                : "Submit Delivery Note"}
+                            </Button>
+                            <Button
+                              htmlType="button"
+                              size="large"
+                              className="clearButton  ms-3"
+                              onClick={() => {
+                                const values = form.getFieldsValue();
+                                const isEmpty = Object.values(values).every(
+                                  (value) =>
+                                    value === undefined ||
+                                    value === null ||
+                                    value === "" ||
+                                    (Array.isArray(value) && value.length === 0)
+                                );
+
+                                if (isEmpty) {
+                                  notification.info({
+                                    message: "Nothing to clear",
+                                    description:
+                                      "All fields are already empty.",
+                                  });
+                                } else {
+                                  const preservedFields = {
+                                    deliveryNumber: values.deliveryNumber,
+                                    date: values.date,
+                                  };
+                                  // form.resetFields();
+                                  setDataSource([]);
+                                  setInputRow({
+                                    partNumber: "",
+                                    itemDescription: "",
+                                    quantity: "",
+                                    unit: "",
+                                    stockInHand: "",
+                                  });
+                                  form.setFields([
+                                    { name: "customername", value: undefined },
+                                    { name: "address", value: undefined },
+                                    {
+                                      name: "modeOfDelivery",
+                                      value: undefined,
+                                    },
+                                    { name: "reference", value: undefined },
+                                  ]);
+                                  form.setFieldsValue(preservedFields);
+                                  notification.success({
+                                    message: "Success",
+                                    description: "Form cleared successfully!",
+                                  });
+                                }
+                              }}
+                            >
+                              Clear Input
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                      <div className="col-6">
-                        <Form.Item
-                          label="Reference "
-                          name="reference"
-                          className="fw-bold"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please enter the reference!",
-                            },
-                          ]}
-                        >
-                          <Input placeholder="Enter reference" />
-                        </Form.Item>
-                      </div>
-                    </div>
-                    <Form.Item>
-                      <Table
-                        columns={columns}
-                        dataSource={displayData}
-                        pagination={{
-                          pageSize: 10,
-                        }}
-                        rowKey="key"
-                        scroll={{ x: "max-content" }}
-                        size="middle"
-                        bordered
-                      />
-                    </Form.Item>
+                    </Form>
+                  </>
+                )}
 
-                    <div className="col-7 text-center m-auto d-flex">
-                      <Button
-                        htmlType="submit"
-                        size="large"
-                        className="submitButton "
-                        loading={loading}
-                        disabled={loading}
-                      >
-                        {loading
-                          ? "Submitting Delivery Note"
-                          : "Submit Delivery Note"}
-                      </Button>
-                      <Button
-                        htmlType="button"
-                        size="large"
-                        className="clearButton  ms-3"
-                        onClick={() => {
-                          const values = form.getFieldsValue();
-                          const isEmpty = Object.values(values).every(
-                            (value) =>
-                              value === undefined ||
-                              value === null ||
-                              value === "" ||
-                              (Array.isArray(value) && value.length === 0)
-                          );
-
-                          if (isEmpty) {
-                            notification.info({
-                              message: "Nothing to clear",
-                              description: "All fields are already empty.",
-                            });
-                          } else {
-                            const preservedFields = {
-                              deliveryNumber: values.deliveryNumber,
-                              date: values.date,
-                            };
-                            // form.resetFields();
-                            setDataSource([]);
-                            setInputRow({
-                              partNumber: "",
-                              itemDescription: "",
-                              quantity: "",
-                              unit: "",
-                              stockInHand: "",
-                            });
-                            form.setFields([
-                              { name: "customername", value: undefined },
-                              { name: "address", value: undefined },
-                              { name: "modeOfDelivery", value: undefined },
-                              { name: "reference", value: undefined },
-                            ]);
-                            form.setFieldsValue(preservedFields);
-                            notification.success({
-                              message: "Success",
-                              description: "Form cleared successfully!",
-                            });
-                          }
-                        }}
-                      >
-                        Clear Input
-                      </Button>
-                    </div>
-                  </div>
-                </Form>
-
-                <div className="d-flex align-items-center gap-2 mb-1 mt-5 pt-2">
+                <div
+                  className={`d-flex align-items-center gap-2 ${
+                    readOnly ? "mb-1" : "mb-1 mt-5 pt-2"
+                  }`}
+                >
+                  {" "}
                   <div
                     className="d-flex align-items-center justify-content-center"
                     style={{
@@ -3733,7 +3774,7 @@ export default function DeliveryNote({ username }) {
                     >
                       Reset
                     </Button>
-                    {username === "Admin" && (
+                    {isFullControl && (
                       <Button
                         icon={<ExportOutlined />}
                         onClick={handleExport}

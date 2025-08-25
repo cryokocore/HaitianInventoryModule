@@ -45,12 +45,12 @@ export default function Login({ onLoginSuccess }) {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec",
+        "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec",
         {
           method: "POST",
           body: new URLSearchParams({
             action: "loginUser",
-            username: values.username,
+            userEmail: values.userEmail,
             password: values.password,
           }),
         }
@@ -61,10 +61,14 @@ export default function Login({ onLoginSuccess }) {
         notification.success({
           message: "Success",
           // description: `Login successful!`,
-          description: `Welcome ${values.username}!`,
+          description: `Welcome ${values.userEmail}!`,
         });
 
-        onLoginSuccess(values.username);
+        // onLoginSuccess(values.username);
+          onLoginSuccess({
+    email: values.userEmail,
+    access: data.access,
+  });
       } else {
         setShake(true);
         notification.error({
@@ -178,14 +182,18 @@ export default function Login({ onLoginSuccess }) {
                               className="me-1"
                               size="lg"
                             />
-                            Username
+                            User Email
                           </>
                         }
-                        name="username"
+                        name="userEmail"
                         rules={[
                           {
                             required: true,
-                            message: "Please input your username!",
+                            message: "Please input your email!",
+                          },
+                          {
+                            type: "email",
+                            message: "Please enter a valid email address!",
                           },
                         ]}
                       >

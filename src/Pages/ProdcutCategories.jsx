@@ -27,7 +27,7 @@ notification.config({
   duration: 3,
 });
 
-export default function ProductCategories({ username }) {
+export default function ProductCategories({ user }) {
   const [form] = Form.useForm();
   const [partNumber, setPartNumber] = useState("");
   const [description, setDescription] = useState("");
@@ -39,6 +39,7 @@ export default function ProductCategories({ username }) {
   const [auxiliariesDataSource, setAuxiliariesDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const access = user?.access?.["Product Categories"] || "No Access";
 
   const [inputRow, setInputRow] = useState({
     partNumber: "",
@@ -115,7 +116,7 @@ export default function ProductCategories({ username }) {
 
   const [stockCache, setStockCache] = useState({});
   const [loadingStockCache, setLoadingStockCache] = useState(true);
-  const [userRole, setUserRole] = useState(username);
+  const [userRole, setUserRole] = useState(user);
 
   const updateTotalPrice = (purchase, addOn, quantity) => {
     const p = parseFloat(purchase);
@@ -132,7 +133,7 @@ export default function ProductCategories({ username }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec";
+    "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -1453,7 +1454,7 @@ export default function ProductCategories({ username }) {
           machineUnit: machine.unit || "-",
           machineTotalPrice: machine.totalPrice || "-",
           machineDate: machine.date || "",
-          userName: username || "",
+          userName: user || "",
 
           consumables: i === 0 ? consumables || "" : "",
           // tools: i === 0 ? tools || "" : "",
@@ -1534,7 +1535,7 @@ export default function ProductCategories({ username }) {
           // assets: assets || "-",
           consumables: consumables || "-",
           // tools: tools || "-",
-          userName: username || "",
+          userName: user || "",
         });
 
         console.log(
@@ -4775,6 +4776,13 @@ export default function ProductCategories({ username }) {
   
 }
     `;
+  if (access === "No Access") {
+    return <h2 style={{ padding: 20 }}>You do not have access to Product Categories</h2>;
+  }
+
+  const readOnly = access === "Read";
+  const canWrite = access === "Read/Write" || access === "Full Control";
+  const isFullControl = access === "Full Control";
 
   return (
     <>
@@ -4838,7 +4846,7 @@ export default function ProductCategories({ username }) {
                   layout="vertical"
                   onFinish={handleSubmit}
                   className="mt-3 mt-lg-3"
-                  disabled={loading}
+                  disabled={loading || readOnly}
                 >
                   <div className="row mt-3">
                     <div className="rounded-2 p-2">
@@ -5311,7 +5319,7 @@ export default function ProductCategories({ username }) {
                         </div>
                       </div>
                     )}
-
+                    {!readOnly && (
                     <div className="col-7 text-center mt-4 mb-3 d-flex m-auto">
                       <Button
                         htmlType="submit"
@@ -5427,6 +5435,7 @@ export default function ProductCategories({ username }) {
                         Clear Input
                       </Button>
                     </div>
+                    )}
                   </div>
                 </Form>
               </div>

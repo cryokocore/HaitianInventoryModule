@@ -25,13 +25,19 @@ import {
 } from "antd";
 import "../App.css";
 
-export default function CustomerDetails({ username }) {
+export default function CustomerDetails({ user }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [ownerLoading, setOwnerLoading] = useState(false);
 
   const [ownerOptions, setOwnerOptions] = useState([]);
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec"
+  const access = user?.access?.["Customer Details"] || "No Access"; 
+  const readOnly = access === "Read";
+
+
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec"
+
+  
 
   useEffect(() => {
     fetchCustomerOwners();
@@ -91,7 +97,7 @@ export default function CustomerDetails({ username }) {
             paymentTerms: values.paymentTerms || "-",
             creditLimit: values.creditLimit || "-",
             deliveryTerms: values.deliveryTerms || "-",
-            userName: username || "-",
+            userName: user || "-",
           }),
         }
       );
@@ -214,8 +220,7 @@ export default function CustomerDetails({ username }) {
                   layout="vertical"
                   onFinish={handleSubmit}
                   className="mt-3 mt-lg-3"
-                  disabled={loading}
-                >
+ disabled={loading || readOnly}                  >
                   <div className="row mt-3">
                     <Form.Item
                       label="Customer Name"
@@ -722,7 +727,7 @@ export default function CustomerDetails({ username }) {
                       <Input placeholder="Enter Credit Limit" />
                     </Form.Item>
 
-                    <div className="col-7 text-center mt-5 pt-3 mb-3 d-flex m-auto">
+                   {!readOnly && ( <div className="col-7 text-center mt-5 pt-3 mb-3 d-flex m-auto">
                       <Button
                         htmlType="submit"
                         size="large"
@@ -731,6 +736,7 @@ export default function CustomerDetails({ username }) {
                       >
                         {loading ? "Adding Customer" : "Add Customer"}
                       </Button>
+                      
                       <Button
                         htmlType="button"
                         size="large"
@@ -761,7 +767,7 @@ export default function CustomerDetails({ username }) {
                       >
                         Clear Input
                       </Button>
-                    </div>
+                    </div>)}
                   </div>
                 </Form>
               </div>

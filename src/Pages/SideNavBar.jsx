@@ -1,6 +1,10 @@
 import React from "react";
 import { Menu, Button, Avatar } from "antd";
-import { UserOutlined, UserAddOutlined, FileDoneOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  UserAddOutlined,
+  FileDoneOutlined,
+} from "@ant-design/icons";
 
 import {
   AppstoreOutlined,
@@ -9,15 +13,18 @@ import {
   BarChartOutlined,
   UnorderedListOutlined,
   LogoutOutlined,
-  IdcardOutlined
+  IdcardOutlined,
 } from "@ant-design/icons";
 import "../App.css";
 import HaitianLogo from "../Images/HaitianLogo.png";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export default function SideNavBar({ onLogout, username }) {
+export default function SideNavBar({ onLogout, user }) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const access = user?.access || {};
+  const email = user?.email || "N/A";
 
   const customStyles = `
     .ant-menu {
@@ -155,9 +162,9 @@ export default function SideNavBar({ onLogout, username }) {
             /> */}
             <div className="profile-box">
               <Avatar size={55} className="profile-avatar">
-                {username?.slice(0, 2).toUpperCase() || "N/A"}
+                {email?.slice(0, 2).toUpperCase() || "N/A"}
               </Avatar>
-              <div className="profile-username">{username || "N/A"}</div>
+              <div className="profile-username">{email || "N/A"}</div>
             </div>
           </div>
           <div className="sidebar-divider mt-3" />
@@ -165,17 +172,16 @@ export default function SideNavBar({ onLogout, username }) {
           <Menu
             mode="inline"
             theme="dark"
-            selectedKeys={[location.pathname]}
-            onClick={(item) => {
-              if (item.key === "logout") onLogout();
-              else navigate(item.key);
+            selectedKeys={[`/${location.pathname.split("/")[1] || ""}`]}
+            onClick={({ key }) => {
+              if (key === "logout") onLogout();
+              else navigate(key);
             }}
             className="mt-2"
           >
             <Menu.Item key="/dashboard" icon={<PieChartOutlined />}>
               Dashboard
             </Menu.Item>
-
             <Menu.Item key="/inventory" icon={<AppstoreOutlined />}>
               Inventory
             </Menu.Item>
@@ -185,19 +191,25 @@ export default function SideNavBar({ onLogout, username }) {
             >
               Product Categories
             </Menu.Item>
-            <Menu.Item key="/customerDetails" icon={<IdcardOutlined style={{ fontSize: '17px' }} />}>
+            <Menu.Item key="/customerDetails" icon={<IdcardOutlined />}>
               Customer Details
             </Menu.Item>
-               <Menu.Item key="/deliveryNote" icon={<FileDoneOutlined style={{ fontSize: '17px' }} />}>
+            <Menu.Item key="/deliveryNote" icon={<FileDoneOutlined />}>
               Delivery Note
             </Menu.Item>
+
+            {/* { username === "Admin" ? 
+            (<Menu.Item key="/addUser" icon={<UserAddOutlined />}>
+              Add New User
+            </Menu.Item>):""} */}
+            {access["Add User"] !== "No Access" && (
+              <Menu.Item key="/addUser" icon={<UserAddOutlined />}>
+                Add New User
+              </Menu.Item>
+            )}
             <Menu.Item key="/reports" icon={<BarChartOutlined />}>
               Reports
             </Menu.Item>
-            { username === "Admin" ? 
-            (<Menu.Item key="/addUser" icon={<UserAddOutlined />}>
-              Add New User
-            </Menu.Item>):""}
           </Menu>
         </div>
 

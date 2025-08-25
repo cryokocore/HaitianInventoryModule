@@ -7,10 +7,14 @@ import "../App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
-export default function Inventory({ username }) {
+export default function Inventory({ user }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [tableDataSource, setTableDataSource] = useState();
+    const access = user?.access?.["Add User"] || "No Access";
+  const readOnly = access === "Read";
+  const canWrite = access === "Read/Write" || access === "Full Control";
+  const isFullControl = access === "Full Control";
 
 // const columns = [
 //   {
@@ -152,66 +156,130 @@ export default function Inventory({ username }) {
   
 // ];
 
-const columns = [
+// const columns = [
+//   {
+//     title: "Serial Number",
+//     dataIndex: "serialNumber",  
+//     key: "serial",
+//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//   },
+//   {
+//     title: "Part Number",
+//     dataIndex: "partNumber",  
+//     key: "partNumber",
+//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//   },
+//   {
+//     title: "Description",
+//     dataIndex: "description",  
+//     key: "description",
+//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//   },
+//   {
+//     title: "Quantity",
+//     dataIndex: "quantity",  
+//     key: "quantity",
+//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//   },
+//   {
+//     title: "Unit",
+//     dataIndex: "unit",  
+//     key: "unit",
+//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//   },
+//   ...(username === "Admin"
+//     ? [
+//         {
+//           title: "Total Price in AED",
+//           dataIndex: "totalPrice",  
+//           key: "totalPrice",
+//           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//         },
+//         {
+//           title: "Purchase Cost(per item)",
+//           dataIndex: "purchaseCost",  
+//           key: "purchaseCost",
+//           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//         },
+//         {
+//           title: "Add On Cost",
+//           dataIndex: "addOnCost",  
+//           key: "addOnCost",
+//           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//         },
+//         {
+//           title: "Selling Cost",
+//           dataIndex: "sellingCost",  
+//           key: "sellingCost",
+//           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+//         },
+//       ]
+//     : []),
+// ];
+const baseColumns = [
   {
     title: "Serial Number",
-    dataIndex: "serialNumber",  
+    dataIndex: "serialNumber",
     key: "serial",
     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
   {
     title: "Part Number",
-    dataIndex: "partNumber",  
+    dataIndex: "partNumber",
     key: "partNumber",
     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
   {
     title: "Description",
-    dataIndex: "description",  
+    dataIndex: "description",
     key: "description",
     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
   {
     title: "Quantity",
-    dataIndex: "quantity",  
+    dataIndex: "quantity",
     key: "quantity",
     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
   {
     title: "Unit",
-    dataIndex: "unit",  
+    dataIndex: "unit",
     key: "unit",
     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
   },
-  ...(username === "Admin"
-    ? [
-        {
-          title: "Total Price in AED",
-          dataIndex: "totalPrice",  
-          key: "totalPrice",
-          render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-        },
-        {
-          title: "Purchase Cost(per item)",
-          dataIndex: "purchaseCost",  
-          key: "purchaseCost",
-          render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-        },
-        {
-          title: "Add On Cost",
-          dataIndex: "addOnCost",  
-          key: "addOnCost",
-          render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-        },
-        {
-          title: "Selling Cost",
-          dataIndex: "sellingCost",  
-          key: "sellingCost",
-          render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-        },
-      ]
-    : []),
 ];
+
+// extra columns only visible to Full Control
+const adminColumns = [
+  {
+    title: "Total Price in AED",
+    dataIndex: "totalPrice",
+    key: "totalPrice",
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  },
+  {
+    title: "Purchase Cost (per item)",
+    dataIndex: "purchaseCost",
+    key: "purchaseCost",
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  },
+  {
+    title: "Add On Cost",
+    dataIndex: "addOnCost",
+    key: "addOnCost",
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  },
+  {
+    title: "Selling Cost",
+    dataIndex: "sellingCost",
+    key: "sellingCost",
+    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  },
+];
+
+// merge based on access
+const columns = isFullControl ? [...baseColumns, ...adminColumns] : baseColumns;
+
 
 const columnMapping = {
   "Serial Number": "serialNumber",
@@ -236,7 +304,7 @@ const columnMapping = {
       });
 
       const res = await fetch(
-        "https://script.google.com/macros/s/AKfycbwUC722-QJcAaAieHcIZH7AgC8_Wdkzb0FJXsF_4Hibmh_HiOKr9bU1M9J-BGPB1rKd2A/exec",
+        "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec",
         {
           method: "POST",
           body: params,
@@ -341,6 +409,12 @@ const columnMapping = {
 }   
   
   `;
+
+    if (access === "No Access") {
+    return <h2 style={{ padding: 20 }}>You do not have access to Inventory</h2>;
+  }
+
+
   return (
     <>
       <style>{styl}</style>
