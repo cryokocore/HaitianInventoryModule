@@ -45,7 +45,7 @@ export default function Login({ onLoginSuccess }) {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec",
+        "https://script.google.com/macros/s/AKfycbyRXIGs-Sgkn086oQlwp2-0go0vJQdOO3VPqHVszvL4ejK8obaGBP43vsPjhw5FHkguaQ/exec",
         {
           method: "POST",
           body: new URLSearchParams({
@@ -61,7 +61,7 @@ export default function Login({ onLoginSuccess }) {
         notification.success({
           message: "Success",
           // description: `Login successful!`,
-          description: `Welcome ${values.userEmail}!`,
+          description: `Welcome ${values.userEmail.split("@")[0]}!`,
         });
 
         // onLoginSuccess(values.username);

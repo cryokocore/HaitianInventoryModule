@@ -133,7 +133,7 @@ export default function ProductCategories({ user }) {
   };
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec";
+    "https://script.google.com/macros/s/AKfycbyRXIGs-Sgkn086oQlwp2-0go0vJQdOO3VPqHVszvL4ejK8obaGBP43vsPjhw5FHkguaQ/exec";
 
   const IMMSeriesOptions = [
     { value: "MA", label: "MA (Mars)" },
@@ -1427,6 +1427,9 @@ export default function ProductCategories({ user }) {
         // const asset = assetsDataSource[i] || {};
         const spare = dataSource[i] || {};
 
+        console.log("User object in handleSubmit:", user);
+
+
         const formData = new URLSearchParams({
           action: "addProductCategories",
           recordType: "machine",
@@ -1454,7 +1457,8 @@ export default function ProductCategories({ user }) {
           machineUnit: machine.unit || "-",
           machineTotalPrice: machine.totalPrice || "-",
           machineDate: machine.date || "",
-          userName: user || "",
+          // userName: user || "",
+userName: user?.email || "",
 
           consumables: i === 0 ? consumables || "" : "",
           // tools: i === 0 ? tools || "" : "",
@@ -1535,7 +1539,7 @@ export default function ProductCategories({ user }) {
           // assets: assets || "-",
           consumables: consumables || "-",
           // tools: tools || "-",
-          userName: user || "",
+userName: user?.email || "",
         });
 
         console.log(

@@ -113,7 +113,7 @@ export default function DeliveryNote({ user }) {
   const access = user?.access?.["Delivery Note"] || "No Access";
 
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec";
+    "https://script.google.com/macros/s/AKfycbyRXIGs-Sgkn086oQlwp2-0go0vJQdOO3VPqHVszvL4ejK8obaGBP43vsPjhw5FHkguaQ/exec";
 
   // const fetchInitialData = async () => {
   //   try {
@@ -921,13 +921,13 @@ export default function DeliveryNote({ user }) {
 
     setDataSource(updatedData);
 
-    // setInputRow({
-    //   partNumber: "",
-    //   itemDescription: "",
-    //   quantity: "",
-    //   stockInHand: "",
-    //   unit: "",
-    // });
+    setInputRow({
+      partNumber: "",
+      itemDescription: "",
+      quantity: "",
+      stockInHand: "",
+      unit: "",
+    });
   };
 
   const handleDelete = (key) => {
@@ -1588,7 +1588,8 @@ export default function DeliveryNote({ user }) {
           modeOfDelivery: values.modeOfDelivery,
           reference: values.reference,
           items: JSON.stringify(dataSource),
-          userName: user || "-",
+          // userName: user || "-",
+          userName: user?.email || ""
         }),
       });
 

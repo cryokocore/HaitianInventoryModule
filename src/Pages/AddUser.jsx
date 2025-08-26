@@ -26,6 +26,7 @@ import {
 import "../App.css";
 import { width } from "@fortawesome/free-brands-svg-icons/fa42Group";
 import { text } from "@fortawesome/fontawesome-svg-core";
+import dayjs from "dayjs";
 
 notification.config({
   maxCount: 2,
@@ -60,7 +61,7 @@ export default function AddUser({ user }) {
   const access = user?.access?.["Add User"] || "No Access";
   const readOnly = access === "Read";
   const GAS_URL =
-    "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec";
+    "https://script.google.com/macros/s/AKfycbyRXIGs-Sgkn086oQlwp2-0go0vJQdOO3VPqHVszvL4ejK8obaGBP43vsPjhw5FHkguaQ/exec";
   const fetchUsers = async () => {
     setFetching(true);
     try {
@@ -207,8 +208,11 @@ export default function AddUser({ user }) {
       const data = await res.json();
 
       if (data.success) {
-        message.success("User updated successfully!");
-
+        // message.success("User updated successfully!");
+ notification.success({
+        message: "Success",
+        description: `User updated successfully.`,
+      });
         // refresh user list
         fetchUsers();
 
@@ -216,42 +220,95 @@ export default function AddUser({ user }) {
         setIsEditModalVisible(false);
         editForm.resetFields();
       } else {
-        message.error(data.message || "Failed to update user.");
+        // message.error(data.message || "Failed to update user.");
+               notification.success({
+        message: "Error",
+        description: (data.message || "Failed to update user."),
+      });
       }
     } catch (error) {
       console.error("Update error:", error);
-      message.error("Please check the form and try again.");
+      // message.error("Please check the form and try again.");
+       notification.success({
+        message: "Error",
+        description: `Please check the form and try again.`,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const columns = [
-    { title: "User Email", dataIndex: "User Email", key: "userEmail" },
-    { title: "Modified User", dataIndex: "Modified User", key: "modifiedUser" },
-    {
-      title: "Modified Date & Time",
-      dataIndex: "Modified Date & Time",
-      key: "modifiedDate",
-    },
-    {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <>
-          <Button className="addButton" onClick={() => handleView(record)}>
-            View
-          </Button>
-          <Button
-            className="deleteButton ms-2 "
-            onClick={() => handleEdit(record)}
-          >
-            Edit
-          </Button>
-        </>
-      ),
-    },
-  ];
+//   const columns = [
+//   { title: "User Email", dataIndex: "User Email", key: "userEmail" },
+//   {
+//     title: "Modified User",
+//     dataIndex: "Modified Date & Time", 
+//     key: "modifiedUser",
+//   },
+//   {
+//     title: "Modified Date & Time",
+//     dataIndex: "Modified User", 
+//     key: "modifiedDate",
+//     render: (value) => {
+//       if (!value) return "N/A";
+//       const parsed = dayjs(value);
+//       return parsed.isValid() ? parsed.format("DD-MM-YYYY hh:mm A") : value;
+//     },
+//   },
+//   {
+//     title: "Action",
+//     key: "action",
+//     render: (_, record) => (
+//       <>
+//         <Button className="addButton" onClick={() => handleView(record)}>
+//           View
+//         </Button>
+//         <Button
+//           className="deleteButton ms-2 "
+//           onClick={() => handleEdit(record)}
+//         >
+//           Edit
+//         </Button>
+//       </>
+//     ),
+//   },
+// ];
+
+const columns = [
+  { title: "User Email", dataIndex: "User Email", key: "userEmail" },
+  {
+    title: "Modified User",
+    dataIndex: "Modified User",
+    key: "modifiedUser",
+    render: (value) => value || "N/A",
+  },
+  {
+    title: "Modified Date & Time",
+    dataIndex: "Modified Date & Time",
+    key: "modifiedDate",
+    render: (value) => value || "N/A",
+  },
+  {
+    title: "Action",
+    key: "action",
+    render: (_, record) => (
+      <>
+        <Button className="addButton" onClick={() => handleView(record)}>
+          View
+        </Button>
+        {!readOnly && (
+        <Button
+          className="deleteButton ms-2"
+          onClick={() => handleEdit(record)}
+        >
+          Edit
+        </Button>)}
+      </>
+    ),
+  },
+];
+
+
 
   const editModuleColumns = [
     {
@@ -349,7 +406,7 @@ export default function AddUser({ user }) {
     text-align: start;
     text-decoration: none;
     word-wrap: break-word;
-    background-color: #0D3883;
+    background-color: rgba(137, 137, 137, 1) !important;
     border-radius: 6px;
       border: 2px solid rgba(137, 137, 137, 0.87);
     box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
@@ -502,6 +559,8 @@ export default function AddUser({ user }) {
           <div className="row d-flex flex-row mt-4 ">
             <div className="d-flex flex-column flex-lg-row justify-content-lg-evenly rounded-4">
               <div className="col-12 p-3 p-lg-4  ">
+                {!readOnly && (
+                  <>
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <div
                     className="d-flex align-items-center justify-content-center"
@@ -690,9 +749,11 @@ export default function AddUser({ user }) {
                     )}
                   </div>
                 </Form>
+                </>)}
+                
                 <div
                   className={`d-flex align-items-center gap-2 ${
-                    readOnly ? "mb-1" : "mb-1 mt-4 pt-2"
+                    readOnly ? "mb-1 " : "mb-1 mt-4 pt-2"
                   }`}
                 >
                   {" "}
@@ -732,7 +793,7 @@ export default function AddUser({ user }) {
                   columns={columns}
                   dataSource={users}
                   rowKey={(record) => record["User Email"]}
-                  loading={loading}
+                  loading={fetching}
                   className="mt-3"
                   bordered
                 />
@@ -789,7 +850,7 @@ export default function AddUser({ user }) {
                   </div>
                   <div className="border border-1"></div>
 
-                  <Form
+                 <Form
                     form={editForm}
                     layout="vertical"
                     onFinish={handleUpdate}

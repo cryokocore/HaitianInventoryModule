@@ -1,298 +1,359 @@
 import React, { useEffect, useState } from "react";
 import "antd/dist/reset.css";
-import { Button, Form, Input, Table, Tooltip } from "antd";
+import { Button, Form, Input, Table, Tooltip, Modal } from "antd";
 import { notification } from "antd";
 // import HaitianLogo from "../Images/HaitianLogo.jpeg";
 import "../App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faEye } from "@fortawesome/free-solid-svg-icons";
+import HaitianLogo from "../Images/Haitian.png";
 
 export default function Inventory({ user }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [tableDataSource, setTableDataSource] = useState();
-    const access = user?.access?.["Add User"] || "No Access";
+  const access = user?.access?.["Add User"] || "No Access";
   const readOnly = access === "Read";
   const canWrite = access === "Read/Write" || access === "Full Control";
   const isFullControl = access === "Full Control";
+  const [isViewModalVisible, setIsViewModalVisible] = useState(false);
+  const [viewRecord, setViewRecord] = useState(null);
+  const [viewForm] = Form.useForm();
 
-// const columns = [
-//   {
-//     title: "Serial Number",
-//     dataIndex: "Serial Number",
-//     key: "serial",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-//   {
-//     title: "Part Number",
-//     dataIndex: "Part Number",
-//     key: "partNumber",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-//   {
-//     title: "Description",
-//     dataIndex: "Description",
-//     key: "description",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-//   {
-//     title: "Quantity",
-//     dataIndex: "Quantity",
-//     key: "quantity",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-//   {
-//     title: "Unit",
-//     dataIndex: "Unit",
-//     key: "unit",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-  
-//   // {
-//   //   title: "Total Price in AED",
-//   //   dataIndex: "Total Price in AED",
-//   //   key: "totalPrice",
-//   //   render: (text) => (
-//   //     <Tooltip title={text}>
-//   //       <span>{text}</span>
-//   //     </Tooltip>
-//   //   ),
-//   // },
-//   // {
-//   //   title: "Purchase Cost(per item)",
-//   //   dataIndex: "Purchase Cost(per item)",
-//   //   key: "purchaseCost",
-//   //   render: (text) => (
-//   //     <Tooltip title={text}>
-//   //       <span>{text}</span>
-//   //     </Tooltip>
-//   //   ),
-//   // },
-//   // {
-//   //   title: "Add On Cost",
-//   //   dataIndex: "Add On Cost",
-//   //   key: "addOnCost",
-//   //   render: (text) => (
-//   //     <Tooltip title={text}>
-//   //       <span>{text}</span>
-//   //     </Tooltip>
-//   //   ),
-//   // },
-//   // {
-//   //   title: "Selling Cost",
-//   //   dataIndex: "Selling Cost",
-//   //   key: "sellingCost",
-//   //   render: (text) => (
-//   //     <Tooltip title={text}>
-//   //       <span>{text}</span>
-//   //     </Tooltip>
-//   //   ),
-//   // },
+  // const columns = [
+  //   {
+  //     title: "Serial Number",
+  //     dataIndex: "Serial Number",
+  //     key: "serial",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
+  //   {
+  //     title: "Part Number",
+  //     dataIndex: "Part Number",
+  //     key: "partNumber",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
+  //   {
+  //     title: "Description",
+  //     dataIndex: "Description",
+  //     key: "description",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
+  //   {
+  //     title: "Quantity",
+  //     dataIndex: "Quantity",
+  //     key: "quantity",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
+  //   {
+  //     title: "Unit",
+  //     dataIndex: "Unit",
+  //     key: "unit",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
 
-//    ...(username === "Admin"
-//       ? [
-//       {
-//     title: "Total Price in AED",
-//     dataIndex: "Total Price in AED",
-//     key: "totalPrice",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-//   {
-//     title: "Purchase Cost(per item)",
-//     dataIndex: "Purchase Cost(per item)",
-//     key: "purchaseCost",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-//   {
-//     title: "Add On Cost",
-//     dataIndex: "Add On Cost",
-//     key: "addOnCost",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-//   {
-//     title: "Selling Cost",
-//     dataIndex: "Selling Cost",
-//     key: "sellingCost",
-//     render: (text) => (
-//       <Tooltip title={text}>
-//         <span>{text}</span>
-//       </Tooltip>
-//     ),
-//   },
-//       ]
-//       : []),
-  
-// ];
+  //   // {
+  //   //   title: "Total Price in AED",
+  //   //   dataIndex: "Total Price in AED",
+  //   //   key: "totalPrice",
+  //   //   render: (text) => (
+  //   //     <Tooltip title={text}>
+  //   //       <span>{text}</span>
+  //   //     </Tooltip>
+  //   //   ),
+  //   // },
+  //   // {
+  //   //   title: "Purchase Cost(per item)",
+  //   //   dataIndex: "Purchase Cost(per item)",
+  //   //   key: "purchaseCost",
+  //   //   render: (text) => (
+  //   //     <Tooltip title={text}>
+  //   //       <span>{text}</span>
+  //   //     </Tooltip>
+  //   //   ),
+  //   // },
+  //   // {
+  //   //   title: "Add On Cost",
+  //   //   dataIndex: "Add On Cost",
+  //   //   key: "addOnCost",
+  //   //   render: (text) => (
+  //   //     <Tooltip title={text}>
+  //   //       <span>{text}</span>
+  //   //     </Tooltip>
+  //   //   ),
+  //   // },
+  //   // {
+  //   //   title: "Selling Cost",
+  //   //   dataIndex: "Selling Cost",
+  //   //   key: "sellingCost",
+  //   //   render: (text) => (
+  //   //     <Tooltip title={text}>
+  //   //       <span>{text}</span>
+  //   //     </Tooltip>
+  //   //   ),
+  //   // },
 
-// const columns = [
-//   {
-//     title: "Serial Number",
-//     dataIndex: "serialNumber",  
-//     key: "serial",
-//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//   },
-//   {
-//     title: "Part Number",
-//     dataIndex: "partNumber",  
-//     key: "partNumber",
-//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//   },
-//   {
-//     title: "Description",
-//     dataIndex: "description",  
-//     key: "description",
-//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//   },
-//   {
-//     title: "Quantity",
-//     dataIndex: "quantity",  
-//     key: "quantity",
-//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//   },
-//   {
-//     title: "Unit",
-//     dataIndex: "unit",  
-//     key: "unit",
-//     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//   },
-//   ...(username === "Admin"
-//     ? [
-//         {
-//           title: "Total Price in AED",
-//           dataIndex: "totalPrice",  
-//           key: "totalPrice",
-//           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//         },
-//         {
-//           title: "Purchase Cost(per item)",
-//           dataIndex: "purchaseCost",  
-//           key: "purchaseCost",
-//           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//         },
-//         {
-//           title: "Add On Cost",
-//           dataIndex: "addOnCost",  
-//           key: "addOnCost",
-//           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//         },
-//         {
-//           title: "Selling Cost",
-//           dataIndex: "sellingCost",  
-//           key: "sellingCost",
-//           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-//         },
-//       ]
-//     : []),
-// ];
-const baseColumns = [
-  {
-    title: "Serial Number",
-    dataIndex: "serialNumber",
-    key: "serial",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-  {
-    title: "Part Number",
-    dataIndex: "partNumber",
-    key: "partNumber",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-  {
-    title: "Description",
-    dataIndex: "description",
-    key: "description",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-  {
-    title: "Quantity",
-    dataIndex: "quantity",
-    key: "quantity",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-  {
-    title: "Unit",
-    dataIndex: "unit",
-    key: "unit",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-];
+  //    ...(username === "Admin"
+  //       ? [
+  //       {
+  //     title: "Total Price in AED",
+  //     dataIndex: "Total Price in AED",
+  //     key: "totalPrice",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
+  //   {
+  //     title: "Purchase Cost(per item)",
+  //     dataIndex: "Purchase Cost(per item)",
+  //     key: "purchaseCost",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
+  //   {
+  //     title: "Add On Cost",
+  //     dataIndex: "Add On Cost",
+  //     key: "addOnCost",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
+  //   {
+  //     title: "Selling Cost",
+  //     dataIndex: "Selling Cost",
+  //     key: "sellingCost",
+  //     render: (text) => (
+  //       <Tooltip title={text}>
+  //         <span>{text}</span>
+  //       </Tooltip>
+  //     ),
+  //   },
+  //       ]
+  //       : []),
 
-// extra columns only visible to Full Control
-const adminColumns = [
-  {
-    title: "Total Price in AED",
-    dataIndex: "totalPrice",
-    key: "totalPrice",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-  {
-    title: "Purchase Cost (per item)",
-    dataIndex: "purchaseCost",
-    key: "purchaseCost",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-  {
-    title: "Add On Cost",
-    dataIndex: "addOnCost",
-    key: "addOnCost",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-  {
-    title: "Selling Cost",
-    dataIndex: "sellingCost",
-    key: "sellingCost",
-    render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
-  },
-];
+  // ];
 
-// merge based on access
-const columns = isFullControl ? [...baseColumns, ...adminColumns] : baseColumns;
+  // const columns = [
+  //   {
+  //     title: "Serial Number",
+  //     dataIndex: "serialNumber",
+  //     key: "serial",
+  //     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //   },
+  //   {
+  //     title: "Part Number",
+  //     dataIndex: "partNumber",
+  //     key: "partNumber",
+  //     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //   },
+  //   {
+  //     title: "Description",
+  //     dataIndex: "description",
+  //     key: "description",
+  //     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //   },
+  //   {
+  //     title: "Quantity",
+  //     dataIndex: "quantity",
+  //     key: "quantity",
+  //     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //   },
+  //   {
+  //     title: "Unit",
+  //     dataIndex: "unit",
+  //     key: "unit",
+  //     render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //   },
+  //   ...(username === "Admin"
+  //     ? [
+  //         {
+  //           title: "Total Price in AED",
+  //           dataIndex: "totalPrice",
+  //           key: "totalPrice",
+  //           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //         },
+  //         {
+  //           title: "Purchase Cost(per item)",
+  //           dataIndex: "purchaseCost",
+  //           key: "purchaseCost",
+  //           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //         },
+  //         {
+  //           title: "Add On Cost",
+  //           dataIndex: "addOnCost",
+  //           key: "addOnCost",
+  //           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //         },
+  //         {
+  //           title: "Selling Cost",
+  //           dataIndex: "sellingCost",
+  //           key: "sellingCost",
+  //           render: (text) => <Tooltip title={text}><span>{text}</span></Tooltip>,
+  //         },
+  //       ]
+  //     : []),
+  // ];
+  const baseColumns = [
+    {
+      title: "Serial Number",
+      dataIndex: "serialNumber",
+      key: "serial",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Part Number",
+      dataIndex: "partNumber",
+      key: "partNumber",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Unit",
+      dataIndex: "unit",
+      key: "unit",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+  ];
 
+  // extra columns only visible to Full Control
+  const adminColumns = [
+    {
+      title: "Total Price in AED",
+      dataIndex: "totalPrice",
+      key: "totalPrice",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Purchase Cost (per item)",
+      dataIndex: "purchaseCost",
+      key: "purchaseCost",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Add On Cost",
+      dataIndex: "addOnCost",
+      key: "addOnCost",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Selling Cost",
+      dataIndex: "sellingCost",
+      key: "sellingCost",
+      render: (text) => (
+        <Tooltip title={text}>
+          <span>{text}</span>
+        </Tooltip>
+      ),
+    },
+  ];
 
-const columnMapping = {
-  "Serial Number": "serialNumber",
-  "Part Number": "partNumber",
-  "Description": "description",
-  "Quantity": "quantity",
-  "Unit": "unit",
-  "Total Price in AED": "totalPrice",
-  "Purchase Cost(per item)": "purchaseCost",
-  "Add On Cost": "addOnCost",
-  "Selling Cost": "sellingCost",
-};
+  const actionColumn = {
+    title: "Action",
+    key: "action",
+      width: 120,
+      align: "center",
+       fixed: "right",
+    render: (_, record) => (
+      <Button
+        className="addButton"
+        onClick={() => {
+          setViewRecord(record);
+          viewForm.setFieldsValue(record); // ✅ preload record into form
+          setIsViewModalVisible(true);
+        }}
+      >
+        View
+      </Button>
+    ),
+  };
 
+  // merge based on access
+  const columns = isFullControl
+    ? [...baseColumns, ...adminColumns]
+    : baseColumns;
+  const finalColumns = [...columns, actionColumn];
+
+  const columnMapping = {
+    "Serial Number": "serialNumber",
+    "Part Number": "partNumber",
+    Description: "description",
+    Quantity: "quantity",
+    Unit: "unit",
+    "Total Price in AED": "totalPrice",
+    "Purchase Cost(per item)": "purchaseCost",
+    "Add On Cost": "addOnCost",
+    "Selling Cost": "sellingCost",
+  };
 
   const fetchInventory = async (values = {}) => {
     try {
@@ -304,7 +365,7 @@ const columnMapping = {
       });
 
       const res = await fetch(
-        "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec",
+        "https://script.google.com/macros/s/AKfycbyRXIGs-Sgkn086oQlwp2-0go0vJQdOO3VPqHVszvL4ejK8obaGBP43vsPjhw5FHkguaQ/exec",
         {
           method: "POST",
           body: params,
@@ -319,19 +380,18 @@ const columnMapping = {
       // }
 
       if (data.success) {
-   const normalizedData = data.data.map((item, idx) => {
-        const normalizedItem = { key: idx };
-        Object.keys(item).forEach((header) => {
-          const newKey = columnMapping[header] || header; // map if exists, else keep original
-          normalizedItem[newKey] = item[header];
+        const normalizedData = data.data.map((item, idx) => {
+          const normalizedItem = { key: idx };
+          Object.keys(item).forEach((header) => {
+            const newKey = columnMapping[header] || header; // map if exists, else keep original
+            normalizedItem[newKey] = item[header];
+          });
+          return normalizedItem;
         });
-        return normalizedItem;
-      });
-  setTableDataSource(normalizedData);
-} else {
-  notification.error({ message: "Error", description: data.message });
-}
-
+        setTableDataSource(normalizedData);
+      } else {
+        notification.error({ message: "Error", description: data.message });
+      }
     } catch (err) {
       notification.error({ message: "Error", description: err.message });
     } finally {
@@ -407,13 +467,15 @@ const columnMapping = {
     transition: background 0.2s ease;
   
 }   
+      .ant-modal-root .ant-modal {
+    width: var(--ant-modal-xs-width);
+    width: 100% !important;
   
   `;
 
-    if (access === "No Access") {
+  if (access === "No Access") {
     return <h2 style={{ padding: 20 }}>You do not have access to Inventory</h2>;
   }
-
 
   return (
     <>
@@ -530,7 +592,7 @@ const columnMapping = {
 
                 <Table
                   className="mt-5"
-                  columns={columns}
+                  columns={finalColumns}
                   dataSource={tableDataSource}
                   pagination={{
                     pageSize: 10,
@@ -541,6 +603,170 @@ const columnMapping = {
                   loading={loading}
                   rowKey={(record, idx) => idx}
                 />
+
+                <Modal
+                  open={isViewModalVisible}
+                  onCancel={() => {
+                    setIsViewModalVisible(false);
+                    viewForm.resetFields();
+                  }}
+                  footer={null}
+                  width={1200}
+                  style={{ top: "5px" }}
+                >
+                  {/* Logo */}
+                  <div className="col-12 col-lg-8 text-center m-auto">
+                    <img
+                      src={HaitianLogo}
+                      alt="HaitianLogo"
+                      className="m-0 p-0"
+                      style={{ width: "30%" }}
+                    />
+                  </div>
+
+                  {/* Header Section */}
+                  <div className="d-flex align-items-center gap-2 mb-1">
+                    <div
+                      className="d-flex align-items-center justify-content-center"
+                      style={{
+                        backgroundColor: "#e8f0fe",
+                        borderRadius: "12px",
+                        width: "40px",
+                        height: "40px",
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={faEye}
+                        size="lg"
+                        style={{ color: "#0D3884" }}
+                      />
+                    </div>
+                    <div>
+                      <div
+                        className="fw-bold m-0 p-0"
+                        style={{ fontSize: "20px", color: "#0D3884" }}
+                      >
+                        View Inventory Item
+                      </div>
+                      <div
+                        className="m-0 p-0"
+                        style={{ fontSize: "14px", color: "#0D3884" }}
+                      >
+                        Details of the selected inventory record
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border border-1"></div>
+
+                  {/* Form Section */}
+                  <Form
+                    form={viewForm}
+                    layout="vertical"
+                    className="mt-3 mt-lg-3"
+                  >
+                    <div className="row mt-3">
+                      {/* Base fields */}
+                      <div className="col-12">
+                        <Form.Item
+                          label="Serial Number"
+                          name="serialNumber"
+                          className="fw-bold"
+                        >
+                          <Input readOnly />
+                        </Form.Item>
+                      </div>
+                      <div className="col-12">
+                        <Form.Item
+                          label="Part Number"
+                          name="partNumber"
+                          className="fw-bold"
+                        >
+                          <Input readOnly />
+                        </Form.Item>
+                      </div>
+                      <div className="col-12">
+                        <Form.Item
+                          label="Description"
+                          name="description"
+                          className="fw-bold"
+                        >
+                          <Input.TextArea readOnly />
+                        </Form.Item>
+                      </div>
+                      <div className="col-12">
+                        <Form.Item
+                          label="Quantity"
+                          name="quantity"
+                          className="fw-bold"
+                        >
+                          <Input readOnly />
+                        </Form.Item>
+                      </div>
+                      <div className="col-12">
+                        <Form.Item label="Unit" name="unit" className="fw-bold">
+                          <Input readOnly />
+                        </Form.Item>
+                      </div>
+
+                      {/* Admin-only fields */}
+                      {isFullControl && (
+                        <>
+                          <div className="col-12">
+                            <Form.Item
+                              label="Total Price in AED"
+                              name="totalPrice"
+                              className="fw-bold"
+                            >
+                              <Input readOnly />
+                            </Form.Item>
+                          </div>
+                          <div className="col-12">
+                            <Form.Item
+                              label="Purchase Cost (per item)"
+                              name="purchaseCost"
+                              className="fw-bold"
+                            >
+                              <Input readOnly />
+                            </Form.Item>
+                          </div>
+                          <div className="col-12">
+                            <Form.Item
+                              label="Add On Cost"
+                              name="addOnCost"
+                              className="fw-bold"
+                            >
+                              <Input readOnly />
+                            </Form.Item>
+                          </div>
+                          <div className="col-12">
+                            <Form.Item
+                              label="Selling Cost"
+                              name="sellingCost"
+                              className="fw-bold"
+                            >
+                              <Input readOnly />
+                            </Form.Item>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Close Button */}
+                      <div className="col-7 text-center mt-4 mb-3 m-auto">
+                        <Button
+                          htmlType="button"
+                          size="large"
+                          className="clearButton mt-2 ms-3 text-center"
+                          onClick={() => {
+                            setIsViewModalVisible(false);
+                            viewForm.resetFields();
+                          }}
+                        >
+                          Close Form
+                        </Button>
+                      </div>
+                    </div>
+                  </Form>
+                </Modal>
               </div>
             </div>
           </div>

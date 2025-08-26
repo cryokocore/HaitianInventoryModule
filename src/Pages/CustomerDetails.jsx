@@ -35,7 +35,7 @@ export default function CustomerDetails({ user }) {
   const readOnly = access === "Read";
 
 
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbw5ddmiZY1_ILKMuLqmvBu0FiD0sHmy4de1AlrjMt09U-8AWVDpqFC_q3Fd6prYbdpyfw/exec"
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyRXIGs-Sgkn086oQlwp2-0go0vJQdOO3VPqHVszvL4ejK8obaGBP43vsPjhw5FHkguaQ/exec"
 
   
 
@@ -97,7 +97,9 @@ export default function CustomerDetails({ user }) {
             paymentTerms: values.paymentTerms || "-",
             creditLimit: values.creditLimit || "-",
             deliveryTerms: values.deliveryTerms || "-",
-            userName: user || "-",
+            // userName: user || "-",
+            userName: user?.email || "",
+
           }),
         }
       );
